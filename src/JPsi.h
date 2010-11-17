@@ -24,7 +24,9 @@
 #define MAX_TRACK_NUMBER 9
 #define MIN_CHARGED_TRACK 3
 
+#include <TMatrixD.h>
 #include <vector>
+#include <algorithm>
 class JPsi : public Algorithm 
 {
 	public:
@@ -48,6 +50,10 @@ class JPsi : public Algorithm
 	NTuple::Item<long> nneutrk;//number of neutral tracks
 	NTuple::Item<long> ntrk; //total number of tracks.
 	NTuple::Item<long> niptrk; //tracks from interection point
+	NTuple::Item<double> S1;
+	NTuple::Item<double> S2;
+	NTuple::Item<double> S3;
+	NTuple::Item<double> m_S;
 
 	//charged track information
 	NTuple::Tuple * chtr_tuple; //charged grack tuple
@@ -58,16 +64,6 @@ class JPsi : public Algorithm
   NTuple::Array<double> m_q;
   NTuple::Array<double> m_x, m_y, m_z;
   NTuple::Array<double> m_ismu;
-	//struct track_t
-	//{
-	//	NTuple::Item<double> pt; //transverse momentum
-	//	NTuple::Item<double> E;  //Energy
-	//	NTuple::Item<double> M; //Invariant mass
-	//	NTuple::Item<double> q;//charge
-	//	NTuple::Item<double> x, y, z; //vertex coordinate
-	//	NTuple::Item<double> ismu;  //is it a muon track
-	//};
-	//std::vector <track_t> chtr;
 
 	//de_dx infrmation temporary remove
 	//NTuple::Tuple * dedx_tuple;
@@ -82,6 +78,7 @@ class JPsi : public Algorithm
   //NTuple::Item<double> m_ghit[MAX_TRACK_NUMBER];
   //NTuple::Item<double> m_thit[MAX_TRACK_NUMBER];
 	void InitData(void);
+	TMatrixD S; //sphericity tensor
 };
 
 #endif

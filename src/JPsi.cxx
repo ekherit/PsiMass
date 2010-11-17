@@ -51,6 +51,8 @@ using CLHEP::HepLorentzVector;
 #endif
 #include "JPsi.h"
 
+#include <TMatrixDEigen.h>
+
 #include "VertexFit/KinematicFit.h"
 #include "VertexFit/VertexFit.h"
 #include "VertexFit/Helix.h"
@@ -58,26 +60,14 @@ using CLHEP::HepLorentzVector;
 
 JPsi::JPsi(const std::string& name, ISvcLocator* pSvcLocator) :
   Algorithm(name, pSvcLocator)
-	//chtr(MAX_TRACK_NUMBER)
 {
-  
-  //Declare the properties  
-  //declareProperty("Vr0cut", m_vr0cut=1.0);
-  //declareProperty("Vz0cut", m_vz0cut=5.0);
-  //declareProperty("EnergyThreshold", m_energyThreshold=0.04);
-  //declareProperty("GammaPhiCut", m_gammaPhiCut=20.0);
-  //declareProperty("GammaThetaCut", m_gammaThetaCut=20.0);
-  //declareProperty("GammaAngleCut", m_gammaAngleCut=20.0);
-  //declareProperty("Test4C", m_test4C = 1);
-  //declareProperty("Test5C", m_test5C = 1);
-  //declareProperty("CheckDedx", m_checkDedx = 1);
-  //declareProperty("CheckTof",  m_checkTof = 1);
   declareProperty("CheckDedx", prop_check_dedx = 1);
   declareProperty("Delta_x", prop_delta_x = 1.0); //cm?
   declareProperty("Delta_y", prop_delta_y = 1.0); //cm?
   declareProperty("Delta_z", prop_delta_z = 10.0); //cm?
   declareProperty("USE_IPCUT", USE_IPCUT=1); //to use interection point cut.
   declareProperty("IPTRACKS", IPTRACKS=2); //number of tracks from interection point
+	S.ResizeTo(3, 3);
 }
 
 
@@ -97,18 +87,6 @@ StatusCode JPsi::initialize(void)
 		chtr_tuple = ntupleSvc()->book("FILE1/chtr", CLID_ColumnWiseTuple, "Charged rack");
 		if(chtr_tuple)
 		{
-			//char buf[1024];
-			//for(unsigned i=0;i<chtr.size();++i)
-			//{
-			//	sprintf(buf, "E%d",    i); status = chtr_tuple->addItem(buf, chtr[i].E);
-			//	sprintf(buf, "pt%d",   i); status = chtr_tuple->addItem(buf, chtr[i].pt);
-			//	sprintf(buf, "M%d",    i); status = chtr_tuple->addItem(buf, chtr[i].M);
-			//	sprintf(buf, "q%d",    i); status = chtr_tuple->addItem(buf, chtr[i].q);
-			//	sprintf(buf, "x%d",    i); status = chtr_tuple->addItem(buf, chtr[i].x);
-			//	sprintf(buf, "y%d",    i); status = chtr_tuple->addItem(buf, chtr[i].y);
-			//	sprintf(buf, "z%d",    i); status = chtr_tuple->addItem(buf, chtr[i].z);
-			//	sprintf(buf, "ismu%d", i); status = chtr_tuple->addItem(buf, chtr[i].ismu);
-			//}
       status = chtr_tuple->addItem ("nchtr", tr_idx, 0, MAX_TRACK_NUMBER);
       status = chtr_tuple->addIndexedItem ("E", tr_idx, m_E );
       status = chtr_tuple->addIndexedItem ("pt", tr_idx, m_pt );
@@ -137,6 +115,11 @@ StatusCode JPsi::initialize(void)
 			status=main_tuple->addItem("nneutrk", nneutrk);
 			status=main_tuple->addItem("ntrk", ntrk);
 			status=main_tuple->addItem("niptrk", niptrk);
+			/*  sphericity part */
+			status=main_tuple->addItem("S1", S1);
+			status=main_tuple->addItem("S2", S2);
+			status=main_tuple->addItem("S3", S3);
+			status=main_tuple->addItem("S", m_S);
 		}
 		else
 		{
@@ -213,6 +196,7 @@ StatusCode JPsi::execute()
 	nchtrk = evtRecEvent->totalCharged();
 	nneutrk= evtRecEvent->totalCharged();
 	ntrk=nchtrk+nneutrk;
+	double p2sum=0;
 	/*  loop over charged track */
   for(int i = 0; i < evtRecEvent->totalCharged(); i++)
 	{
@@ -227,15 +211,6 @@ StatusCode JPsi::execute()
 		p[i].setPhi(mdcTrk->phi());
 		p[i].setRho(mdcTrk->p());
 		p[i].setE(emcTrk->energy());
-		//chtr[i].q=mdcTrk->charge();
-    //chtr[i].x=mdcTrk->x();
-    //chtr[i].y=mdcTrk->y();
-    //chtr[i].z=mdcTrk->z();
-		//chtr[i].pt=mdcTrk->p()*sin(mdcTrk->theta());
-		//chtr[i].E=emcTrk->energy();
-		//Etotal+=chtr[i].E;
-		//chtr[i].M=p[i].m();
-		//chtr[i].ismu=(*itTrk)->isMucTrackValid();
 		m_pt[i]=mdcTrk->p()*sin(mdcTrk->theta());
 		m_E[i]=emcTrk->energy();
 		m_M[i]=p[i].m();
@@ -262,10 +237,38 @@ StatusCode JPsi::execute()
 		//	m_probPH[i] = dedxTrk->probPH();
 		//	m_normPH[i] = dedxTrk->normPH();
 		//}
+		/* Calculate sphericity tensor */
+		for(int i=0;i<3;i++)
+			for(int j=0;j<3;j++)
+			{
+				S[i][j]+=mdcTrk->p3()[i]*mdcTrk->p3()[j];
+			}
+		p2sum+=mdcTrk->p()*mdcTrk->p();
 		if(fabs(m_x[i])<prop_delta_x && fabs(m_y[i]) < prop_delta_y && fabs(m_z[i])< prop_delta_z) niptrk++;
 	}
+
 	//Two tracks from interaction points.
 	if(USE_IPCUT && niptrk <IPTRACKS) return StatusCode::SUCCESS;
+
+	//normalize sphericity tensor
+		for(int i=0;i<3;i++)
+			for(int j=0;j<3;j++)
+				S[i][j]/=p2sum;
+	TMatrixDEigen Stmp(S);
+	const TVectorD & eval = Stmp.GetEigenValuesRe();
+	std::vector<double> v(3);
+	for(int i=0;i<3;i++) v[i]=eval[i];
+	std::sort(v.begin(), v.end());
+	S1=v[0];
+	S2=v[1];
+	S3=v[2];
+	m_S = 1.5*(v[0]+v[1]);
+	//cout << v[0] << " " << v[1] << " " << v[2] << endl;
+	if(!(v[0]<=v[1] && v[1]<=v[2]))
+	{
+		cerr << "Bad sphericity" << endl;
+		exit(1);
+	}
 	chtr_tuple->write();
 	main_tuple->write();
 	//dedx_tuple->write();
@@ -289,17 +292,20 @@ void JPsi::InitData(void)
 	nchtrk=0;
 	nneutrk=0;
 	niptrk=0;
-	//for(unsigned i=0;i<chtr.size();i++)
-	//{
-	//	chtr[i].E=0;
-	//	chtr[i].q=0;
-	//	chtr[i].pt=0;
-	//	chtr[i].M=0;
-	//	chtr[i].x=-99999;
-	//	chtr[i].y=-99999;
-	//	chtr[i].z=-99999;
-	//	chtr[i].ismu=-99999;
-	//}
+	for(unsigned i=0;i<MAX_TRACK_NUMBER;++i)
+	{
+		m_E[i]=-999;
+		m_pt[i]=-999;
+		m_M[i]=-999;
+		m_q[i]=-999;
+		m_x[i]=-999;
+		m_y[i]=-999;
+		m_z[i]=-999;
+		m_ismu[i]=0;
+	}
+	for(int i=0;i<3;i++)
+		for(int j=0;j<3;j++)
+			S[i][j]=0;
 	//for(int i=0; i<2; i++) 
 	//{
 	//		m_ptrk[i]  = -999;
