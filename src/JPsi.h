@@ -21,8 +21,6 @@
 #include "GaudiKernel/AlgFactory.h"
 #include "GaudiKernel/Algorithm.h"
 #include "GaudiKernel/NTuple.h"
-#define MAX_TRACK_NUMBER 9
-#define MIN_CHARGED_TRACK 3
 
 #include <TMatrixD.h>
 #include <vector>
@@ -39,6 +37,8 @@ class JPsi : public Algorithm
   int prop_check_dedx;
 	int USE_IPCUT; //use interection point cut
 	int IPTRACKS; //tracks number from interection point
+	int MIN_CHARGED_TRACKS; //minimum charged tracks in selection
+	int MAX_TRACK_NUMBER; //minimum charged tracks in selection
 	double prop_delta_x; //interaction  point
 	double prop_delta_y;
 	double prop_delta_z;
@@ -54,10 +54,11 @@ class JPsi : public Algorithm
 	NTuple::Item<double> S2;
 	NTuple::Item<double> S3;
 	NTuple::Item<double> m_S;
+	NTuple::Item<long> m_Signal;
 
+  NTuple::Item<long> tr_idx;
 	//charged track information
 	NTuple::Tuple * chtr_tuple; //charged grack tuple
-  NTuple::Item<long> tr_idx;
   NTuple::Array<double> m_E;
   NTuple::Array<double> m_pt;
   NTuple::Array<double> m_M;
@@ -65,20 +66,10 @@ class JPsi : public Algorithm
   NTuple::Array<double> m_x, m_y, m_z;
   NTuple::Array<double> m_ismu;
 
-	//de_dx infrmation temporary remove
-	//NTuple::Tuple * dedx_tuple;
-  //NTuple::Item<double> m_ptrk[MAX_TRACK_NUMBER];
-  //NTuple::Item<double> m_chie[MAX_TRACK_NUMBER];
-  //NTuple::Item<double> m_chimu[MAX_TRACK_NUMBER];
-  //NTuple::Item<double> m_chipi[MAX_TRACK_NUMBER];
-  //NTuple::Item<double> m_chik[MAX_TRACK_NUMBER];
-  //NTuple::Item<double> m_chip[MAX_TRACK_NUMBER];
-  //NTuple::Item<double> m_probPH[MAX_TRACK_NUMBER];
-  //NTuple::Item<double> m_normPH[MAX_TRACK_NUMBER];
-  //NTuple::Item<double> m_ghit[MAX_TRACK_NUMBER];
-  //NTuple::Item<double> m_thit[MAX_TRACK_NUMBER];
 	void InitData(void);
 	TMatrixD S; //sphericity tensor
+
+	/*  BhaBha specific section section */
 };
 
 #endif
