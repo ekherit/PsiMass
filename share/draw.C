@@ -20,11 +20,14 @@
 	TTree * chtr = (TTree*)f.Get("chtr");
 	TTree * main = (TTree*)f.Get("main");
 	chtr->AddFriend(main);
+	TCanvas * c = new TCanvas;
+	c->Divide(2, 2);
 
 
 	const char * scut1 = "signal==1";
 	const char * bcut1 = "signal==0";
-	TCanvas * cE  = new TCanvas;
+	//TCanvas * cE  = new TCanvas;
+	c->cd(1);
 	chtr->Draw("Etotal", "");
 	chtr->Draw("Etotal>>hEs", scut1);
 	hEs->SetLineColor(kRed);
@@ -38,7 +41,8 @@
 	lE->AddEntry(hEb, "Bhabha (ncharded=2)", "lp");
 	lE->Draw();
 
-	TCanvas * cS = new TCanvas; //sphericity
+	c->cd(3);
+	//TCanvas * cS = new TCanvas; //sphericity
 	chtr->Draw("S", "");
 	chtr->Draw("S>>hSs",scut1);
 	hSs->SetLineColor(kRed);
@@ -55,7 +59,8 @@
 	//Now apply some cuts to see what happen
 	const char * scut2 = "signal==1&&S>0.1";
 	const char * bcut2 = "signal==0&&S<0.1";
-	TCanvas * cE2  = new TCanvas;
+	//TCanvas * cE2  = new TCanvas;
+	c->cd(2);
 	chtr->Draw("Etotal", "");
 	chtr->Draw("Etotal>>hE2s", scut2);
 	hE2s->SetLineColor(kRed);
@@ -71,7 +76,8 @@
 
 	const char * scut22 = "signal==1&&Etotal>1&&Etotal<2.5";
 	const char * bcut22 = "signal==0&&Etotal>2.5";
-	TCanvas * cS2 = new TCanvas; //sphericity
+	//TCanvas * cS2 = new TCanvas; //sphericity
+	c->cd(4);
 	chtr->Draw("S", "");
 	chtr->Draw("S>>hS2s",scut22);
 	hS2s->SetLineColor(kRed);
