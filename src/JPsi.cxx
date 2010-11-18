@@ -62,9 +62,9 @@ JPsi::JPsi(const std::string& name, ISvcLocator* pSvcLocator) :
   Algorithm(name, pSvcLocator)
 {
   declareProperty("CheckDedx", prop_check_dedx = 1);
-  declareProperty("Delta_x", prop_delta_x = 1.0); //cm?
-  declareProperty("Delta_y", prop_delta_y = 1.0); //cm?
-  declareProperty("Delta_z", prop_delta_z = 10.0); //cm?
+  declareProperty("DELTA_X", DELTA_X = 1.0); //cm?
+  declareProperty("DELTA_Y", DELTA_Y = 1.0); //cm?
+  declareProperty("DELTA_Z", DELTA_Z = 10.0); //cm?
   declareProperty("USE_IPCUT", USE_IPCUT=1); //to use interection point cut.
   declareProperty("IPTRACKS", IPTRACKS=2); //number of tracks from interection point
   declareProperty("MIN_CHARGED_TRACKS", MIN_CHARGED_TRACKS=2); //minimum number of charged tracks in selection
@@ -102,6 +102,7 @@ StatusCode JPsi::initialize(void)
 			status=main_tuple->addItem("S", m_S);
 			status=main_tuple->addItem("signal", m_Signal);
 			//charged tracks
+			status=main_tuple->addItem("coshp", m_cos_high_p);
       status = main_tuple->addItem ("nchtr", tr_idx, 0, MAX_TRACK_NUMBER);
       status = main_tuple->addIndexedItem ("E", tr_idx, m_E );
       status = main_tuple->addIndexedItem ("pt", tr_idx, m_pt );
@@ -153,13 +154,16 @@ StatusCode JPsi::execute()
 	nneutrk= evtRecEvent->totalCharged();
 	ntrk=nchtrk+nneutrk;
 	double p2sum=0;
+	double  Eh[2]={0, 0};
+	Hep3Vector ph[2];//Two high momentum
+	unsigned has_mdc_emc=0;
 	/*  loop over charged track */
   for(int i = 0; i < evtRecEvent->totalCharged(); i++)
 	{
 		tr_idx=i;
     EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + i;
-    if(!(*itTrk)->isMdcTrackValid()) continue;
-    if(!(*itTrk)->isEmcShowerValid()) continue;
+    if(!(*itTrk)->isMdcTrackValid() || !(*itTrk)->isEmcShowerValid() ) continue;
+		has_mdc_emc++;
     RecMdcTrack *mdcTrk = (*itTrk)->mdcTrack();  //main drift chambe
     RecEmcShower *emcTrk = (*itTrk)->emcShower(); //Electro Magnet Calorimeer
 		p[i]=HepLorentzVector(1, 1, 1, 1);
@@ -183,11 +187,28 @@ StatusCode JPsi::execute()
 				S[i][j]+=mdcTrk->p3()[i]*mdcTrk->p3()[j];
 			}
 		p2sum+=mdcTrk->p()*mdcTrk->p();
-		if(fabs(m_x[i])<prop_delta_x && fabs(m_y[i]) < prop_delta_y && fabs(m_z[i])< prop_delta_z) niptrk++;
+		if(fabs(m_x[i])<DELTA_X && fabs(m_y[i]) < DELTA_Y && fabs(m_z[i])< DELTA_Z) niptrk++;
+		/* find two high energy track */
+		if(emcTrk->energy() >= Eh[0])
+		{
+			Eh[0]=emcTrk->energy();
+			ph[0]=mdcTrk->p3();
+		}
+		else
+		{
+			if(emcTrk->energy() >= Eh[1])
+			{
+				ph[1]=mdcTrk->p3();
+				Eh[1]=emcTrk->energy();
+			}
+		}
 	}
+	if(has_mdc_emc<2) return StatusCode::SUCCESS; //at list two tracks must have drift and shower.
+	/*  calculate angles of high energy tracks */
+	double tmp = ph[0].mag()*ph[1].mag()<=0 ? -10 : (ph[0].dot(ph[1]))/(ph[0].mag()*ph[1].mag());
+	m_cos_high_p=tmp;
 
-	//Two tracks from interaction points.
-	//The same condion for BhaBha and for multihadron
+	//Two tracks from interaction points. The same condion for BhaBha and for multihadron
 	if(USE_IPCUT && niptrk <IPTRACKS) return StatusCode::SUCCESS;
 
 	//normalize sphericity tensor
@@ -231,6 +252,7 @@ void JPsi::InitData(void)
 	nneutrk=0;
 	niptrk=0;
 	m_Signal=-1;
+	m_cos_high_p=-10;
 	for(unsigned i=0;i<MAX_TRACK_NUMBER;++i)
 	{
 		m_E[i]=-999;

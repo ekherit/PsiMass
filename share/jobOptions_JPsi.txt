@@ -2,8 +2,8 @@
 ApplicationMgr.DLLs += {"JPsi"};
 ApplicationMgr.TopAlg += {"JPsi"};
 JPsi.CheckDedx = 1;
-JPsi.Delta_x=1.0;
-JPsi.Delta_y=1.0;
-JPsi.Delta_z=10.0;
+JPsi.DELTA_X=1.0;
+JPsi.DELTA_Y=1.0;
+JPsi.DELTA_Z=10.0;
 JPsi.USE_IPCUT=1;
 JPsi.IPTRACKS=2;
