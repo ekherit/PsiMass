@@ -88,4 +88,15 @@
 	lS2->AddEntry(hS2s, "Signal (ncharged>2&&Etotal>1&&Etotal<2.5)", "lp");
 	lS2->AddEntry(hS2b, "Bhabha (ncharded=2&&Etotal>2.5)", "lp");
 	lS2->Draw();
+
+	TCanvas * ccos = new TCanvas;
+	tree->Draw("coshp>>hCs", "signal==1&&coshp>-5");
+	hCs->SetLineColor(kRed);
+	hCs->SetLineWidth(2);
+	hCs->GetXaxis()->SetTitle("cos #phi");
+	tree->Draw("coshp>>hCb", "signal==0&&coshp>-5", "same");
+	TLegend * lC = new TLegend(0.6, 0.8, 1.0, 1.0);
+	lC->AddEntry(hCs, "Signal (ncharged>2)", "lp");
+	lC->AddEntry(hCb, "Bhabha (ncharded=2)", "lp");
+	lC->Draw();
 }
