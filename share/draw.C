@@ -16,10 +16,8 @@
  * =====================================================================================
  */
 {
-	TFile f("jpsi.root");
-	TTree * chtr = (TTree*)f.Get("chtr");
-	TTree * main = (TTree*)f.Get("main");
-	chtr->AddFriend(main);
+	TFile f("proceed.root");
+	TTree * tree = (TTree*)f.Get("mhadr");
 	TCanvas * c = new TCanvas;
 	c->Divide(2, 2);
 
@@ -28,13 +26,13 @@
 	const char * bcut1 = "signal==0";
 	//TCanvas * cE  = new TCanvas;
 	c->cd(1);
-	chtr->Draw("Etotal", "");
-	chtr->Draw("Etotal>>hEs", scut1);
+	tree->Draw("Etotal", "");
+	tree->Draw("Etotal>>hEs", scut1);
 	hEs->SetLineColor(kRed);
 	hEs->SetTitle("Total charged track energy deposition");
 	hEs->GetXaxis()->SetTitle("E [GeV]");
 	hEs->SetLineWidth(2);
-	chtr->Draw("Etotal>>hEb",bcut1,"same");
+	tree->Draw("Etotal>>hEb",bcut1,"same");
 	hEb->SetLineColor(kBlue);
 	TLegend * lE = new TLegend(0.6, 0.8, 1.0, 1.0);
 	lE->AddEntry(hEs, "Signal (ncharged>2)", "lp");
@@ -43,13 +41,13 @@
 
 	c->cd(3);
 	//TCanvas * cS = new TCanvas; //sphericity
-	chtr->Draw("S", "");
-	chtr->Draw("S>>hSs",scut1);
+	tree->Draw("S", "");
+	tree->Draw("S>>hSs",scut1);
 	hSs->SetLineColor(kRed);
 	hSs->SetTitle("Sphericity");
 	hSs->GetXaxis()->SetTitle("S");
 	hSs->SetLineWidth(2);
-	chtr->Draw("S>>hSb", bcut1,"same");
+	tree->Draw("S>>hSb", bcut1,"same");
 	hSb->SetLineColor(kBlue);
 	TLegend * lS = new TLegend(0.6, 0.8, 1.0, 1.0);
 	lS->AddEntry(hSs, "Signal (ncharged>2)", "lp");
@@ -61,13 +59,13 @@
 	const char * bcut2 = "signal==0&&S<0.1";
 	//TCanvas * cE2  = new TCanvas;
 	c->cd(2);
-	chtr->Draw("Etotal", "");
-	chtr->Draw("Etotal>>hE2s", scut2);
+	tree->Draw("Etotal", "");
+	tree->Draw("Etotal>>hE2s", scut2);
 	hE2s->SetLineColor(kRed);
 	hE2s->SetTitle("Total charged track energy deposition");
 	hE2s->GetXaxis()->SetTitle("E [GeV]");
 	hE2s->SetLineWidth(2);
-	chtr->Draw("Etotal>>hE2b",bcut2,"same");
+	tree->Draw("Etotal>>hE2b",bcut2,"same");
 	hE2b->SetLineColor(kBlue);
 	TLegend * lE2 = new TLegend(0.6, 0.8, 1.0, 1.0);
 	lE2->AddEntry(hE2s, "Signal (ncharged>2&&S>0.1)", "lp");
@@ -78,13 +76,13 @@
 	const char * bcut22 = "signal==0&&Etotal>2.5";
 	//TCanvas * cS2 = new TCanvas; //sphericity
 	c->cd(4);
-	chtr->Draw("S", "");
-	chtr->Draw("S>>hS2s",scut22);
+	tree->Draw("S", "");
+	tree->Draw("S>>hS2s",scut22);
 	hS2s->SetLineColor(kRed);
 	hS2s->SetTitle("Sphericity");
 	hS2s->GetXaxis()->SetTitle("S");
 	hS2s->SetLineWidth(2);
-	chtr->Draw("S>>hS2b", bcut22,"same");
+	tree->Draw("S>>hS2b", bcut22,"same");
 	hS2b->SetLineColor(kBlue);
 	TLegend * lS2 = new TLegend(0.6, 0.8, 1.0, 1.0);
 	lS2->AddEntry(hS2s, "Signal (ncharged>2&&Etotal>1&&Etotal<2.5)", "lp");

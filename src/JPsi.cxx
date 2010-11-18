@@ -82,36 +82,14 @@ StatusCode JPsi::initialize(void)
 	event_write = 0;
   
   StatusCode status;
-	NTuplePtr my_nt(ntupleSvc(), "FILE1/chtr");
-	if(my_nt) chtr_tuple=my_nt;
+	NTuplePtr my_nt(ntupleSvc(), "FILE1/mhadr");
+	if(my_nt) main_tuple=my_nt;
 	else
 	{
-		chtr_tuple = ntupleSvc()->book("FILE1/chtr", CLID_ColumnWiseTuple, "Charged rack");
-		if(chtr_tuple)
-		{
-      status = chtr_tuple->addItem ("nchtr", tr_idx, 0, MAX_TRACK_NUMBER);
-      status = chtr_tuple->addIndexedItem ("E", tr_idx, m_E );
-      status = chtr_tuple->addIndexedItem ("pt", tr_idx, m_pt );
-      status = chtr_tuple->addIndexedItem ("M", tr_idx, m_M );
-      status = chtr_tuple->addIndexedItem ("q", tr_idx, m_q );
-      status = chtr_tuple->addIndexedItem ("x", tr_idx, m_x );
-      status = chtr_tuple->addIndexedItem ("y", tr_idx, m_y );
-      status = chtr_tuple->addIndexedItem ("z", tr_idx, m_z );
-      status = chtr_tuple->addIndexedItem ("ismu", tr_idx, m_ismu );
-		}
-		else
-		{
-      log << MSG::ERROR << "    Cannot book N-tuple:" << long(chtr_tuple) << endmsg;
-      return StatusCode::FAILURE;
-		}
-	}
-	NTuplePtr mainnt(ntupleSvc(), "FILE1/main");
-	if(mainnt) main_tuple=mainnt;
-	else
-	{
-		main_tuple = ntupleSvc()->book("FILE1/main", CLID_ColumnWiseTuple, "Event information");
+		main_tuple = ntupleSvc()->book("FILE1/mhadr", CLID_ColumnWiseTuple, "Multihadron tree plus bhabha");
 		if(main_tuple)
 		{
+			//common
 			status=main_tuple->addItem("Etotal", Etotal);
 			status=main_tuple->addItem("nchtrk", nchtrk);
 			status=main_tuple->addItem("nneutrk", nneutrk);
@@ -123,6 +101,16 @@ StatusCode JPsi::initialize(void)
 			status=main_tuple->addItem("S3", S3);
 			status=main_tuple->addItem("S", m_S);
 			status=main_tuple->addItem("signal", m_Signal);
+			//charged tracks
+      status = main_tuple->addItem ("nchtr", tr_idx, 0, MAX_TRACK_NUMBER);
+      status = main_tuple->addIndexedItem ("E", tr_idx, m_E );
+      status = main_tuple->addIndexedItem ("pt", tr_idx, m_pt );
+      status = main_tuple->addIndexedItem ("M", tr_idx, m_M );
+      status = main_tuple->addIndexedItem ("q", tr_idx, m_q );
+      status = main_tuple->addIndexedItem ("x", tr_idx, m_x );
+      status = main_tuple->addIndexedItem ("y", tr_idx, m_y );
+      status = main_tuple->addIndexedItem ("z", tr_idx, m_z );
+      status = main_tuple->addIndexedItem ("ismu", tr_idx, m_ismu );
 		}
 		else
 		{
@@ -221,7 +209,6 @@ StatusCode JPsi::execute()
 		exit(1);
 	}
 	/* now fill the data */
-	chtr_tuple->write();
 	main_tuple->write();
 	event_write++;
   return StatusCode::SUCCESS;

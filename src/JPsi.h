@@ -25,6 +25,7 @@
 #include <TMatrixD.h>
 #include <vector>
 #include <algorithm>
+
 class JPsi : public Algorithm 
 {
 	public:
@@ -58,7 +59,6 @@ class JPsi : public Algorithm
 
   NTuple::Item<long> tr_idx;
 	//charged track information
-	NTuple::Tuple * chtr_tuple; //charged grack tuple
   NTuple::Array<double> m_E;
   NTuple::Array<double> m_pt;
   NTuple::Array<double> m_M;
@@ -68,8 +68,6 @@ class JPsi : public Algorithm
 
 	void InitData(void);
 	TMatrixD S; //sphericity tensor
-
-	/*  BhaBha specific section section */
 };
 
 #endif
