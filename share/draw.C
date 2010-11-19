@@ -15,19 +15,21 @@
  *
  * =====================================================================================
  */
+#include <TTree.h>
+void draw(TTree * tree,  const char * title)
 {
-	TFile f("proceed.root");
-	TTree * tree = (TTree*)f.Get("mhadr");
-	TTree * dedx = (TTree*)f.Get("dedx");
-	tree->AddFriend(dedx);
 	TCanvas * c = new TCanvas;
+	c->SetTitle(title);
 	c->Divide(2, 2);
+	c->SetBorderMode(0);
+	c->SetFillColor(0);
 
 
 	const char * scut1 = "signal==1";
 	const char * bcut1 = "signal==0";
 	//TCanvas * cE  = new TCanvas;
 	c->cd(1);
+	gPad->SetFillColor(0);
 	tree->Draw("Etotal", "");
 	tree->Draw("Etotal>>hEs", scut1);
 	hEs->SetLineColor(kRed);
@@ -37,11 +39,13 @@
 	tree->Draw("Etotal>>hEb",bcut1,"same");
 	hEb->SetLineColor(kBlue);
 	TLegend * lE = new TLegend(0.6, 0.8, 1.0, 1.0);
-	lE->AddEntry(hEs, "Signal (ncharged>2)", "lp");
-	lE->AddEntry(hEb, "Bhabha (ncharded=2)", "lp");
+	lE->AddEntry(hEs, "N_{q}>2", "lp");
+	lE->AddEntry(hEb, "N_{q}=2", "lp");
 	lE->Draw();
 
 	c->cd(3);
+	gPad->SetFillColor(0);
+	gPad->SetLogy();
 	//TCanvas * cS = new TCanvas; //sphericity
 	tree->Draw("S", "");
 	tree->Draw("S>>hSs",scut1);
@@ -52,8 +56,8 @@
 	tree->Draw("S>>hSb", bcut1,"same");
 	hSb->SetLineColor(kBlue);
 	TLegend * lS = new TLegend(0.6, 0.8, 1.0, 1.0);
-	lS->AddEntry(hSs, "Signal (ncharged>2)", "lp");
-	lS->AddEntry(hSb, "Bhabha (ncharded=2)", "lp");
+	lS->AddEntry(hSs, "N_{q}>2", "lp");
+	lS->AddEntry(hSb, "N_{q}=2", "lp");
 	lS->Draw();
 
 	//Now apply some cuts to see what happen
@@ -61,6 +65,7 @@
 	const char * bcut2 = "signal==0&&S<0.1";
 	//TCanvas * cE2  = new TCanvas;
 	c->cd(2);
+	gPad->SetFillColor(0);
 	tree->Draw("Etotal", "");
 	tree->Draw("Etotal>>hE2s", scut2);
 	hE2s->SetLineColor(kRed);
@@ -70,14 +75,16 @@
 	tree->Draw("Etotal>>hE2b",bcut2,"same");
 	hE2b->SetLineColor(kBlue);
 	TLegend * lE2 = new TLegend(0.6, 0.8, 1.0, 1.0);
-	lE2->AddEntry(hE2s, "Signal (ncharged>2&&S>0.1)", "lp");
-	lE2->AddEntry(hE2b, "Bhabha (ncharded=2&&S<0.1)", "lp");
+	lE2->AddEntry(hE2s, "N_{q}>2, S>0.1", "lp");
+	lE2->AddEntry(hE2b, "N_{q}=2, S<0.1", "lp");
 	lE2->Draw();
 
-	const char * scut22 = "signal==1&&Etotal>1&&Etotal<2.5";
+	const char * scut22 = "signal==1&&Etotal>0.5&&Etotal<2.5";
 	const char * bcut22 = "signal==0&&Etotal>2.5";
 	//TCanvas * cS2 = new TCanvas; //sphericity
 	c->cd(4);
+	gPad->SetFillColor(0);
+	gPad->SetLogy();
 	tree->Draw("S", "");
 	tree->Draw("S>>hS2s",scut22);
 	hS2s->SetLineColor(kRed);
@@ -87,11 +94,12 @@
 	tree->Draw("S>>hS2b", bcut22,"same");
 	hS2b->SetLineColor(kBlue);
 	TLegend * lS2 = new TLegend(0.6, 0.8, 1.0, 1.0);
-	lS2->AddEntry(hS2s, "Signal (ncharged>2&&Etotal>1&&Etotal<2.5)", "lp");
-	lS2->AddEntry(hS2b, "Bhabha (ncharded=2&&Etotal>2.5)", "lp");
+	lS2->AddEntry(hS2s, "N_{q}>2, E_{tot} #in (0.5, 2.5)GeV", "lp");
+	lS2->AddEntry(hS2b, "N_{q}=2, E_{tot}>2.5 GeV", "lp");
 	lS2->Draw();
 
 	TCanvas * ccos = new TCanvas;
+	ccos->SetTitle(title);
 	tree->Draw("coshp>>hCs", "signal==1&&coshp>-5");
 	hCs->SetLineColor(kRed);
 	hCs->SetLineWidth(2);
@@ -101,4 +109,114 @@
 	lC->AddEntry(hCs, "Signal (ncharged>2)", "lp");
 	lC->AddEntry(hCb, "Bhabha (ncharded=2)", "lp");
 	lC->Draw();
+
+	TCanvas * c  = new TCanvas;
+	c->SetTitle(title);
+	tree->Draw("Etotal",  "fabs(chimu[0])<1.5");
+
+	//Calculate result.
+	//const char * main_signal_cut = "nchtrk>2&&Etotal>0.5&&Etotal<2.5&&S>0.1";
+	const char * main_signal_cut = "nchtrk>2&&S>0.1&&Etotal>0.5&&Etotal<2.5";
+	const char * main_bhabha_cut = "nchtrk==2&&S<0.1&&Etotal>2.5";
+	TCanvas * rc = new TCanvas;
+	rc->SetTitle(title);
+	tree->Draw("Etotal>>Rsh(200, 0, 4.0)", main_signal_cut);
+	unsigned Nsignal = tree->GetSelectedRows();
+	Rsh->SetLineColor(kRed);
+	Rsh->SetLineWidth(2);
+	tree->Draw("Etotal>>Rbh(200, 0, 4.0)", main_bhabha_cut, "same");
+
+	TCanvas * cnch = new TCanvas;
+	cnch->SetTitle(title);
+	cnch->SetLogy();
+	cnch->SetFillColor(0);
+	cnch->SetBorderMode(0);
+	tree->Draw("nchtrk>>hNs(20, 0, 20)", "Etotal>0.5&&Etotal<2.5&&S>0.1");
+	hNs->SetLineColor(kRed);
+	hNs->SetLineWidth(2);
+	hNs->SetTitle(title);
+	hNs->GetXaxis()->SetTitle("number of charged tracks");
+	tree->Draw("nchtrk>>hNb(20, 0, 20)", "Etotal>2.5&&S<0.1", "same");
+	double maxb = hNb->GetMaximum();
+	cout <<"Maximum = "<<maxb << endl;
+	hNs->SetMaximum(maxb);
+	cnch->Update();
+	TLegend * lnch = new TLegend(0.6, 0.8, 1.0, 1.0);
+	lnch->AddEntry(hNs, "0.5 < E_{tot} < 2.5 GeV, S>0.1", "lp");
+	lnch->AddEntry(hNb, " E_{tot} >2.5 GeV, S<0.1", "lp");
+	lnch->Draw();
+
+
+	unsigned Nbhabha = tree->GetSelectedRows();
+	double R=(double)Nsignal/(double)Nbhabha;
+	cout << title << " : " << " signal = " << Nsignal << ",  bhabha = " << Nbhabha << ",  signal/bhabha = " << R << endl;
+	
+}
+
+
+void draw_charged_cut(TTree * tree,  const char * title)
+{
+	TCanvas * c = new TCanvas;
+	c->SetTitle(title);
+	c->Divide(2, 1);
+	c->SetBorderMode(0);
+	c->SetFillColor(0);
+
+	const char * scut1 = "signal==1";
+	const char * bcut1 = "signal==0";
+	c->cd(1);
+	gPad->SetFillColor(0);
+	gPad->SetBorderMode(0);
+	tree->Draw("Etotal", "");
+	tree->Draw("Etotal>>hEs", scut1);
+	hEs->SetLineColor(kRed);
+	hEs->SetTitle("Total charged track energy deposition");
+	hEs->GetXaxis()->SetTitle("E [GeV]");
+	hEs->SetLineWidth(3);
+	tree->Draw("Etotal>>hEb",bcut1,"same");
+	hEb->SetLineColor(kBlue);
+	hEb->SetLineWidth(3);
+	TLegend * lE = new TLegend(0.6, 0.8, 1.0, 1.0);
+	lE->AddEntry(hEs, "N_{q}>2", "lp");
+	lE->AddEntry(hEb, "N_{q}=2", "lp");
+	lE->Draw();
+
+	c->cd(2);
+	gPad->SetFillColor(0);
+	gPad->SetBorderMode(0);
+	gPad->SetLogy();
+	tree->Draw("S", "");
+	tree->Draw("S>>hSs",scut1);
+	hSs->SetLineColor(kRed);
+	hSs->SetTitle("Sphericity");
+	hSs->GetXaxis()->SetTitle("S");
+	hSs->SetLineWidth(3);
+	tree->Draw("S>>hSb", bcut1,"same");
+	hSb->SetLineColor(kBlue);
+	hSb->SetLineWidth(3);
+	TLegend * lS = new TLegend(0.6, 0.8, 1.0, 1.0);
+	lS->AddEntry(hSs, "N_{q}>2", "lp");
+	lS->AddEntry(hSb, "N_{q}=2", "lp");
+	lS->Draw();
+}
+void draw(void)
+{
+	//signal
+	TFile * psip_file = new TFile("psip.root");
+	TTree * psip = (TTree*)psip_file->Get("mhadr");
+	psip->AddFriend("dedx");
+	//draw(psip, "psi prime data");
+	draw_charged_cut(psip, "#Psi^{#prime} data");
+	////monte carlo
+	TFile * mc_file = new TFile("mcpsip.root");
+	TTree * mc = (TTree*)mc_file->Get("mhadr");
+	mc->AddFriend("dedx");
+	draw_charged_cut(mc,  "psi prime Monte Carlo");
+
+	//continuum
+	TFile * cont_file = new TFile( "con365.root");
+	TTree * cont = (TTree*)cont_file->Get("mhadr");
+	cont->AddFriend("dedx");
+	draw_charged_cut(cont,  "Continuum 3.65 GeV");
+	
 }
