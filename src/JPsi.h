@@ -59,12 +59,24 @@ class JPsi : public Algorithm
   NTuple::Item<long> tr_idx;
 	//charged track information
   NTuple::Array<double> m_E;
+  NTuple::Array<double> m_p;
   NTuple::Array<double> m_pt;
   NTuple::Array<double> m_M;
   NTuple::Array<double> m_q;
   NTuple::Array<double> m_x, m_y, m_z;
   NTuple::Array<double> m_ismu;
 
+	NTuple::Tuple * dedx_tuple;
+  NTuple::Item<long> trdedx_idx;
+	NTuple::Array<double> m_chie; //chi2_dEdx for electron
+	NTuple::Array<double> m_chimu;//chi2_dEdx for muon
+	NTuple::Array<double> m_chipi;//chi2_dEdx pion
+	NTuple::Array<double> m_chik; //chi2_dEdx kaon
+	NTuple::Array<double> m_chip; //chi2_dEdx proton
+	NTuple::Array<double> m_ghit; //number of good de/dx hits (excluding overflow)
+	NTuple::Array<double> m_thit; //nuber of total de/dx including overflow
+  NTuple::Array<double> m_probPH; //most probable pulse height from trucated mean 
+  NTuple::Array<double> m_normPH; //normalized pulse height
 	void InitData(void);
 	TMatrixD S; //sphericity tensor
 };

@@ -18,6 +18,8 @@
 {
 	TFile f("proceed.root");
 	TTree * tree = (TTree*)f.Get("mhadr");
+	TTree * dedx = (TTree*)f.Get("dedx");
+	tree->AddFriend(dedx);
 	TCanvas * c = new TCanvas;
 	c->Divide(2, 2);
 

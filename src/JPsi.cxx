@@ -105,6 +105,7 @@ StatusCode JPsi::initialize(void)
 			status=main_tuple->addItem("coshp", m_cos_high_p);
       status = main_tuple->addItem ("nchtr", tr_idx, 0, MAX_TRACK_NUMBER);
       status = main_tuple->addIndexedItem ("E", tr_idx, m_E );
+      status = main_tuple->addIndexedItem ("p", tr_idx, m_p );
       status = main_tuple->addIndexedItem ("pt", tr_idx, m_pt );
       status = main_tuple->addIndexedItem ("M", tr_idx, m_M );
       status = main_tuple->addIndexedItem ("q", tr_idx, m_q );
@@ -116,6 +117,30 @@ StatusCode JPsi::initialize(void)
 		else
 		{
       log << MSG::ERROR << "    Cannot book N-tuple:" << long(main_tuple) << endmsg;
+      return StatusCode::FAILURE;
+		}
+	}
+	NTuplePtr nt2(ntupleSvc(), "FILE1/dedx");
+	if(nt2) dedx_tuple=nt2;
+	else
+	{
+		dedx_tuple = ntupleSvc()->book("FILE1/dedx", CLID_ColumnWiseTuple, "dedx Information");
+		if(dedx_tuple)
+		{
+      status = dedx_tuple->addItem ("nchtr", trdedx_idx, 0, MAX_TRACK_NUMBER);
+      status = dedx_tuple->addIndexedItem ("chie", trdedx_idx, m_chie );
+      status = dedx_tuple->addIndexedItem ("chimu",trdedx_idx, m_chimu );
+      status = dedx_tuple->addIndexedItem ("chipi", trdedx_idx, m_chipi );
+      status = dedx_tuple->addIndexedItem ("chik", trdedx_idx, m_chik );
+      status = dedx_tuple->addIndexedItem ("chip", trdedx_idx, m_chip );
+      status = dedx_tuple->addIndexedItem ("ghit", trdedx_idx, m_ghit );
+      status = dedx_tuple->addIndexedItem ("thit", trdedx_idx, m_thit );
+      status = dedx_tuple->addIndexedItem ("probPH", trdedx_idx, m_probPH );
+      status = dedx_tuple->addIndexedItem ("normPH", trdedx_idx, m_normPH );
+		}
+		else
+		{
+      log << MSG::ERROR << "    Cannot book N-tuple:" << long(dedx_tuple) << endmsg;
       return StatusCode::FAILURE;
 		}
 	}
@@ -161,6 +186,7 @@ StatusCode JPsi::execute()
   for(int i = 0; i < evtRecEvent->totalCharged(); i++)
 	{
 		tr_idx=i;
+		trdedx_idx=i;
     EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + i;
     if(!(*itTrk)->isMdcTrackValid() || !(*itTrk)->isEmcShowerValid() ) continue;
 		has_mdc_emc++;
@@ -173,6 +199,7 @@ StatusCode JPsi::execute()
 		p[i].setE(emcTrk->energy());
 		m_pt[i]=mdcTrk->p()*sin(mdcTrk->theta());
 		m_E[i]=emcTrk->energy();
+		m_p[i]=mdcTrk->p();
 		m_M[i]=p[i].m();
 		m_q[i]=mdcTrk->charge();
     m_x[i]=mdcTrk->x();
@@ -202,14 +229,30 @@ StatusCode JPsi::execute()
 				Eh[1]=emcTrk->energy();
 			}
 		}
+		/* dEdx information */
+		if(prop_check_dedx == 1 && (*itTrk)->isMdcDedxValid())
+		{
+			RecMdcDedx* dedxTrk = (*itTrk)->mdcDedx();
+			m_chie[i] = dedxTrk->chiE();
+			m_chimu[i] = dedxTrk->chiMu();
+			m_chipi[i] = dedxTrk->chiPi();
+			m_chik[i] = dedxTrk->chiK();
+			m_chip[i] = dedxTrk->chiP();
+			m_ghit[i] = dedxTrk->numGoodHits();
+			m_thit[i] = dedxTrk->numTotalHits();
+			m_probPH[i] = dedxTrk->probPH();
+			m_normPH[i] = dedxTrk->normPH();
+		}
 	}
 	if(has_mdc_emc<2) return StatusCode::SUCCESS; //at list two tracks must have drift and shower.
+
+	//Two tracks from interaction points. The same condion for BhaBha and for multihadron
+	if(USE_IPCUT && niptrk <IPTRACKS) return StatusCode::SUCCESS;
+
 	/*  calculate angles of high energy tracks */
 	double tmp = ph[0].mag()*ph[1].mag()<=0 ? -10 : (ph[0].dot(ph[1]))/(ph[0].mag()*ph[1].mag());
 	m_cos_high_p=tmp;
 
-	//Two tracks from interaction points. The same condion for BhaBha and for multihadron
-	if(USE_IPCUT && niptrk <IPTRACKS) return StatusCode::SUCCESS;
 
 	//normalize sphericity tensor
 	for(int i=0;i<3;i++)
@@ -231,6 +274,7 @@ StatusCode JPsi::execute()
 	}
 	/* now fill the data */
 	main_tuple->write();
+	dedx_tuple->write();
 	event_write++;
   return StatusCode::SUCCESS;
 }
@@ -262,8 +306,19 @@ void JPsi::InitData(void)
 		m_x[i]=-999;
 		m_y[i]=-999;
 		m_z[i]=-999;
-		m_ismu[i]=0;
+		m_ismu[i]=-999;
+		//dedx information
+		m_chie[i] = -999;
+		m_chimu[i] = -999;
+		m_chipi[i] = -999;
+		m_chik[i] = -999;
+		m_chip[i] = -999;
+		m_ghit[i] = -999;
+		m_thit[i] = -999;
+		m_probPH[i] = -999;
+		m_normPH[i] = -999;
 	}
+	//sphericity initialization
 	for(int i=0;i<3;i++)
 		for(int j=0;j<3;j++)
 			S[i][j]=0;
