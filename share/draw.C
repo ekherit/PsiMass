@@ -173,9 +173,12 @@ void draw_charged_cut(TTree * tree,  const char * title)
 	hEs->SetTitle("Total charged track energy deposition");
 	hEs->GetXaxis()->SetTitle("E [GeV]");
 	hEs->SetLineWidth(3);
+	double hEsmax = hEs->GetMaximum();
 	tree->Draw("Etotal>>hEb",bcut1,"same");
 	hEb->SetLineColor(kBlue);
 	hEb->SetLineWidth(3);
+	double hEbmax = hEb->GetMaximum();
+	hEs->SetMaximum(max(hEsmax, hEbmax));
 	TLegend * lE = new TLegend(0.6, 0.8, 1.0, 1.0);
 	lE->AddEntry(hEs, "N_{q}>2", "lp");
 	lE->AddEntry(hEb, "N_{q}=2", "lp");
@@ -191,13 +194,29 @@ void draw_charged_cut(TTree * tree,  const char * title)
 	hSs->SetTitle("Sphericity");
 	hSs->GetXaxis()->SetTitle("S");
 	hSs->SetLineWidth(3);
+	double hSsmax = hSs->GetMaximum();
 	tree->Draw("S>>hSb", bcut1,"same");
 	hSb->SetLineColor(kBlue);
 	hSb->SetLineWidth(3);
+	double hSbmax = hSb->GetMaximum();
+	hSs->SetMaximum(max(hSbmax, hSsmax));
+
+
 	TLegend * lS = new TLegend(0.6, 0.8, 1.0, 1.0);
 	lS->AddEntry(hSs, "N_{q}>2", "lp");
 	lS->AddEntry(hSb, "N_{q}=2", "lp");
 	lS->Draw();
+}
+
+
+void draw_angle_plot(TTree * tree,  const char * title)
+{
+	TCanvas * c = new TCanvas;
+	c->SetTitle(title);
+	c->SetBorderMode(0);
+	c->SetFillColor(0);
+	tree->Draw("theta:Etotal", "fabs(theta)<10");
+	hEs->SetTitle("Scattering angle");
 }
 void draw(void)
 {
@@ -207,16 +226,19 @@ void draw(void)
 	psip->AddFriend("dedx");
 	//draw(psip, "psi prime data");
 	draw_charged_cut(psip, "#Psi^{#prime} data");
+	draw_angle_plot(psip, "psip");
 	////monte carlo
 	TFile * mc_file = new TFile("mcpsip.root");
 	TTree * mc = (TTree*)mc_file->Get("mhadr");
 	mc->AddFriend("dedx");
 	draw_charged_cut(mc,  "psi prime Monte Carlo");
+	draw_angle_plot(mc, "psip MC");
 
 	//continuum
 	TFile * cont_file = new TFile( "con365.root");
 	TTree * cont = (TTree*)cont_file->Get("mhadr");
 	cont->AddFriend("dedx");
 	draw_charged_cut(cont,  "Continuum 3.65 GeV");
+	draw_angle_plot(cont, "Continum");
 	
 }
