@@ -60,6 +60,8 @@ class JPsi : public Algorithm
 	//charged track information
   NTuple::Array<double> m_E;
   NTuple::Array<double> m_p;
+	NTuple::Array<double> m_theta;
+	NTuple::Array<double> m_phi;
   NTuple::Array<double> m_pt;
   NTuple::Array<double> m_M;
   NTuple::Array<double> m_q;

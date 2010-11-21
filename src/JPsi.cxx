@@ -107,6 +107,8 @@ StatusCode JPsi::initialize(void)
       status = main_tuple->addIndexedItem ("E", tr_idx, m_E );
       status = main_tuple->addIndexedItem ("p", tr_idx, m_p );
       status = main_tuple->addIndexedItem ("pt", tr_idx, m_pt );
+      status = main_tuple->addIndexedItem ("theta", tr_idx, m_theta );
+      status = main_tuple->addIndexedItem ("phi", tr_idx, m_phi );
       status = main_tuple->addIndexedItem ("M", tr_idx, m_M );
       status = main_tuple->addIndexedItem ("q", tr_idx, m_q );
       status = main_tuple->addIndexedItem ("x", tr_idx, m_x );
@@ -200,6 +202,8 @@ StatusCode JPsi::execute()
 		m_pt[i]=mdcTrk->p()*sin(mdcTrk->theta());
 		m_E[i]=emcTrk->energy();
 		m_p[i]=mdcTrk->p();
+		m_theta[i]=mdcTrk->theta();
+		m_phi[i]=mdcTrk->phi();
 		m_M[i]=p[i].m();
 		m_q[i]=mdcTrk->charge();
     m_x[i]=mdcTrk->x();
@@ -301,6 +305,9 @@ void JPsi::InitData(void)
 	{
 		m_E[i]=-999;
 		m_pt[i]=-999;
+		m_p[i]=-999;
+		m_theta[i]=-999;
+		m_phi[i]=-999;
 		m_M[i]=-999;
 		m_q[i]=-999;
 		m_x[i]=-999;
