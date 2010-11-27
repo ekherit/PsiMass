@@ -44,6 +44,7 @@ class JPsi : public Algorithm
 	long int event_proceed;
 	long int event_write;
 	NTuple::Tuple * main_tuple;//main tuple 
+	NTuple::Item<long> m_time; //time when events is writed (unixtime)
 	NTuple::Item<double> Etotal; //Total energy deposition
 	NTuple::Item<long> nchtrk; //number of charged tracks
 	NTuple::Item<long> nneutrk;//number of neutral tracks
@@ -60,6 +61,7 @@ class JPsi : public Algorithm
 	//charged track information
   NTuple::Array<double> m_E;
   NTuple::Array<double> m_p;
+  NTuple::Array<double> m_px,m_py,m_pz;
 	NTuple::Array<double> m_theta;
 	NTuple::Array<double> m_phi;
   NTuple::Array<double> m_pt;

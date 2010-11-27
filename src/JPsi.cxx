@@ -90,6 +90,7 @@ StatusCode JPsi::initialize(void)
 		if(main_tuple)
 		{
 			//common
+			status=main_tuple->addItem("t", m_time);
 			status=main_tuple->addItem("Etotal", Etotal);
 			status=main_tuple->addItem("nchtrk", nchtrk);
 			status=main_tuple->addItem("nneutrk", nneutrk);
@@ -106,6 +107,9 @@ StatusCode JPsi::initialize(void)
       status = main_tuple->addItem ("nchtr", tr_idx, 0, MAX_TRACK_NUMBER);
       status = main_tuple->addIndexedItem ("E", tr_idx, m_E );
       status = main_tuple->addIndexedItem ("p", tr_idx, m_p );
+      status = main_tuple->addIndexedItem ("px", tr_idx, m_px );
+      status = main_tuple->addIndexedItem ("py", tr_idx, m_py );
+      status = main_tuple->addIndexedItem ("pz", tr_idx, m_pz );
       status = main_tuple->addIndexedItem ("pt", tr_idx, m_pt );
       status = main_tuple->addIndexedItem ("theta", tr_idx, m_theta );
       status = main_tuple->addIndexedItem ("phi", tr_idx, m_phi );
@@ -158,11 +162,16 @@ StatusCode JPsi::execute()
   SmartDataPtr<Event::EventHeader> eventHeader(eventSvc(),"/Event/EventHeader");
   int runNo=eventHeader->runNumber();
   int event=eventHeader->eventNumber();
-  log << MSG::DEBUG <<"run, evtnum = "
-      << runNo << " , "
-      << event <<endreq;
+	m_time = eventHeader->time();
 	if(event_proceed%1000==0)
+	{
+		log << MSG::DEBUG <<"run, evtnum = "
+			<< runNo << " , "
+			<< event <<endreq;
 		std::cout << "proceed event " << event_proceed << std::endl;
+		time_t t=eventHeader->time();
+		cout << t << " "  << ctime(&t) << endl;
+	}
 	event_proceed++;
 
 	/*  Get information about reconstructed events */
@@ -178,7 +187,7 @@ StatusCode JPsi::execute()
 	else 
 		m_Signal=1;
 	nchtrk = evtRecEvent->totalCharged();
-	nneutrk= evtRecEvent->totalCharged();
+	nneutrk= evtRecEvent->totalNeutral();
 	ntrk=nchtrk+nneutrk;
 	double p2sum=0;
 	double  Eh[2]={0, 0};
@@ -187,8 +196,8 @@ StatusCode JPsi::execute()
 	/*  loop over charged track */
   for(int i = 0; i < evtRecEvent->totalCharged(); i++)
 	{
-		tr_idx=i;
-		trdedx_idx=i;
+		tr_idx=i+1;
+		trdedx_idx=i+1;
     EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + i;
     if(!(*itTrk)->isMdcTrackValid() || !(*itTrk)->isEmcShowerValid() ) continue;
 		has_mdc_emc++;
@@ -202,6 +211,9 @@ StatusCode JPsi::execute()
 		m_pt[i]=mdcTrk->p()*sin(mdcTrk->theta());
 		m_E[i]=emcTrk->energy();
 		m_p[i]=mdcTrk->p();
+		m_px[i]=mdcTrk->px();
+		m_py[i]=mdcTrk->py();
+		m_pz[i]=mdcTrk->pz();
 		m_theta[i]=mdcTrk->theta();
 		m_phi[i]=mdcTrk->phi();
 		m_M[i]=p[i].m();
@@ -306,6 +318,9 @@ void JPsi::InitData(void)
 		m_E[i]=-999;
 		m_pt[i]=-999;
 		m_p[i]=-999;
+		m_px[i]=-999;
+		m_py[i]=-999;
+		m_pz[i]=-999;
 		m_theta[i]=-999;
 		m_phi[i]=-999;
 		m_M[i]=-999;
