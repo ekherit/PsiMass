@@ -1,9 +1,9 @@
 /*
  * =====================================================================================
  *
- *       Filename:  TauEMU.h
+ *       Filename:  JPsi.h
  *
- *    Description:  Selection of tau decey into e mu
+ *    Description:  Multihadron event selection for j/psi and psi prime resonance.
  *
  *        Version:  1.0
  *        Created:  04/27/2010 02:47:32 PM
@@ -83,6 +83,15 @@ class JPsi : public Algorithm
   NTuple::Array<double> m_normPH; //normalized pulse height
 	void InitData(void);
 	TMatrixD S; //sphericity tensor
+
+	//gamma-gamma annihilation selection
+	NTuple::Tuple * gg_tuple;
+  NTuple::Item<long> gg_nneu;
+	NTuple::Array<double> gg_x, gg_y, gg_z; //coordinat of claster
+	NTuple::Array<double> gg_theta, gg_phi;//angles
+	NTuple::Array<double> gg_E, gg_dE; //energy and error
+	NTuple::Array<long> gg_n; //number of clasters
+	NTuple::Array<long> gg_model; //module=0: east endcap;  module=1: barrel;  module=2: west endcap.
 };
 
 #endif

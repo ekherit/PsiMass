@@ -1,9 +1,9 @@
 /*
  * =====================================================================================
  *
- *       Filename:  TauEMU.cxx
+ *       Filename:  JPsi.cxx
  *
- *    Description:  My bha bha implementation algorithm
+ *    Description:  Multihadron event selection for j/psi and psi prime resonance.
  *
  *        Version:  1.0
  *        Created:  04/27/2010 02:50:11 PM
@@ -130,7 +130,7 @@ StatusCode JPsi::initialize(void)
 	if(nt2) dedx_tuple=nt2;
 	else
 	{
-		dedx_tuple = ntupleSvc()->book("FILE1/dedx", CLID_ColumnWiseTuple, "dedx Information");
+		dedx_tuple = ntupleSvc()->book("FILE1/dedx", CLID_ColumnWiseTuple, "dedx information");
 		if(dedx_tuple)
 		{
       status = dedx_tuple->addItem ("nchtr", trdedx_idx, 0, MAX_TRACK_NUMBER);
@@ -147,6 +147,30 @@ StatusCode JPsi::initialize(void)
 		else
 		{
       log << MSG::ERROR << "    Cannot book N-tuple:" << long(dedx_tuple) << endmsg;
+      return StatusCode::FAILURE;
+		}
+	}
+	NTuplePtr nt_gg(ntupleSvc(), "FILE1/gg");
+	if(nt_gg) gg_tuple=nt_gg;
+	else
+	{
+		gg_tuple = ntupleSvc()->book("FILE1/gg", CLID_ColumnWiseTuple, "gamma-gamma annihilation");
+		if(gg_tuple)
+		{
+      status = gg_tuple->addItem ("nneu", gg_nneu, 0, 2);
+      status = gg_tuple->addIndexedItem ("x", gg_nneu, gg_x );
+      status = gg_tuple->addIndexedItem ("y", gg_nneu, gg_y );
+      status = gg_tuple->addIndexedItem ("z", gg_nneu, gg_z );
+      status = gg_tuple->addIndexedItem ("theta", gg_nneu, gg_theta );
+      status = gg_tuple->addIndexedItem ("phi", gg_nneu, gg_phi );
+      status = gg_tuple->addIndexedItem ("E", gg_nneu, gg_E );
+      status = gg_tuple->addIndexedItem ("dE", gg_nneu, gg_dE );
+      status = gg_tuple->addIndexedItem ("model", gg_nneu, gg_model );
+      status = gg_tuple->addIndexedItem ("n", gg_nneu, gg_n );
+		}
+		else
+		{
+      log << MSG::ERROR << "    Cannot book N-tuple:" << long(gg_tuple) << endmsg;
       return StatusCode::FAILURE;
 		}
 	}
@@ -292,6 +316,10 @@ StatusCode JPsi::execute()
 	main_tuple->write();
 	dedx_tuple->write();
 	event_write++;
+
+	// part for ee->gg annihilation
+	// big angles, two neutral track,  no charged.
+	
   return StatusCode::SUCCESS;
 }
 
@@ -344,5 +372,17 @@ void JPsi::InitData(void)
 	for(int i=0;i<3;i++)
 		for(int j=0;j<3;j++)
 			S[i][j]=0;
+	for(int i=0; i<2;i++)
+	{
+		gg_x [i]=-9999;
+		gg_y [i]=-9999;
+		gg_z [i]=-9999;
+		gg_theta [i]=-9999;
+		gg_phi [i]=-9999;
+		gg_E [i]=-9999;
+		gg_dE [i]=-9999;
+		gg_model [i]=-9999;
+		gg_n[i]=-9999;
+	}
 }
 // for particle id look /ihepbatch/bes/alex/workarea/Analysis/Physics/PsiPrime/G2MuMuAlg-00-00-01/PipiJpsiAlg/src
