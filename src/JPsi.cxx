@@ -351,16 +351,16 @@ StatusCode JPsi::execute()
 			//calculate colliniarity
 			gg_cos = (gg_x[0]*gg_x[1] + gg_y[0]*gg_y[1] + gg_z[0]*gg_z[1])/(r[0]*r[1]);
 			gg_Etotal = gg_E[0]+gg_E[1];
-			gg_tuple->write();
-			gg_event_writed++;
+			if(gg_Etotal>1) 
+			{
+				gg_tuple->write();
+				gg_event_writed++;
+			}
 		}
 	}
-
 	event_proceed++;
-
 	// part for ee->gg annihilation
 	// big angles, two neutral track,  no charged.
-	
   return StatusCode::SUCCESS;
 }
 
