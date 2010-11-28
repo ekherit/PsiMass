@@ -326,6 +326,8 @@ StatusCode JPsi::execute()
 	else 
 	{
 		//gamma gamma selection only two neutral tracks
+		// part for ee->gg annihilation
+		// big angles, two neutral track,  no charged.
 		if(nneutrk==2 && nchtrk==0)
 		{
 			double r[2];
@@ -359,8 +361,6 @@ StatusCode JPsi::execute()
 		}
 	}
 	event_proceed++;
-	// part for ee->gg annihilation
-	// big angles, two neutral track,  no charged.
   return StatusCode::SUCCESS;
 }
 
