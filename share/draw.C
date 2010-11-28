@@ -156,9 +156,9 @@ void draw(TTree * tree,  const char * title)
 
 void draw_charged_cut(TTree * tree,  const char * title)
 {
-	TCanvas * c = new TCanvas;
+	TCanvas * c = new TCanvas(title, title, 640, 480/2*3*3/2);
 	c->SetTitle(title);
-	c->Divide(2, 1);
+	c->Divide(1, 2);
 	c->SetBorderMode(0);
 	c->SetFillColor(0);
 
@@ -214,25 +214,72 @@ void draw_angle_plot(TTree * tree,  const char * title)
 	TCanvas * c = new TCanvas;
 	c->SetTitle(title);
 	c->SetBorderMode(0);
-	c->SetFillColor(0);
-	tree->Draw("theta:Etotal", "fabs(theta)<10");
-	hEs->SetTitle("Scattering angle");
+	c->SetFillColor(0); tree->Draw("theta:Etotal>>hsang", "fabs(theta)<10","lego2");
+	hsang->SetTitle("Scattering angle");
+	hsang->GetXaxis()->SetTitle("E [GeV]");
+	hsang->GetYaxis()->SetTitle("#theta");
 }
+void draw_angle_plot2(TTree * tree,  const char * title)
+{
+	TCanvas * c = new TCanvas;
+	c->SetLogz();
+	c->SetTitle(title);
+	c->SetBorderMode(0);
+	c->SetFillColor(0); tree->Draw("theta:S>>hsangS", "fabs(theta)<10","lego2");
+	hsangS->SetTitle("Scattering angle");
+	hsangS->GetXaxis()->SetTitle("S");
+	hsangS->GetYaxis()->SetTitle("#theta");
+}
+
+void draw_ES_plot(TTree * tree,  const char * title)
+{
+	TCanvas * c = new TCanvas;
+	c->SetLogz();
+	c->SetTitle(title);
+	c->SetBorderMode(0);
+	c->SetFillColor(0); 
+	tree->Draw("Etotal:S>>hES", "fabs(E)<10&&fabs(S)<10","lego2");
+	hES->SetTitle("Total energy and sphericity");
+	hES->GetXaxis()->SetTitle("S");
+	hES->GetYaxis()->SetTitle("E");
+}
+
+
+void draw_dalits(TTree * tree, const char * title)
+{
+	new TCanvas;
+	tree->SetAlias("M01","(E[0]-E[1])**2-(px[0]-px[1])**2-(py[0]-py[1])**2-(pz[0]-pz[1])**2");
+	tree->SetAlias("M02","(E[0]-E[2])**2-(px[0]-px[2])**2-(py[0]-py[2])**2-(pz[0]-pz[2])**2");
+	tree->SetAlias("M12","(E[1]-E[2])**2-(px[1]-px[2])**2-(py[1]-py[2])**2-(pz[1]-pz[2])**2");
+	tree->Draw("E[2]", "nchtrk==3&&fabs(M01)<100","lego2");
+}
+
+void draw(const char * file, const char * title)
+{
+}
+
 void draw(void)
 {
 	//signal
 	TFile * psip_file = new TFile("psip.root");
 	TTree * psip = (TTree*)psip_file->Get("mhadr");
 	psip->AddFriend("dedx");
-	//draw(psip, "psi prime data");
+	draw(psip, "psi prime data");
 	draw_charged_cut(psip, "#Psi^{#prime} data");
 	draw_angle_plot(psip, "psip");
+	draw_angle_plot2(psip, "psip");
+	draw_ES_plot(psip, "psip");
+  //draw_dalits(psip,"psip");
+
+
 	////monte carlo
 	TFile * mc_file = new TFile("mcpsip.root");
 	TTree * mc = (TTree*)mc_file->Get("mhadr");
 	mc->AddFriend("dedx");
+
 	draw_charged_cut(mc,  "psi prime Monte Carlo");
 	draw_angle_plot(mc, "psip MC");
+	draw_angle_plot2(mc, "psip MC");
 
 	//continuum
 	TFile * cont_file = new TFile( "con365.root");
