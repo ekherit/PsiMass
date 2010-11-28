@@ -80,6 +80,7 @@ StatusCode JPsi::initialize(void)
   log << MSG::INFO << "in initialize()" << endmsg;
 	event_proceed=0;
 	event_write = 0;
+	gg_event_writed=0;
   
   StatusCode status;
 	NTuplePtr my_nt(ntupleSvc(), "FILE1/mhadr");
@@ -157,16 +158,18 @@ StatusCode JPsi::initialize(void)
 		gg_tuple = ntupleSvc()->book("FILE1/gg", CLID_ColumnWiseTuple, "gamma-gamma annihilation");
 		if(gg_tuple)
 		{
-      status = gg_tuple->addItem ("nneu", gg_nneu, 0, 2);
-      status = gg_tuple->addIndexedItem ("x", gg_nneu, gg_x );
-      status = gg_tuple->addIndexedItem ("y", gg_nneu, gg_y );
-      status = gg_tuple->addIndexedItem ("z", gg_nneu, gg_z );
-      status = gg_tuple->addIndexedItem ("theta", gg_nneu, gg_theta );
-      status = gg_tuple->addIndexedItem ("phi", gg_nneu, gg_phi );
-      status = gg_tuple->addIndexedItem ("E", gg_nneu, gg_E );
-      status = gg_tuple->addIndexedItem ("dE", gg_nneu, gg_dE );
-      status = gg_tuple->addIndexedItem ("model", gg_nneu, gg_model );
-      status = gg_tuple->addIndexedItem ("n", gg_nneu, gg_n );
+      status = gg_tuple->addItem ("nneu", gg_nntrk, 0, 2);
+      status = gg_tuple->addItem ("cos", gg_cos);
+      status = gg_tuple->addItem ("Etotal", gg_Etotal);
+      status = gg_tuple->addIndexedItem ("x", gg_nntrk, gg_x );
+      status = gg_tuple->addIndexedItem ("y", gg_nntrk, gg_y );
+      status = gg_tuple->addIndexedItem ("z", gg_nntrk, gg_z );
+      status = gg_tuple->addIndexedItem ("theta", gg_nntrk, gg_theta );
+      status = gg_tuple->addIndexedItem ("phi", gg_nntrk, gg_phi );
+      status = gg_tuple->addIndexedItem ("E", gg_nntrk, gg_E );
+      status = gg_tuple->addIndexedItem ("dE", gg_nntrk, gg_dE );
+      status = gg_tuple->addIndexedItem ("model", gg_nntrk, gg_module );
+      status = gg_tuple->addIndexedItem ("n", gg_nntrk, gg_n );
 		}
 		else
 		{
@@ -196,7 +199,6 @@ StatusCode JPsi::execute()
 		time_t t=eventHeader->time();
 		cout << t << " "  << ctime(&t) << endl;
 	}
-	event_proceed++;
 
 	/*  Get information about reconstructed events */
   SmartDataPtr<EvtRecEvent> evtRecEvent(eventSvc(), EventModel::EvtRec::EvtRecEvent);
@@ -204,118 +206,157 @@ StatusCode JPsi::execute()
 	std::vector<HepLorentzVector> p(MAX_TRACK_NUMBER);
 	std::vector<Hep3Vector> p3(MAX_TRACK_NUMBER);
 	InitData();
-	/* Multihadron selecion and Bhabha*/
-	if(evtRecEvent->totalCharged()<MIN_CHARGED_TRACKS || evtRecEvent->totalCharged()>=MAX_TRACK_NUMBER) return StatusCode::SUCCESS;
-	if(evtRecEvent->totalCharged()<3) 
-		m_Signal=0;
-	else 
-		m_Signal=1;
+
 	nchtrk = evtRecEvent->totalCharged();
 	nneutrk= evtRecEvent->totalNeutral();
-	ntrk=nchtrk+nneutrk;
-	double p2sum=0;
-	double  Eh[2]={0, 0};
-	Hep3Vector ph[2];//Two high momentum
-	unsigned has_mdc_emc=0;
-	/*  loop over charged track */
-  for(int i = 0; i < evtRecEvent->totalCharged(); i++)
+
+	/************    Multihadron event and BhaBha selection ****************/
+	/*  the selection is based on charged tracks */
+	if(MIN_CHARGED_TRACKS<=nchtrk && nchtrk <=MAX_TRACK_NUMBER)
 	{
-		tr_idx=i+1;
-		trdedx_idx=i+1;
-    EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + i;
-    if(!(*itTrk)->isMdcTrackValid() || !(*itTrk)->isEmcShowerValid() ) continue;
-		has_mdc_emc++;
-    RecMdcTrack *mdcTrk = (*itTrk)->mdcTrack();  //main drift chambe
-    RecEmcShower *emcTrk = (*itTrk)->emcShower(); //Electro Magnet Calorimeer
-		p[i]=HepLorentzVector(1, 1, 1, 1);
-		p[i].setTheta(mdcTrk->theta());
-		p[i].setPhi(mdcTrk->phi());
-		p[i].setRho(mdcTrk->p());
-		p[i].setE(emcTrk->energy());
-		m_pt[i]=mdcTrk->p()*sin(mdcTrk->theta());
-		m_E[i]=emcTrk->energy();
-		m_p[i]=mdcTrk->p();
-		m_px[i]=mdcTrk->px();
-		m_py[i]=mdcTrk->py();
-		m_pz[i]=mdcTrk->pz();
-		m_theta[i]=mdcTrk->theta();
-		m_phi[i]=mdcTrk->phi();
-		m_M[i]=p[i].m();
-		m_q[i]=mdcTrk->charge();
-    m_x[i]=mdcTrk->x();
-    m_y[i]=mdcTrk->y();
-    m_z[i]=mdcTrk->z();
-		m_ismu[i]=(*itTrk)->isMucTrackValid();
-		Etotal+=m_E[i];
-		/* Calculate sphericity tensor */
+		if(evtRecEvent->totalCharged()<3) 
+			m_Signal=0;
+		else 
+			m_Signal=1;
+		ntrk=nchtrk+nneutrk;
+		double p2sum=0;
+		double  Eh[2]={0, 0};
+		Hep3Vector ph[2];//Two high momentum
+		unsigned has_mdc_emc=0;
+		/*  loop over charged track */
+		for(int i = 0; i < evtRecEvent->totalCharged(); i++)
+		{
+			tr_idx=i+1;
+			trdedx_idx=i+1;
+			EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + i;
+			if(!(*itTrk)->isMdcTrackValid() || !(*itTrk)->isEmcShowerValid() ) continue;
+			has_mdc_emc++;
+			RecMdcTrack *mdcTrk = (*itTrk)->mdcTrack();  //main drift chambe
+			RecEmcShower *emcTrk = (*itTrk)->emcShower(); //Electro Magnet Calorimeer
+			p[i]=HepLorentzVector(1, 1, 1, 1);
+			p[i].setTheta(mdcTrk->theta());
+			p[i].setPhi(mdcTrk->phi());
+			p[i].setRho(mdcTrk->p());
+			p[i].setE(emcTrk->energy());
+			m_pt[i]=mdcTrk->p()*sin(mdcTrk->theta());
+			m_E[i]=emcTrk->energy();
+			m_p[i]=mdcTrk->p();
+			m_px[i]=mdcTrk->px();
+			m_py[i]=mdcTrk->py();
+			m_pz[i]=mdcTrk->pz();
+			m_theta[i]=mdcTrk->theta();
+			m_phi[i]=mdcTrk->phi();
+			m_M[i]=p[i].m();
+			m_q[i]=mdcTrk->charge();
+			m_x[i]=mdcTrk->x();
+			m_y[i]=mdcTrk->y();
+			m_z[i]=mdcTrk->z();
+			m_ismu[i]=(*itTrk)->isMucTrackValid();
+			Etotal+=m_E[i];
+			/* Calculate sphericity tensor */
+			for(int i=0;i<3;i++)
+				for(int j=0;j<3;j++)
+				{
+					S[i][j]+=mdcTrk->p3()[i]*mdcTrk->p3()[j];
+				}
+			p2sum+=mdcTrk->p()*mdcTrk->p();
+			if(fabs(m_x[i])<DELTA_X && fabs(m_y[i]) < DELTA_Y && fabs(m_z[i])< DELTA_Z) niptrk++;
+			/* find two high energy track */
+			if(emcTrk->energy() >= Eh[0])
+			{
+				Eh[0]=emcTrk->energy();
+				ph[0]=mdcTrk->p3();
+			}
+			else
+			{
+				if(emcTrk->energy() >= Eh[1])
+				{
+					ph[1]=mdcTrk->p3();
+					Eh[1]=emcTrk->energy();
+				}
+			}
+			/* dEdx information */
+			if(prop_check_dedx == 1 && (*itTrk)->isMdcDedxValid())
+			{
+				RecMdcDedx* dedxTrk = (*itTrk)->mdcDedx();
+				m_chie[i] = dedxTrk->chiE();
+				m_chimu[i] = dedxTrk->chiMu();
+				m_chipi[i] = dedxTrk->chiPi();
+				m_chik[i] = dedxTrk->chiK();
+				m_chip[i] = dedxTrk->chiP();
+				m_ghit[i] = dedxTrk->numGoodHits();
+				m_thit[i] = dedxTrk->numTotalHits();
+				m_probPH[i] = dedxTrk->probPH();
+				m_normPH[i] = dedxTrk->normPH();
+			}
+		}
+		if(has_mdc_emc<2) return StatusCode::SUCCESS; //at list two tracks must have drift and shower.
+
+		//Two tracks from interaction points. The same condion for BhaBha and for multihadron
+		if(USE_IPCUT && niptrk <IPTRACKS) return StatusCode::SUCCESS;
+
+		/*  calculate angles of high energy tracks */
+		double tmp = ph[0].mag()*ph[1].mag()<=0 ? -10 : (ph[0].dot(ph[1]))/(ph[0].mag()*ph[1].mag());
+		m_cos_high_p=tmp;
+
+
+		//normalize sphericity tensor
 		for(int i=0;i<3;i++)
 			for(int j=0;j<3;j++)
-			{
-				S[i][j]+=mdcTrk->p3()[i]*mdcTrk->p3()[j];
-			}
-		p2sum+=mdcTrk->p()*mdcTrk->p();
-		if(fabs(m_x[i])<DELTA_X && fabs(m_y[i]) < DELTA_Y && fabs(m_z[i])< DELTA_Z) niptrk++;
-		/* find two high energy track */
-		if(emcTrk->energy() >= Eh[0])
+				S[i][j]/=p2sum;
+		TMatrixDEigen Stmp(S);
+		const TVectorD & eval = Stmp.GetEigenValuesRe();
+		std::vector<double> v(3);
+		for(int i=0;i<3;i++) v[i]=eval[i];
+		std::sort(v.begin(), v.end());
+		S1=v[0];
+		S2=v[1];
+		S3=v[2];
+		m_S = 1.5*(v[0]+v[1]);
+		if(!(v[0]<=v[1] && v[1]<=v[2])) //test the order of eigenvalues
 		{
-			Eh[0]=emcTrk->energy();
-			ph[0]=mdcTrk->p3();
+			cerr << "Bad sphericity" << endl;
+			exit(1);
 		}
-		else
-		{
-			if(emcTrk->energy() >= Eh[1])
-			{
-				ph[1]=mdcTrk->p3();
-				Eh[1]=emcTrk->energy();
-			}
-		}
-		/* dEdx information */
-		if(prop_check_dedx == 1 && (*itTrk)->isMdcDedxValid())
-		{
-			RecMdcDedx* dedxTrk = (*itTrk)->mdcDedx();
-			m_chie[i] = dedxTrk->chiE();
-			m_chimu[i] = dedxTrk->chiMu();
-			m_chipi[i] = dedxTrk->chiPi();
-			m_chik[i] = dedxTrk->chiK();
-			m_chip[i] = dedxTrk->chiP();
-			m_ghit[i] = dedxTrk->numGoodHits();
-			m_thit[i] = dedxTrk->numTotalHits();
-			m_probPH[i] = dedxTrk->probPH();
-			m_normPH[i] = dedxTrk->normPH();
-		}
+		/* now fill the data */
+		main_tuple->write();
+		dedx_tuple->write();
+		event_write++;
 	}
-	if(has_mdc_emc<2) return StatusCode::SUCCESS; //at list two tracks must have drift and shower.
-
-	//Two tracks from interaction points. The same condion for BhaBha and for multihadron
-	if(USE_IPCUT && niptrk <IPTRACKS) return StatusCode::SUCCESS;
-
-	/*  calculate angles of high energy tracks */
-	double tmp = ph[0].mag()*ph[1].mag()<=0 ? -10 : (ph[0].dot(ph[1]))/(ph[0].mag()*ph[1].mag());
-	m_cos_high_p=tmp;
-
-
-	//normalize sphericity tensor
-	for(int i=0;i<3;i++)
-		for(int j=0;j<3;j++)
-			S[i][j]/=p2sum;
-	TMatrixDEigen Stmp(S);
-	const TVectorD & eval = Stmp.GetEigenValuesRe();
-	std::vector<double> v(3);
-	for(int i=0;i<3;i++) v[i]=eval[i];
-	std::sort(v.begin(), v.end());
-	S1=v[0];
-	S2=v[1];
-	S3=v[2];
-	m_S = 1.5*(v[0]+v[1]);
-	if(!(v[0]<=v[1] && v[1]<=v[2])) //test the order of eigenvalues
+	else 
 	{
-		cerr << "Bad sphericity" << endl;
-		exit(1);
+		//gamma gamma selection only two neutral tracks
+		if(nneutrk==2 && nchtrk==0)
+		{
+			double r[2];
+			for(int track = 0; track<nneutrk; track++)
+			{
+				gg_nntrk=track+1;
+				EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + track;
+				if((*itTrk)->isEmcShowerValid())
+				{
+					RecEmcShower *emcTrk = (*itTrk)->emcShower();
+					gg_x[track] = emcTrk->x();
+					gg_y[track] = emcTrk->y();
+					gg_z[track] = emcTrk->z();
+			 		r[track] = sqrt(gg_x[track]*gg_x[track] + gg_y[track]*gg_y[track] + gg_z[track]*gg_z[track]);
+					gg_theta[track] = emcTrk->theta();
+					gg_phi[track] = emcTrk->phi();
+					gg_E[track]  =  emcTrk->energy();
+					gg_dE[track] =  emcTrk->dE();
+					gg_module[track] = emcTrk->module();
+					gg_n[track] = emcTrk->numHits();
+				}
+			}
+			//calculate colliniarity
+			gg_cos = (gg_x[0]*gg_x[1] + gg_y[0]*gg_y[1] + gg_z[0]*gg_z[1])/(r[0]*r[1]);
+			gg_Etotal = gg_E[0]+gg_E[1];
+			gg_tuple->write();
+			gg_event_writed++;
+		}
 	}
-	/* now fill the data */
-	main_tuple->write();
-	dedx_tuple->write();
-	event_write++;
+
+	event_proceed++;
 
 	// part for ee->gg annihilation
 	// big angles, two neutral track,  no charged.
@@ -381,7 +422,7 @@ void JPsi::InitData(void)
 		gg_phi [i]=-9999;
 		gg_E [i]=-9999;
 		gg_dE [i]=-9999;
-		gg_model [i]=-9999;
+		gg_module [i]=-9999;
 		gg_n[i]=-9999;
 	}
 }

@@ -26,6 +26,10 @@
 #include <vector>
 #include <algorithm>
 
+//#include "EventModel/EventModel.h"
+//#include "EventModel/Event.h"
+#include "EventModel/EventHeader.h"
+
 class JPsi : public Algorithm 
 {
 	public:
@@ -85,13 +89,16 @@ class JPsi : public Algorithm
 	TMatrixD S; //sphericity tensor
 
 	//gamma-gamma annihilation selection
+	long gg_event_writed;
 	NTuple::Tuple * gg_tuple;
-  NTuple::Item<long> gg_nneu;
+  NTuple::Item<long> gg_nntrk;
+	NTuple::Item<double> gg_cos; //aclolinearity
+	NTuple::Item<double> gg_Etotal; //aclolinearity
 	NTuple::Array<double> gg_x, gg_y, gg_z; //coordinat of claster
 	NTuple::Array<double> gg_theta, gg_phi;//angles
 	NTuple::Array<double> gg_E, gg_dE; //energy and error
 	NTuple::Array<long> gg_n; //number of clasters
-	NTuple::Array<long> gg_model; //module=0: east endcap;  module=1: barrel;  module=2: west endcap.
+	NTuple::Array<long> gg_module; //module=0: east endcap;  module=1: barrel;  module=2: west endcap.
 };
 
 #endif
