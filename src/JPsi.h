@@ -72,6 +72,7 @@ class JPsi : public Algorithm
   NTuple::Array<double> m_M;
   NTuple::Array<double> m_q;
   NTuple::Array<double> m_x, m_y, m_z;
+  NTuple::Array<double> m_X, m_Y, m_Z;
   NTuple::Array<double> m_ismu;
 
 	NTuple::Tuple * dedx_tuple;

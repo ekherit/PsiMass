@@ -119,6 +119,9 @@ StatusCode JPsi::initialize(void)
       status = main_tuple->addIndexedItem ("x", tr_idx, m_x );
       status = main_tuple->addIndexedItem ("y", tr_idx, m_y );
       status = main_tuple->addIndexedItem ("z", tr_idx, m_z );
+      status = main_tuple->addIndexedItem ("X", tr_idx, m_X );
+      status = main_tuple->addIndexedItem ("Y", tr_idx, m_Y );
+      status = main_tuple->addIndexedItem ("Z", tr_idx, m_Z );
       status = main_tuple->addIndexedItem ("ismu", tr_idx, m_ismu );
 		}
 		else
@@ -251,6 +254,9 @@ StatusCode JPsi::execute()
 			m_x[i]=mdcTrk->x();
 			m_y[i]=mdcTrk->y();
 			m_z[i]=mdcTrk->z();
+			m_X[i]=mdcTrk->getVX0();
+			m_Y[i]=mdcTrk->getVY0();
+			m_Z[i]=mdcTrk->getVZ0();
 			m_ismu[i]=(*itTrk)->isMucTrackValid();
 			Etotal+=m_E[i];
 			/* Calculate sphericity tensor */
@@ -397,6 +403,9 @@ void JPsi::InitData(void)
 		m_x[i]=-999;
 		m_y[i]=-999;
 		m_z[i]=-999;
+		m_X[i]=-999;
+		m_Y[i]=-999;
+		m_Z[i]=-999;
 		m_ismu[i]=-999;
 		//dedx information
 		m_chie[i] = -999;
