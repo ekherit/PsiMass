@@ -267,9 +267,7 @@ StatusCode JPsi::execute()
   SmartDataPtr<EvtRecEvent> evtRecEvent(eventSvc(), EventModel::EvtRec::EvtRecEvent);
   SmartDataPtr<EvtRecTrackCol> evtRecTrkCol(eventSvc(),  EventModel::EvtRec::EvtRecTrackCol);
   
-  cout << "Before init data" << endl;
 	InitData(evtRecEvent->totalCharged(), evtRecEvent->totalNeutral());
-  cout << "After init data" << endl;
 
 	/************    Multihadron event and BhaBha selection ****************/
 	/*  the selection is based on charged tracks */
@@ -283,7 +281,6 @@ StatusCode JPsi::execute()
     mdc.ntrack=0;
 		for(int i = 0; i < evtRecEvent->totalCharged(); ++i)
 		{
-    cout << "Track number " <<  i << endl;
 			EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + i;
       mdc.ntrack=i+1;
 			if(!(*itTrk)->isMdcTrackValid()) continue; 
@@ -315,7 +312,6 @@ StatusCode JPsi::execute()
       mdc.isemc[i]=(*itTrk)->isEmcShowerValid();
       if(mdc.isemc[i]) 
       {
-        cout << "Use mdc" << endl;
         mdc.nemc++;//increase number of emc clasters
         RecEmcShower *emcTrk = (*itTrk)->emcShower(); //Electro Magnet Calorimeer
 
@@ -498,35 +494,23 @@ StatusCode JPsi::finalize()
 
 void JPsi::InitData(long nchtrack, long nneutrack)
 {
-  cout << "Init main data" << endl;
   m_ntrack=nchtrack+nneutrack;
 	m_nchtr=nchtrack;
 	m_nneutr=nneutrack;
   m_Etotal=0;
   m_Eemc=0;
-  cout << "Init main for mdc" << endl;
   //mdc track informaion init
-  cout << "Init mdc nemc" << endl;
   mdc.nemc=0;
-  cout << "Init mdc nip" << endl;
   mdc.nip=0;
-  cout << "Init mdc Eemc" << endl;
   mdc.Eemc=0;
-  cout << "Init mdc Emdc" << endl;
   mdc.Emdc=0;
-  cout << "Init mdc S" << endl;
   mdc.S=0;
-  cout << "Init mdc idx1" << endl;
   mdc.idx1=-1000;
-  cout << "Init mdc idx2" << endl;
   mdc.idx2=-1000;
-  cout << "Init mdc hp_cos" << endl;
   mdc.hp_cos=-1000;
-  cout << "Init mdc ntrack" << endl;
   //mdc.ntrack=nchtrack;
   for(int i=0;i<nchtrack; i++)
   {
-    cout << "Init track number " << i << endl;
     mdc.p[i]=-1000;
     mdc.px[i]=-1000;
     mdc.py[i]=-1000;
