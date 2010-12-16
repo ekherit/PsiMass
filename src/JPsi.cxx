@@ -259,8 +259,10 @@ StatusCode JPsi::execute()
 	/*  Get information about reconstructed events */
   SmartDataPtr<EvtRecEvent> evtRecEvent(eventSvc(), EventModel::EvtRec::EvtRecEvent);
   SmartDataPtr<EvtRecTrackCol> evtRecTrkCol(eventSvc(),  EventModel::EvtRec::EvtRecTrackCol);
-
+  
+  cout << "Before init data" << endl;
 	InitData(evtRecEvent->totalCharged(), evtRecEvent->totalNeutral());
+  cout << "After init data" << endl;
 
 	/************    Multihadron event and BhaBha selection ****************/
 	/*  the selection is based on charged tracks */
@@ -274,6 +276,7 @@ StatusCode JPsi::execute()
     mdc.ntrack=0;
 		for(int i = 0; i < evtRecEvent->totalCharged(); ++i)
 		{
+    cout << "Track number " <<  i << endl;
 			EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + i;
       mdc.ntrack=i+1;
 			if(!(*itTrk)->isMdcTrackValid()) continue; 
@@ -305,6 +308,7 @@ StatusCode JPsi::execute()
       mdc.isemc[i]=(*itTrk)->isEmcShowerValid();
       if(mdc.isemc[i]) 
       {
+        cout << "Use mdc" << endl;
         mdc.nemc++;//increase number of emc clasters
         RecEmcShower *emcTrk = (*itTrk)->emcShower(); //Electro Magnet Calorimeer
 
