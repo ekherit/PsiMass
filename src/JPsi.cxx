@@ -186,6 +186,7 @@ StatusCode JPsi::initialize(void)
 		if(dedx_tuple)
 		{
       status = dedx_tuple->addItem ("nchtr", trdedx_idx, 0, MAX_TRACK_NUMBER);
+      status = dedx_tuple->addIndexedItem ("pid", trdedx_idx, m_pid );
       status = dedx_tuple->addIndexedItem ("chie", trdedx_idx, m_chie );
       status = dedx_tuple->addIndexedItem ("chimu",trdedx_idx, m_chimu );
       status = dedx_tuple->addIndexedItem ("chipi", trdedx_idx, m_chipi );
@@ -195,6 +196,11 @@ StatusCode JPsi::initialize(void)
       status = dedx_tuple->addIndexedItem ("thit", trdedx_idx, m_thit );
       status = dedx_tuple->addIndexedItem ("probPH", trdedx_idx, m_probPH );
       status = dedx_tuple->addIndexedItem ("normPH", trdedx_idx, m_normPH );
+      status = dedx_tuple->addIndexedItem ("dedx_e", trdedx_idx, m_dedx_e );
+      status = dedx_tuple->addIndexedItem ("dedx_mu", trdedx_idx, m_dedx_mu );
+      status = dedx_tuple->addIndexedItem ("dedx_pi", trdedx_idx, m_dedx_pi );
+      status = dedx_tuple->addIndexedItem ("dedx_K", trdedx_idx, m_dedx_K );
+      status = dedx_tuple->addIndexedItem ("dedx_p", trdedx_idx, m_dedx_p );
 		}
 		else
 		{
@@ -356,6 +362,12 @@ StatusCode JPsi::execute()
 				m_thit[i] = dedxTrk->numTotalHits();
 				m_probPH[i] = dedxTrk->probPH();
 				m_normPH[i] = dedxTrk->normPH();
+				m_dedx_e[i] = dedxTrk->getDedxExpect(0);
+				m_dedx_mu[i] = dedxTrk->getDedxExpect(1);
+				m_dedx_pi[i] = dedxTrk->getDedxExpect(2);
+				m_dedx_K[i] = dedxTrk->getDedxExpect(3);
+				m_dedx_p[i] = dedxTrk->getDedxExpect(4);
+        m_pid[i]=dedxTrk->particleId();
 			}
 		}
 
@@ -516,15 +528,21 @@ void JPsi::InitData(void)
     mdc.Z=-1000;
 
 		//dedx information
-		m_chie[i] = -999;
-		m_chimu[i] = -999;
-		m_chipi[i] = -999;
-		m_chik[i] = -999;
-		m_chip[i] = -999;
-		m_ghit[i] = -999;
-		m_thit[i] = -999;
-		m_probPH[i] = -999;
-		m_normPH[i] = -999;
+    m_pid[i]=-1000;
+		m_chie[i] = -1000;
+		m_chimu[i] = -1000;
+		m_chipi[i] = -1000;
+		m_chik[i] = -1000;
+		m_chip[i] = -1000;
+		m_ghit[i] = -1000;
+		m_thit[i] = -1000;
+		m_probPH[i] = -1000;
+		m_normPH[i] = -1000;
+    m_dedx_e[i]=-1000;
+    m_dedx_mu[i]=-1000;
+    m_dedx_pi[i]=-1000;
+    m_dedx_K[i]=-1000;
+    m_dedx_p[i]=-1000;
   }
 	//sphericity initialization
 	for(int i=0;i<3;i++)

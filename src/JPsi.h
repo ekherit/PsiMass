@@ -111,6 +111,7 @@ class JPsi : public Algorithm
 
 	NTuple::Tuple * dedx_tuple;
   NTuple::Item<long> trdedx_idx;
+  NTuple::Array<long> m_pid; //particle id (dedx)
 	NTuple::Array<double> m_chie; //chi2_dEdx for electron
 	NTuple::Array<double> m_chimu;//chi2_dEdx for muon
 	NTuple::Array<double> m_chipi;//chi2_dEdx pion
@@ -120,6 +121,11 @@ class JPsi : public Algorithm
 	NTuple::Array<double> m_thit; //nuber of total de/dx including overflow
   NTuple::Array<double> m_probPH; //most probable pulse height from trucated mean 
   NTuple::Array<double> m_normPH; //normalized pulse height
+  NTuple::Array<double> m_dedx_e; //dedx for electron
+  NTuple::Array<double> m_dedx_mu; //muon
+  NTuple::Array<double> m_dedx_pi; //pion
+  NTuple::Array<double> m_dedx_K; //Kaon
+  NTuple::Array<double> m_dedx_p; //proton
 	void InitData(void);
 	TMatrixD S; //sphericity tensor
 
