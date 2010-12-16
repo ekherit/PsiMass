@@ -131,6 +131,9 @@ StatusCode JPsi::initialize(void)
       status = mdc_tuple->addIndexedItem ("pz", mdc.ntrack, mdc.pz);
       status = mdc_tuple->addIndexedItem ("theta", mdc.ntrack, mdc.theta);
       status = mdc_tuple->addIndexedItem ("phi", mdc.ntrack, mdc.phi);
+      status = mdc_tuple->addIndexedItem ("x", mdc.ntrack, mdc.x);
+      status = mdc_tuple->addIndexedItem ("y", mdc.ntrack, mdc.y);
+      status = mdc_tuple->addIndexedItem ("z", mdc.ntrack, mdc.z);
       status = mdc_tuple->addIndexedItem ("q", mdc.ntrack, mdc.q);
       status = mdc_tuple->addIndexedItem ("emc", mdc.ntrack, mdc.isemc);
       status = mdc_tuple->addIndexedItem ("E", mdc.ntrack, mdc.E);
