@@ -47,34 +47,44 @@ class JPsi : public Algorithm
 	double DELTA_X, DELTA_Y, DELTA_Z; //interection point cut
 	long int event_proceed;
 	long int event_write;
+
 	NTuple::Tuple * main_tuple;//main tuple 
 	NTuple::Item<long> m_time; //time when events is writed (unixtime)
-	NTuple::Item<double> Etotal; //Total energy deposition
-	NTuple::Item<long> nchtrk; //number of charged tracks
-	NTuple::Item<long> nneutrk;//number of neutral tracks
-	NTuple::Item<long> ntrk; //total number of tracks.
-	NTuple::Item<long> niptrk; //tracks from interection point
-	NTuple::Item<long> m_nmdcemc; //good tracks with mdc and emc
-	NTuple::Item<double> S1;
-	NTuple::Item<double> S2;
-	NTuple::Item<double> S3;
-	NTuple::Item<double> m_S;
-	NTuple::Item<double> m_cos_high_p;
+	NTuple::Item<long> m_nchtr; //number of charged tracks
+	NTuple::Item<long> m_nneutr;//number of neutral tracks
+	NTuple::Item<long> m_ntrack; //total number of tracks.
+  NTuple::Item<double> m_Etotal; //total energy deposition
+  NTuple::Item<double> m_Eemc; //total energy deposition EMC only
 
-  NTuple::Item<long> tr_idx;
-	//charged track information
-  NTuple::Array<double> m_E;
-  NTuple::Array<double> m_p;
-  NTuple::Array<double> m_px,m_py,m_pz;
-	NTuple::Array<double> m_theta;
-	NTuple::Array<double> m_phi;
-  NTuple::Array<double> m_pt;
-  NTuple::Array<double> m_M;
-  NTuple::Array<double> m_q;
-  NTuple::Array<double> m_x, m_y, m_z;
-  NTuple::Array<double> m_X, m_Y, m_Z;
-  NTuple::Array<double> m_ismu;
-
+  /*  Main Drift Chamber Information */
+  struct MDC_t
+  {
+    NTuple::Item<long>    ntrack; //number of charged tracks.
+    NTuple::Array<double> p; //Momentum
+    NTuple::Array<double> px,py,pz; //Componets of momentum
+    NTuple::Array<double> pt; //transvese momentum
+    NTuple::Array<double> x, y, z; //poca coordinate of track
+    NTuple::Array<double> theta,phi;
+    NTuple::Array<double> q; //charge of the track
+    NTuple::Array<long> isemc; //has emc information
+    /*  EMC section for this charged track */
+    NTuple::Array<long> ncrstl;
+    NTuple::Array<long> cellId;
+    NTuple::Array<long> status;
+    NTuple::Array<long> module;
+    NTuple::Array<double> E,dE;
+    NTuple::Array<double> M;
+    NTuple::Array<double> ismu; //has muon track information
+    /*  Additional section */
+    NTuple::Array<double> X, Y, Z; //pivot 
+    NTuple::Item<long>   nemc; //Number of clusters in calorimeter
+    NTuple::Item<long>   nip; //Track number from interaction point (same condition as for highest track)
+    NTuple::Item<double> Eemc; //total energy using emc
+    NTuple::Item<double> Emdc; //total energy using only mdc
+    NTuple::Item<double> S; //Sphericity
+    NTuple::Item<long>   idx1, idx2; //Highest energy tracks indexes
+    NTuple::Item<double> hp_cos; //cos angle beween highest energy tracks
+  };
 
   /* ElecroMagnetic Calorimeter Information */
   struct EMC_t
@@ -91,6 +101,9 @@ class JPsi : public Algorithm
     NTuple::Item<double>  Etotal;
   };
 	
+  NTuple::Tuple * mdc_tuple;
+  MDC_t mdc;
+
   NTuple::Tuple * emc_tuple;
   EMC_t emc;
 
