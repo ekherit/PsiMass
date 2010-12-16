@@ -270,10 +270,12 @@ StatusCode JPsi::execute()
 		double  Eh[2]={0, 0};
 		Hep3Vector ph[2];//Two high momentum
 		/*  loop over charged track */
-    mdc.ntrack=evtRecEvent->totalCharged();
+    //mdc.ntrack=evtRecEvent->totalCharged();
+    mdc.ntrack=0;
 		for(int i = 0; i < evtRecEvent->totalCharged(); ++i)
 		{
 			EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + i;
+      mdc.ntrack=i+1;
 			if(!(*itTrk)->isMdcTrackValid()) continue; 
 			RecMdcTrack *mdcTrk = (*itTrk)->mdcTrack();  //main drift chambe
 			mdc.p[i]=mdcTrk->p();
