@@ -97,7 +97,7 @@ StatusCode JPsi::initialize(void)
 			status=main_tuple->addItem("t", m_time);
 			status=main_tuple->addItem("nchtrk", m_nchtr);
 			status=main_tuple->addItem("nneutrk", m_nneutr);
-			status=main_tuple->addItem("ntrk", m_ntrack);
+			status=main_tuple->addItem("ntrack", m_ntrack);
 			status=main_tuple->addItem("Etotal", m_Etotal);
 			status=main_tuple->addItem("Eemc", m_Eemc);
 		}
@@ -246,7 +246,6 @@ StatusCode JPsi::execute()
   SmartDataPtr<Event::EventHeader> eventHeader(eventSvc(),"/Event/EventHeader");
   int runNo=eventHeader->runNumber();
   int event=eventHeader->eventNumber();
-	m_time = eventHeader->time();
 	if(event_proceed%1000==0)
 	{
 		log << MSG::DEBUG <<"run, evtnum = "
@@ -326,19 +325,17 @@ StatusCode JPsi::execute()
         /* find two high energy track */
         if(emcTrk->energy() >= Eh[0])
         {
-          idx1=i;
+          mdc.idx1=i;
           Eh[0]=emcTrk->energy();
           ph[0]=mdcTrk->p3();
-          Rh[0]=mdcTrk->x3();
         }
         else
         {
           if(emcTrk->energy() >= Eh[1])
           {
-            idx2=i;
+            mdc.idx2=i;
             ph[1]=mdcTrk->p3();
             Eh[1]=emcTrk->energy();
-            Rh[1]=mdcTrk->x3();
           }
         }
       }
@@ -373,8 +370,8 @@ StatusCode JPsi::execute()
 
 		//Two tracks from interaction points. The same condion for BhaBha and for multihadron
 		if( USE_IPCUT 
-        && fabs(mdc.x[idx1]) > DELTA_X && fabs(mdc.y[idx1]) > DELTA_Y && fabs(mdc.z[idx1]) > DELTA_Z
-        && fabs(mdc.x[idx2]) > DELTA_X && fabs(mdc.y[idx2]) > DELTA_Y && fabs(mdc.z[idx2]) > DELTA_Z
+        && fabs(mdc.x[mdc.idx1]) > DELTA_X && fabs(mdc.y[mdc.idx1]) > DELTA_Y && fabs(mdc.z[mdc.idx1]) > DELTA_Z
+        && fabs(mdc.x[mdc.idx2]) > DELTA_X && fabs(mdc.y[mdc.idx2]) > DELTA_Y && fabs(mdc.z[mdc.idx2]) > DELTA_Z
         ) return StatusCode::SUCCESS;
 
 		/*  calculate angles of high energy tracks */
@@ -423,8 +420,14 @@ StatusCode JPsi::execute()
       emc.Etotal+=emcTrk->energy();
     }
 
+
+    m_nchtr=evtRecEvent->totalCharged();
+    m_nneutr=evtRecEvent->totalNeutral();
+    m_ntrack=evtRecEvent->totalCharged()+evtRecEvent->totalNeutral();
     m_Etotal = emc.Etotal+mdc.Emdc;
     m_Eemc = emc.Etotal+mdc.Eemc;
+    m_time = eventHeader->time();
+
 
 
 		/* now fill the data */
@@ -439,10 +442,10 @@ StatusCode JPsi::execute()
 		//gamma gamma selection only two neutral tracks
 		// part for ee->gg annihilation
 		// big angles, two neutral track,  no charged.
-		if(nneutrk==2 && nchtrk==0)
+		if(evtRecEvent->totalNeutral()==2 && evtRecEvent->totalCharged==0)
 		{
 			double r[2];
-			for(int track = 0; track<nneutrk; track++)
+			for(int track = 0; track<evtRecEvent->totalNeutral(); track++)
 			{
 				gg_nntrk=track+1;
 				EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + track;
@@ -486,7 +489,7 @@ StatusCode JPsi::finalize()
 
 void JPsi::InitData(void)
 {
-	m_ntr=0;
+  m_ntrack=0;
 	m_nchtr=0;
 	m_nneutr=0;
   m_Etotal=0;
