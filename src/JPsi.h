@@ -75,6 +75,27 @@ class JPsi : public Algorithm
   NTuple::Array<double> m_X, m_Y, m_Z;
   NTuple::Array<double> m_ismu;
 
+
+  /* ElecroMagnetic Calorimeter Information */
+  struct EMC_t
+  {
+    NTuple::Item<long>    ntrack; //number of neutral tracks.
+    NTuple::Array<long>   status; //status status=1: single seed cluster; status=2: splitted from multi-seeds cluster.
+    NTuple::Array<long>   ncrstl; //Number of crystals in the shower
+    NTuple::Array<long>   cellId; //Central crystal’s identifier
+    NTuple::Array<long>   module; //module=0: east endcap;  module=1: barrel;  module=2: west endcap.
+    NTuple::Array<double> x, y, z; //coordinates of claster
+    NTuple::Array<double> theta, phi;  //angles
+    NTuple::Array<double> E; // energy deposition
+    NTuple::Array<double> dE; // energy deposition error
+    NTuple::Item<double>  Etotal;
+  };
+	
+  NTuple::Tuple * EMC_tuple;
+  EMS_t emc;
+
+
+
 	NTuple::Tuple * dedx_tuple;
   NTuple::Item<long> trdedx_idx;
 	NTuple::Array<double> m_chie; //chi2_dEdx for electron

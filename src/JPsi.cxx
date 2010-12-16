@@ -130,6 +130,33 @@ StatusCode JPsi::initialize(void)
       return StatusCode::FAILURE;
 		}
 	}
+	NTuplePtr nt_emc(ntupleSvc(), "FILE1/emc");
+	if(nt_emc) emc_tuple=nt_emc;
+	else
+	{
+		emc_tuple = ntupleSvc()->book("FILE1/emc", CLID_ColumnWiseTuple, "EMS (neutral) track");
+		if(emc_tuple)
+		{
+      status = emc_tuple->addItem ("ntrack", emc.ntrack, 0, MAX_TRACK_NUMBER);
+      status = emc_tuple->addItem ("Etotal", emc.Etotal);
+      status = emc_tuple->addIndexedItem ("model", emc.ntrack, emc_module );
+      status = emc_tuple->addIndexedItem ("status", emc.ntrack, emc.status );
+      status = emc_tuple->addIndexedItem ("ncrstl", emc.ntrack, emc.ncrstl );
+      status = emc_tuple->addIndexedItem ("cellId", emc.ntrack, emc.cellId );
+      status = emc_tuple->addIndexedItem ("x", emc.ntrack, emc.x );
+      status = emc_tuple->addIndexedItem ("y", emc.ntrack, emc.y );
+      status = emc_tuple->addIndexedItem ("z", emc.ntrack, emc.z );
+      status = emc_tuple->addIndexedItem ("E", emc.ntrack, emc.E );
+      status = emc_tuple->addIndexedItem ("dE", emc.ntrack, emc.dE );
+      status = emc_tuple->addIndexedItem ("theta", emc.ntrack, emc.theta );
+      status = emc_tuple->addIndexedItem ("phi", emc.ntrack, emc.phi );
+		}
+		else
+		{
+      log << MSG::ERROR << "    Cannot book N-tuple:" << long(emc_tuple) << endmsg;
+      return StatusCode::FAILURE;
+		}
+	}
 	NTuplePtr nt2(ntupleSvc(), "FILE1/dedx");
 	if(nt2) dedx_tuple=nt2;
 	else
@@ -321,9 +348,36 @@ StatusCode JPsi::execute()
 			cerr << "Bad sphericity" << endl;
 			exit(1);
 		}
+
+    /*  fill data for emc system */
+    emc.ntrack=0;
+    int track=0; //index for neutral tracks
+    emc.Etotal=0;
+    for(int idx = evtRecEvent->totalCharged(); idx<evtRecEvent->totalTracks(); ++idx, ++track)
+    {
+      EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + track;
+      emc.ntrack=track+1;
+      if(!(*itTrk)->isEmcShowerValid()) continue;
+      RecEmcShower *emcTrk = (*itTrk)->emcShower();
+      emc.status[track] = emcTrk->status();
+      emc.ncrstl[track] = emcTrk->numHits();
+      emc.cellId[track] = emcTrk->numHits();
+      emc.module[track] = emcTrk->module();
+      emc.x[track] = emcTrk->x();
+      emc.y[track] = emcTrk->y();
+      emc.z[track] = emcTrk->z();
+      emc.theta[track] = emcTrk->theta();
+      emc.phi[track] = emcTrk->phi();
+      emc.E[track]  =  emcTrk->energy();
+      emc.dE[track] =  emcTrk->dE();
+      emc.Etotal+=emcTrk->energy();
+    }
+
+
 		/* now fill the data */
 		main_tuple->write();
 		dedx_tuple->write();
+    emc_tuple->write();
 		event_write++;
 	}
 	else 
@@ -419,6 +473,24 @@ void JPsi::InitData(void)
 	for(int i=0;i<3;i++)
 		for(int j=0;j<3;j++)
 			S[i][j]=0;
+
+  // emc information init.
+  emc.ntrack=0;
+  emc.Etotal=0;
+  for(int i=0;i<MAX_TRACK_NUMBER;++i)
+  {
+    emc.status[i]=-1000;
+    emc.ncrstl[i]=-1000;
+    emc.cellId[i]=-1000;
+    emc.module[i]=-1000;
+    emc.E[i]=-1000;
+    emc.dE[i]=-1000;
+    emc.x[i]=-1000;
+    emc.y[i]=-1000;
+    emc.z[i]=-1000;
+    emc.theta[i]=-1000;
+    emc.phi[i]=-1000;
+  }
 	for(int i=0; i<2;i++)
 	{
 		gg_x [i]=-9999;
