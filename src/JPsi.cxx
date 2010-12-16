@@ -144,6 +144,9 @@ StatusCode JPsi::initialize(void)
       status = mdc_tuple->addIndexedItem ("module", mdc.ntrack, mdc.module);
       status = mdc_tuple->addIndexedItem ("M", mdc.ntrack, mdc.M);
       status = mdc_tuple->addIndexedItem ("mu", mdc.ntrack, mdc.ismu);
+      status = mdc_tuple->addIndexedItem ("X", mdc.ntrack, mdc.X);
+      status = mdc_tuple->addIndexedItem ("Y", mdc.ntrack, mdc.Y);
+      status = mdc_tuple->addIndexedItem ("Z", mdc.ntrack, mdc.Z);
 
 			/*  sphericity part */
 			status = mdc_tuple->addItem("S", mdc.S);
