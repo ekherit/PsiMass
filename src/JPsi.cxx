@@ -306,16 +306,15 @@ StatusCode JPsi::execute()
       mdc.isemc[i]=(*itTrk)->isEmcShowerValid();
       if(mdc.isemc[i]) 
       {
-        mdc.isemc=1; //set flag we have emc information
         mdc.nemc++;//increase number of emc clasters
         RecEmcShower *emcTrk = (*itTrk)->emcShower(); //Electro Magnet Calorimeer
 
         mdc.E[i]=emcTrk->energy();
         mdc.dE[i]=emcTrk->dE();
-        mdc.ncrstl=emcTrk->numHits();
-        mdc.status=emcTrk->status();
-        mdc.cellId=emcTrk->cellId();
-        mdc.module=emcTrk->module();
+        mdc.ncrstl[i]=emcTrk->numHits();
+        mdc.status[i]=emcTrk->status();
+        mdc.cellId[i]=emcTrk->cellId();
+        mdc.module[i]=emcTrk->module();
         mdc.Eemc+=mdc.E[i];
 
         HepLorentzVector P(mdc.px[i], mdc.py[i], mdc.pz[i], mdc.E[i]);
@@ -442,7 +441,7 @@ StatusCode JPsi::execute()
 		//gamma gamma selection only two neutral tracks
 		// part for ee->gg annihilation
 		// big angles, two neutral track,  no charged.
-		if(evtRecEvent->totalNeutral()==2 && evtRecEvent->totalCharged==0)
+		if(evtRecEvent->totalNeutral()==2 && evtRecEvent->totalCharged()==0)
 		{
 			double r[2];
 			for(int track = 0; track<evtRecEvent->totalNeutral(); track++)
