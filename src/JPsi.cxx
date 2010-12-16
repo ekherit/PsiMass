@@ -499,14 +499,23 @@ void JPsi::InitData(long nchtrack, long nneutrack)
   m_Eemc=0;
   cout << "Init main for mdc" << endl;
   //mdc track informaion init
+  cout << "Init mdc nemc" << endl;
   mdc.nemc=0;
+  cout << "Init mdc nip" << endl;
   mdc.nip=0;
+  cout << "Init mdc Eemc" << endl;
   mdc.Eemc=0;
+  cout << "Init mdc Emdc" << endl;
   mdc.Emdc=0;
+  cout << "Init mdc S" << endl;
   mdc.S=0;
+  cout << "Init mdc idx1" << endl;
   mdc.idx1=-1000;
+  cout << "Init mdc idx2" << endl;
   mdc.idx2=-1000;
+  cout << "Init mdc hp_cos" << endl;
   mdc.hp_cos=-1000;
+  cout << "Init mdc ntrack" << endl;
   mdc.ntrack=nchtrack;
   for(int i=0;i<nchtrack; i++)
   {
