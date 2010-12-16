@@ -103,7 +103,6 @@ StatusCode JPsi::initialize(void)
 			status=main_tuple->addItem("S2", S2);
 			status=main_tuple->addItem("S3", S3);
 			status=main_tuple->addItem("S", m_S);
-			status=main_tuple->addItem("signal", m_Signal);
 			//charged tracks
 			status=main_tuple->addItem("coshp", m_cos_high_p);
       status = main_tuple->addItem ("nchtr", tr_idx, 0, MAX_TRACK_NUMBER);
@@ -218,10 +217,6 @@ StatusCode JPsi::execute()
 	/*  the selection is based on charged tracks */
 	if(MIN_CHARGED_TRACKS<=nchtrk && nchtrk <=MAX_TRACK_NUMBER)
 	{
-		if(evtRecEvent->totalCharged()<3) 
-			m_Signal=0;
-		else 
-			m_Signal=1;
 		ntrk=nchtrk+nneutrk;
 		double p2sum=0;
 		double  Eh[2]={0, 0};
@@ -389,7 +384,6 @@ void JPsi::InitData(void)
 	nneutrk=0;
 	niptrk=0;
 	m_nmdcemc=0;
-	m_Signal=-1;
 	m_cos_high_p=-10;
 	for(unsigned i=0;i<MAX_TRACK_NUMBER;++i)
 	{

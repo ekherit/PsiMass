@@ -59,7 +59,6 @@ class JPsi : public Algorithm
 	NTuple::Item<double> S2;
 	NTuple::Item<double> S3;
 	NTuple::Item<double> m_S;
-	NTuple::Item<long> m_Signal;
 	NTuple::Item<double> m_cos_high_p;
 
   NTuple::Item<long> tr_idx;
