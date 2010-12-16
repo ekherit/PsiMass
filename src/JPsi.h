@@ -50,9 +50,9 @@ class JPsi : public Algorithm
 
 	NTuple::Tuple * main_tuple;//main tuple 
 	NTuple::Item<long> m_time; //time when events is writed (unixtime)
+	NTuple::Item<long> m_ntrack; //total number of tracks.
 	NTuple::Item<long> m_nchtr; //number of charged tracks
 	NTuple::Item<long> m_nneutr;//number of neutral tracks
-	NTuple::Item<long> m_ntrack; //total number of tracks.
   NTuple::Item<double> m_Etotal; //total energy deposition
   NTuple::Item<double> m_Eemc; //total energy deposition EMC only
 

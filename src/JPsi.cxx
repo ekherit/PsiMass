@@ -95,9 +95,9 @@ StatusCode JPsi::initialize(void)
 		{
 			//common
 			status=main_tuple->addItem("t", m_time);
+			status=main_tuple->addItem("ntrack", m_ntrack);
 			status=main_tuple->addItem("nchtrk", m_nchtr);
 			status=main_tuple->addItem("nneutrk", m_nneutr);
-			status=main_tuple->addItem("ntrack", m_ntrack);
 			status=main_tuple->addItem("Etotal", m_Etotal);
 			status=main_tuple->addItem("Eemc", m_Eemc);
 		}
@@ -491,11 +491,13 @@ StatusCode JPsi::finalize()
 
 void JPsi::InitData(long nchtrack, long nneutrack)
 {
-  m_ntrack=0;
-	m_nchtr=0;
-	m_nneutr=0;
+  cout << "Init main data" << endl;
+  m_ntrack=nchtrack+nneutrack;
+	m_nchtr=nchtrack;
+	m_nneutr=nneutrack;
   m_Etotal=0;
   m_Eemc=0;
+  cout << "Init main for mdc" << endl;
   //mdc track informaion init
   mdc.nemc=0;
   mdc.nip=0;
