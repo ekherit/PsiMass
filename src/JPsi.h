@@ -92,7 +92,7 @@ class JPsi : public Algorithm
   };
 	
   NTuple::Tuple * emc_tuple;
-  EMS_t emc;
+  EMC_t emc;
 
 
 
