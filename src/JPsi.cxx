@@ -506,8 +506,9 @@ void JPsi::InitData(long nchtrack, long nneutrack)
   mdc.idx2=-1000;
   mdc.hp_cos=-1000;
   mdc.ntrack=nchtrack;
-  for(int i=0;i<nchtrack; ++i)
+  for(int i=0;i<nchtrack; i++)
   {
+    cout << "Init track number " << i << endl;
     mdc.p[i]=-1000;
     mdc.px[i]=-1000;
     mdc.py[i]=-1000;
@@ -557,7 +558,7 @@ void JPsi::InitData(long nchtrack, long nneutrack)
   // emc information init.
   emc.ntrack=nneutrack;
   emc.Etotal=0;
-  for(int i=0;i<nneutrack;++i)
+  for(int i=0;i<nneutrack;i++)
   {
     emc.status[i]=-1000;
     emc.ncrstl[i]=-1000;
