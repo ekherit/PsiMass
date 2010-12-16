@@ -126,7 +126,7 @@ class JPsi : public Algorithm
   NTuple::Array<double> m_dedx_pi; //pion
   NTuple::Array<double> m_dedx_K; //Kaon
   NTuple::Array<double> m_dedx_p; //proton
-	void InitData(void);
+	void InitData(long number_charged_track, long number_neutral_track);
 	TMatrixD S; //sphericity tensor
 
 	//gamma-gamma annihilation selection

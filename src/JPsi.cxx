@@ -259,13 +259,10 @@ StatusCode JPsi::execute()
 	/*  Get information about reconstructed events */
   SmartDataPtr<EvtRecEvent> evtRecEvent(eventSvc(), EventModel::EvtRec::EvtRecEvent);
   SmartDataPtr<EvtRecTrackCol> evtRecTrkCol(eventSvc(),  EventModel::EvtRec::EvtRecTrackCol);
-	InitData();
 
-	//nchtrk = evtRecEvent->totalCharged();
-	//nneutrk= evtRecEvent->totalNeutral();
+	InitData(evtRecEvent->totalCharged(), evtRecEvent->totalNeutral());
 
 	/************    Multihadron event and BhaBha selection ****************/
-
 	/*  the selection is based on charged tracks */
 	if(MIN_CHARGED_TRACKS<=evtRecEvent->totalCharged() && evtRecEvent->totalCharged() <=MAX_TRACK_NUMBER)
 	{
@@ -486,7 +483,7 @@ StatusCode JPsi::finalize()
 }
 
 
-void JPsi::InitData(void)
+void JPsi::InitData(long nchtrack, long nneutrack)
 {
   m_ntrack=0;
 	m_nchtr=0;
@@ -494,7 +491,6 @@ void JPsi::InitData(void)
   m_Etotal=0;
   m_Eemc=0;
   //mdc track informaion init
-  mdc.ntrack=0;
   mdc.nemc=0;
   mdc.nip=0;
   mdc.Eemc=0;
@@ -503,7 +499,8 @@ void JPsi::InitData(void)
   mdc.idx1=-1000;
   mdc.idx2=-1000;
   mdc.hp_cos=-1000;
-  for(int i=0;i<MAX_TRACK_NUMBER; ++i)
+  mdc.ntrack=nchtrack;
+  for(int i=0;i<nchtrack; ++i)
   {
     mdc.p[i]=-1000;
     mdc.px[i]=-1000;
@@ -552,9 +549,9 @@ void JPsi::InitData(void)
 			S[i][j]=0;
 
   // emc information init.
-  emc.ntrack=0;
+  emc.ntrack=nneutrack;
   emc.Etotal=0;
-  for(int i=0;i<MAX_TRACK_NUMBER;++i)
+  for(int i=0;i<nneutrack;++i)
   {
     emc.status[i]=-1000;
     emc.ncrstl[i]=-1000;
