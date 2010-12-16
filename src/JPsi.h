@@ -91,7 +91,7 @@ class JPsi : public Algorithm
     NTuple::Item<double>  Etotal;
   };
 	
-  NTuple::Tuple * EMC_tuple;
+  NTuple::Tuple * emc_tuple;
   EMS_t emc;
 
 

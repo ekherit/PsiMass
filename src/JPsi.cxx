@@ -139,7 +139,7 @@ StatusCode JPsi::initialize(void)
 		{
       status = emc_tuple->addItem ("ntrack", emc.ntrack, 0, MAX_TRACK_NUMBER);
       status = emc_tuple->addItem ("Etotal", emc.Etotal);
-      status = emc_tuple->addIndexedItem ("model", emc.ntrack, emc_module );
+      status = emc_tuple->addIndexedItem ("model", emc.ntrack, emc.module );
       status = emc_tuple->addIndexedItem ("status", emc.ntrack, emc.status );
       status = emc_tuple->addIndexedItem ("ncrstl", emc.ntrack, emc.ncrstl );
       status = emc_tuple->addIndexedItem ("cellId", emc.ntrack, emc.cellId );
