@@ -516,7 +516,7 @@ void JPsi::InitData(long nchtrack, long nneutrack)
   cout << "Init mdc hp_cos" << endl;
   mdc.hp_cos=-1000;
   cout << "Init mdc ntrack" << endl;
-  mdc.ntrack=nchtrack;
+  //mdc.ntrack=nchtrack;
   for(int i=0;i<nchtrack; i++)
   {
     cout << "Init track number " << i << endl;
@@ -567,7 +567,7 @@ void JPsi::InitData(long nchtrack, long nneutrack)
 			S[i][j]=0;
 
   // emc information init.
-  emc.ntrack=nneutrack;
+  //emc.ntrack=nneutrack;
   emc.Etotal=0;
   for(int i=0;i<nneutrack;i++)
   {
