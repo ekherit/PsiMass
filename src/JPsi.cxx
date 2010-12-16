@@ -97,6 +97,7 @@ StatusCode JPsi::initialize(void)
 			status=main_tuple->addItem("nneutrk", nneutrk);
 			status=main_tuple->addItem("ntrk", ntrk);
 			status=main_tuple->addItem("niptrk", niptrk);
+			status=main_tuple->addItem("nmdcemc", m_nmdcemc);
 			/*  sphericity part */
 			status=main_tuple->addItem("S1", S1);
 			status=main_tuple->addItem("S2", S2);
@@ -297,6 +298,7 @@ StatusCode JPsi::execute()
 			}
 		}
 		if(has_mdc_emc<2) return StatusCode::SUCCESS; //at list two tracks must have drift and shower.
+		m_nmdcemc = has_mdc_emc;
 
 		//Two tracks from interaction points. The same condion for BhaBha and for multihadron
 		if(USE_IPCUT && niptrk <IPTRACKS) return StatusCode::SUCCESS;
@@ -386,6 +388,7 @@ void JPsi::InitData(void)
 	nchtrk=0;
 	nneutrk=0;
 	niptrk=0;
+	m_nmdcemc=0;
 	m_Signal=-1;
 	m_cos_high_p=-10;
 	for(unsigned i=0;i<MAX_TRACK_NUMBER;++i)

@@ -54,6 +54,7 @@ class JPsi : public Algorithm
 	NTuple::Item<long> nneutrk;//number of neutral tracks
 	NTuple::Item<long> ntrk; //total number of tracks.
 	NTuple::Item<long> niptrk; //tracks from interection point
+	NTuple::Item<long> m_nmdcemc; //good tracks with mdc and emc
 	NTuple::Item<double> S1;
 	NTuple::Item<double> S2;
 	NTuple::Item<double> S3;
