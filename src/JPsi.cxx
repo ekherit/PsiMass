@@ -123,6 +123,7 @@ StatusCode JPsi::initialize(void)
       status = mdc_tuple->addItem ("nip", mdc.nip);
       status = mdc_tuple->addItem ("idx1", mdc.idx1);
       status = mdc_tuple->addItem ("idx2", mdc.idx2);
+      status = mdc_tuple->addItem ("hp_cos", mdc.hp_cos);
       status = mdc_tuple->addIndexedItem ("p", mdc.ntrack, mdc.p);
       status = mdc_tuple->addIndexedItem ("pt", mdc.ntrack, mdc.pt);
       status = mdc_tuple->addIndexedItem ("px", mdc.ntrack, mdc.px);
