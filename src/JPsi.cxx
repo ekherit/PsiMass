@@ -402,10 +402,10 @@ StatusCode JPsi::execute()
         {
             mdc.hpipr[i] = sqrt(sq(mdc.x[mdc.hpidx[i]]-0.1)+sq(mdc.y[mdc.hpidx[i]]+0.1));
             mdc.hpipz[i] = mdc.z[mdc.hpidx[i]];
-            if(USE_IPCUT && ( mdc.hpipr[i]> IPR || mdc.hpipz[i] > DELTA_Z) ) return StatusCode::SUCCESS;
+            if(USE_IPCUT && ( mdc.hpipr[i]> IPR || fabs(mdc.hpipz[i]) > DELTA_Z) ) return StatusCode::SUCCESS;
         }
 
-        bool ishpip =  mdc.hpipr[0]<0.2 && mdc.hpipz[0] < 3 && mdc.hpipr[1]<0.2 && mdc.hpipz[1] < 3 ;
+        bool ishpip =  mdc.hpipr[0]<0.2 && fabs(mdc.hpipz[0]) < 3 && fabs(mdc.hpipr[1])<0.2 && mdc.hpipz[1] < 3 ;
         mdc.hpip =ishpip;
 
         double tmp = ph[0].mag()*ph[1].mag()<=0 ? -10 : (ph[0].dot(ph[1]))/(ph[0].mag()*ph[1].mag());
