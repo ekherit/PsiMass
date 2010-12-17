@@ -125,7 +125,7 @@ StatusCode JPsi::initialize(void)
       status = mdc_tuple->addItem ("idx2", mdc.idx2);
       status = mdc_tuple->addItem ("hp_cos", mdc.hp_cos);
       status = mdc_tuple->addItem ("pt50", mdc.pt50);
-      status = mdc_tuple->addItem ("pt100", mdc.p5100);
+      status = mdc_tuple->addItem ("pt100", mdc.pt100);
       status = mdc_tuple->addIndexedItem ("p", mdc.ntrack, mdc.p);
       status = mdc_tuple->addIndexedItem ("pt", mdc.ntrack, mdc.pt);
       status = mdc_tuple->addIndexedItem ("px", mdc.ntrack, mdc.px);
