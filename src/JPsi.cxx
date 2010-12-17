@@ -346,7 +346,7 @@ StatusCode JPsi::execute()
                     mdc.hpidx[1]=tmp;
                     Eh[1]=Eh[0];
                     ph[1]=ph[0];
-                    mdc.idx1=i;
+                    mdc.hpidx[0]=i;
                     Eh[0]=emcTrk->energy();
                     ph[0]=mdcTrk->p3();
                 }
@@ -396,7 +396,7 @@ StatusCode JPsi::execute()
         //Two tracks from interaction points. The same condion for BhaBha and for multihadron
         for(int i=0;i<2;i++)
         {
-            mdc.hpipr[i] = sqrt(sq(mdx.x[mdc.hpidx[i]]-0.1)+sq(mdx.y[mdc.hpidx[i]]+0.1));
+            mdc.hpipr[i] = sqrt(sq(mdc.x[mdc.hpidx[i]]-0.1)+sq(mdc.y[mdc.hpidx[i]]+0.1));
             if(USE_IPCUT && mdc.hpipr[i]> IPR) return StatusCode::SUCCESS;
         }
 
