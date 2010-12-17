@@ -253,15 +253,15 @@ StatusCode JPsi::execute()
   SmartDataPtr<Event::EventHeader> eventHeader(eventSvc(),"/Event/EventHeader");
   int runNo=eventHeader->runNumber();
   int event=eventHeader->eventNumber();
+  time_t t=eventHeader->time();
 	if(event_proceed%1000==0)
 	{
 		log << MSG::DEBUG <<"run, evtnum = "
 			<< runNo << " , "
 			<< event <<endreq;
 		std::cout << "proceed event " << event_proceed << std::endl;
-		time_t t=eventHeader->time();
-		cout << t << " "  << ctime(&t) << endl;
 	}
+  std::cout << "proceed event " << event_proceed << std::endl;
 
 	/*  Get information about reconstructed events */
   SmartDataPtr<EvtRecEvent> evtRecEvent(eventSvc(), EventModel::EvtRec::EvtRecEvent);
@@ -279,8 +279,9 @@ StatusCode JPsi::execute()
 		/*  loop over charged track */
     //mdc.ntrack=evtRecEvent->totalCharged();
     mdc.ntrack=0;
-		for(int i = 0; i < evtRecEvent->totalCharged(); ++i)
+		for(int i = 0; i < evtRecEvent->totalCharged(); i++)
 		{
+      cout << "Track number " << i << endl;
 			EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + i;
       mdc.ntrack=i+1;
 			if(!(*itTrk)->isMdcTrackValid()) continue; 
