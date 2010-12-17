@@ -61,6 +61,8 @@ typedef HepGeom::Point3D<double> HepPoint3D;
 
 const double PI_MESON_MASS=0.13957018; //GeV
 
+inline double sq(double x) { return x*x; }
+
 JPsi::JPsi(const std::string& name, ISvcLocator* pSvcLocator) :
     Algorithm(name, pSvcLocator)
 {
@@ -69,6 +71,7 @@ JPsi::JPsi(const std::string& name, ISvcLocator* pSvcLocator) :
     declareProperty("DELTA_Y", DELTA_Y = 1.0); //cm?
     declareProperty("DELTA_Z", DELTA_Z = 10.0); //cm?
     declareProperty("USE_IPCUT", USE_IPCUT=1); //to use interection point cut.
+    declareProperty("IPR", IPR=1); //Interaction point cut distance.
     declareProperty("IPTRACKS", IPTRACKS=2); //number of tracks from interection point
     declareProperty("MIN_CHARGED_TRACKS", MIN_CHARGED_TRACKS=2); //minimum number of charged tracks in selection
     declareProperty("MAX_TRACK_NUMBER", MAX_TRACK_NUMBER=30); //maximum number of charged tracks
@@ -121,9 +124,9 @@ StatusCode JPsi::initialize(void)
             status = mdc_tuple->addItem ("Eemc", mdc.Eemc);
             status = mdc_tuple->addItem ("nemc", mdc.nemc);
             status = mdc_tuple->addItem ("nip", mdc.nip);
-            status = mdc_tuple->addItem ("idx1", mdc.idx1);
-            status = mdc_tuple->addItem ("idx2", mdc.idx2);
-            status = mdc_tuple->addItem ("hp_cos", mdc.hp_cos);
+            status = mdc_tuple->addIndexedItem ("hpidx", 2, mdc.hpidx);
+            status = mdc_tuple->addIndexedItem ("hpipr", 2, mdc.hpipr);
+            status = mdc_tuple->addItem ("hpcos", mdc.hpcos);
             status = mdc_tuple->addItem ("pt50", mdc.pt50);
             status = mdc_tuple->addItem ("pt100", mdc.pt100);
             status = mdc_tuple->addIndexedItem ("p", mdc.ntrack, mdc.p);
@@ -259,7 +262,7 @@ StatusCode JPsi::execute()
     time_t t=eventHeader->time();
     if(event_proceed%1000==0)
     {
-        std::cout << "proceed event " << event_proceed << std::endl;
+        std::cout << "proceed event: " << event_proceed << " selected events: "<< event_write << std::endl;
     }
     event_proceed++;
     //DEBUG code
@@ -339,8 +342,8 @@ StatusCode JPsi::execute()
                 {
                     //if we'v found energy more then highest finded energy
                     //then we should save old value to lower one.
-                    long tmp=mdc.idx1;
-                    mdc.idx2=tmp;
+                    long tmp=mdc.hpidx[0];
+                    mdc.hpidx[1]=tmp;
                     Eh[1]=Eh[0];
                     ph[1]=ph[0];
                     mdc.idx1=i;
@@ -351,7 +354,7 @@ StatusCode JPsi::execute()
                 {
                     if(emcTrk->energy() >= Eh[1])
                     {
-                        mdc.idx2=i;
+                        mdc.hpidx[1]=i;
                         ph[1]=mdcTrk->p3();
                         Eh[1]=emcTrk->energy();
                     }
@@ -391,13 +394,14 @@ StatusCode JPsi::execute()
         if(mdc.nemc<2) return StatusCode::SUCCESS;
 
         //Two tracks from interaction points. The same condion for BhaBha and for multihadron
-        //if( USE_IPCUT 
-        //        || fabs(mdc.x[mdc.idx1]) > DELTA_X || fabs(mdc.y[mdc.idx1]) > DELTA_Y || fabs(mdc.z[mdc.idx1]) > DELTA_Z
-        //        || fabs(mdc.x[mdc.idx2]) > DELTA_X || fabs(mdc.y[mdc.idx2]) > DELTA_Y || fabs(mdc.z[mdc.idx2]) > DELTA_Z
-        //  ) return StatusCode::SUCCESS;
-        /*  calculate angles of high energy tracks */
+        for(int i=0;i<2;i++)
+        {
+            mdc.hpipr[i] = sqrt(sq(mdx.x[mdc.hpidx[i]]-0.1)+sq(mdx.y[mdc.hpidx[i]]+0.1));
+            if(USE_IPCUT && mdc.hpipr[i]> IPR) return StatusCode::SUCCESS;
+        }
+
         double tmp = ph[0].mag()*ph[1].mag()<=0 ? -10 : (ph[0].dot(ph[1]))/(ph[0].mag()*ph[1].mag());
-        mdc.hp_cos=tmp;
+        mdc.hpcos=tmp;
 
 
         //normalize sphericity tensor
@@ -425,7 +429,6 @@ StatusCode JPsi::execute()
         for(int idx = evtRecEvent->totalCharged(); idx<evtRecEvent->totalTracks() && track<MAX_TRACK_NUMBER; idx++, track++)
         {
             EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + track;
-            //emc.ntrack=track+1;
             if(!(*itTrk)->isEmcShowerValid()) continue;
             RecEmcShower *emcTrk = (*itTrk)->emcShower();
             emc.status[track] = emcTrk->status();
@@ -519,9 +522,12 @@ void JPsi::InitData(long nchtrack, long nneutrack)
     mdc.Eemc=0;
     mdc.Emdc=0;
     mdc.S=0;
-    mdc.idx1=-1000;
-    mdc.idx2=-1000;
-    mdc.hp_cos=-1000;
+    for(int i=0;i<2;i++)
+    {
+        mdc.hpidx[i]=-1000;
+        mdc.hpipr[i]=-1000;
+    }
+    mdc.hpcos=-1000;
     mdc.pt50=-1000;
     mdc.pt100=-1000;
     mdc.ntrack=0;

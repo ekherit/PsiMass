@@ -41,6 +41,7 @@ class JPsi : public Algorithm
 	private:
   int prop_check_dedx;
 	int USE_IPCUT; //use interection point cut
+	double IPR;
 	int IPTRACKS; //tracks number from interection point
 	int MIN_CHARGED_TRACKS; //minimum charged tracks in selection
 	int MAX_TRACK_NUMBER; //minimum charged tracks in selection
@@ -82,8 +83,10 @@ class JPsi : public Algorithm
     NTuple::Item<double> Eemc; //total energy using emc
     NTuple::Item<double> Emdc; //total energy using only mdc
     NTuple::Item<double> S; //Sphericity
-    NTuple::Item<long>   idx1, idx2; //Highest energy tracks indexes
-    NTuple::Item<double> hp_cos; //cos angle beween highest energy tracks
+    //NTuple::Item<long>   idx1, idx2; //Highest energy tracks indexes
+    NTuple::Array<long> hpidx; //index for two high energy track.
+    NTuple::Array<double> hpipr; //interaction point distance for two high energy track
+    NTuple::Item<double> hpcos; //cos angle beween highest energy tracks
     NTuple::Item<long>   pt50; //flag for higher 50 MeV pt
     NTuple::Item<long>   pt100;//flag for higher 100 MeV pt.
   };
