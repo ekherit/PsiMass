@@ -424,13 +424,17 @@ StatusCode JPsi::execute()
     cout << "Before neutral" << endl;
     /*  fill data for neutral tracks */
     emc.ntrack=0;
+    cout << "After emc.ntrack" << endl;
     int track=0; //index for neutral tracks
+    cout << "Before Etotal" << endl;
     emc.Etotal=0;
-    for(int idx = evtRecEvent->totalCharged(); idx<evtRecEvent->totalTracks(); ++idx, ++track)
+    cout << "Before cycle over neutral" << endl;
+    for(int idx = evtRecEvent->totalCharged(); idx<evtRecEvent->totalTracks(); idx++, track++)
     {
       cout << "neuetarl track = " << track;
       EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + track;
       emc.ntrack=track+1;
+      cout << "Before shower valid" << endl;
       if(!(*itTrk)->isEmcShowerValid()) continue;
       RecEmcShower *emcTrk = (*itTrk)->emcShower();
       emc.status[track] = emcTrk->status();
@@ -450,6 +454,7 @@ StatusCode JPsi::execute()
 
     cout << "After emc " << endl;
     m_nchtr=evtRecEvent->totalCharged();
+    cout << "After m_nchtr " << endl;
     m_nneutr=evtRecEvent->totalNeutral();
     m_ntrack=evtRecEvent->totalCharged()+evtRecEvent->totalNeutral();
     m_Etotal = emc.Etotal+mdc.Emdc;
