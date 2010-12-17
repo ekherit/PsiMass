@@ -71,7 +71,7 @@ JPsi::JPsi(const std::string& name, ISvcLocator* pSvcLocator) :
   declareProperty("USE_IPCUT", USE_IPCUT=1); //to use interection point cut.
   declareProperty("IPTRACKS", IPTRACKS=2); //number of tracks from interection point
   declareProperty("MIN_CHARGED_TRACKS", MIN_CHARGED_TRACKS=2); //minimum number of charged tracks in selection
-  declareProperty("MAX_TRACK_NUMBER", MAX_TRACK_NUMBER=20); //maximum number of charged tracks
+  declareProperty("MAX_TRACK_NUMBER", MAX_TRACK_NUMBER=30); //maximum number of charged tracks
 	S.ResizeTo(3, 3);
 }
 
