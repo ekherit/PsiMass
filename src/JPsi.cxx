@@ -452,8 +452,11 @@ StatusCode JPsi::execute()
 
         /* now fill the data */
         main_tuple->write();
+        cout << "Before dedx tuple write" << endl;
         dedx_tuple->write();
+        cout << "Before mdc tuple write" << endl;
         mdc_tuple->write();
+        cout << "Before emc tuple write" << endl;
         emc_tuple->write();
         event_write++;
     }
