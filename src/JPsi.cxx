@@ -137,7 +137,7 @@ StatusCode JPsi::initialize(void)
       status = mdc_tuple->addIndexedItem ("y", mdc.ntrack, mdc.y);
       status = mdc_tuple->addIndexedItem ("z", mdc.ntrack, mdc.z);
       status = mdc_tuple->addIndexedItem ("q", mdc.ntrack, mdc.q);
-      status = mdc_tuple->addIndexedItem ("emc", mdc.ntrack, mdc.isemc);
+      status = mdc_tuple->addIndexedItem ("isemc", mdc.ntrack, mdc.isemc);
       status = mdc_tuple->addIndexedItem ("E", mdc.ntrack, mdc.E);
       status = mdc_tuple->addIndexedItem ("dE", mdc.ntrack, mdc.dE);
       status = mdc_tuple->addIndexedItem ("ncrstl", mdc.ntrack, mdc.ncrstl);
@@ -145,7 +145,7 @@ StatusCode JPsi::initialize(void)
       status = mdc_tuple->addIndexedItem ("status", mdc.ntrack, mdc.status);
       status = mdc_tuple->addIndexedItem ("module", mdc.ntrack, mdc.module);
       status = mdc_tuple->addIndexedItem ("M", mdc.ntrack, mdc.M);
-      status = mdc_tuple->addIndexedItem ("mu", mdc.ntrack, mdc.ismu);
+      status = mdc_tuple->addIndexedItem ("ismu", mdc.ntrack, mdc.ismu);
       status = mdc_tuple->addIndexedItem ("X", mdc.ntrack, mdc.X);
       status = mdc_tuple->addIndexedItem ("Y", mdc.ntrack, mdc.Y);
       status = mdc_tuple->addIndexedItem ("Z", mdc.ntrack, mdc.Z);
