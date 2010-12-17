@@ -392,8 +392,8 @@ StatusCode JPsi::execute()
 
         //Two tracks from interaction points. The same condion for BhaBha and for multihadron
         if( USE_IPCUT 
-                && fabs(mdc.x[mdc.idx1]) > DELTA_X && fabs(mdc.y[mdc.idx1]) > DELTA_Y && fabs(mdc.z[mdc.idx1]) > DELTA_Z
-                && fabs(mdc.x[mdc.idx2]) > DELTA_X && fabs(mdc.y[mdc.idx2]) > DELTA_Y && fabs(mdc.z[mdc.idx2]) > DELTA_Z
+                || fabs(mdc.x[mdc.idx1]) > DELTA_X || fabs(mdc.y[mdc.idx1]) > DELTA_Y || fabs(mdc.z[mdc.idx1]) > DELTA_Z
+                || fabs(mdc.x[mdc.idx2]) > DELTA_X || fabs(mdc.y[mdc.idx2]) > DELTA_Y || fabs(mdc.z[mdc.idx2]) > DELTA_Z
           ) return StatusCode::SUCCESS;
         /*  calculate angles of high energy tracks */
         double tmp = ph[0].mag()*ph[1].mag()<=0 ? -10 : (ph[0].dot(ph[1]))/(ph[0].mag()*ph[1].mag());
