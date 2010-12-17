@@ -261,7 +261,7 @@ StatusCode JPsi::execute()
         std::cout << "proceed event " << event_proceed << std::endl;
     }
     event_proceed++;
-    if(event_proceed<45000) return StatusCode::SUCCESS;
+    if(event_proceed<51861) return StatusCode::SUCCESS;
     cout << "Proceeding event # " << event_proceed << endl;
 
     /*  Get information about reconstructed events */
@@ -584,8 +584,7 @@ void JPsi::InitData(long nchtrack, long nneutrack)
     // emc information init.
     emc.ntrack=0;
     emc.Etotal=0;
-    emc.ntrack=nneutrack;
-    for(int i=0;i<nneutrack;i++)
+    for(int i=0;i<MAX_TRACK_NUMBER;i++)
     {
         emc.status[i]=-1000;
         emc.ncrstl[i]=-1000;
