@@ -261,9 +261,6 @@ StatusCode JPsi::execute()
 		std::cout << "proceed event " << event_proceed << std::endl;
 	}
 	event_proceed++;
-  if(event_proceed<84000) return StatusCode::SUCCESS;
-  cout << event_proceed << endl;
-
 
 	/*  Get information about reconstructed events */
   SmartDataPtr<EvtRecEvent> evtRecEvent(eventSvc(), EventModel::EvtRec::EvtRecEvent);
@@ -285,7 +282,6 @@ StatusCode JPsi::execute()
     bool ispt100=true;
 		for(int i = 0; i < evtRecEvent->totalCharged(); i++)
 		{
-      cout << "charged track #" <<  i << endl;
 			EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + i;
       mdc.ntrack=i+1;
 			if(!(*itTrk)->isMdcTrackValid()) continue; 
@@ -319,7 +315,6 @@ StatusCode JPsi::execute()
       mdc.isemc[i]=(*itTrk)->isEmcShowerValid();
       if(mdc.isemc[i]) 
       {
-        cout << "Hit emc" << endl;
         mdc.nemc++;//increase number of emc clasters
         RecEmcShower *emcTrk = (*itTrk)->emcShower(); //Electro Magnet Calorimeer
 
@@ -390,20 +385,17 @@ StatusCode JPsi::execute()
 
     /* Use data at least two charged track with signal in EMC */
     if(mdc.nemc<2) return StatusCode::SUCCESS;
-    cout << "idx1=" << mdc.idx1 << " idx2=" << mdc.idx2 << endl;
 
 		//Two tracks from interaction points. The same condion for BhaBha and for multihadron
 		if( USE_IPCUT 
         && fabs(mdc.x[mdc.idx1]) > DELTA_X && fabs(mdc.y[mdc.idx1]) > DELTA_Y && fabs(mdc.z[mdc.idx1]) > DELTA_Z
         && fabs(mdc.x[mdc.idx2]) > DELTA_X && fabs(mdc.y[mdc.idx2]) > DELTA_Y && fabs(mdc.z[mdc.idx2]) > DELTA_Z
         ) return StatusCode::SUCCESS;
-    cout << "Before hp_cos " << endl;
 		/*  calculate angles of high energy tracks */
 		double tmp = ph[0].mag()*ph[1].mag()<=0 ? -10 : (ph[0].dot(ph[1]))/(ph[0].mag()*ph[1].mag());
 		mdc.hp_cos=tmp;
 
 
-    cout << "Before sphericity" << endl;
 		//normalize sphericity tensor
 		for(int i=0;i<3;i++)
 			for(int j=0;j<3;j++)
@@ -421,20 +413,14 @@ StatusCode JPsi::execute()
 			exit(1);
 		}
 
-    cout << "Before neutral" << endl;
     /*  fill data for neutral tracks */
     emc.ntrack=0;
-    cout << "After emc.ntrack" << endl;
     int track=0; //index for neutral tracks
-    cout << "Before Etotal" << endl;
     emc.Etotal=0;
-    cout << "Before cycle over neutral" << endl;
     for(int idx = evtRecEvent->totalCharged(); idx<evtRecEvent->totalTracks(); idx++, track++)
     {
-      cout << "neuetarl track = " << track << endl;
       EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + track;
       emc.ntrack=track+1;
-      cout << "Before shower valid" << endl;
       if(!(*itTrk)->isEmcShowerValid()) continue;
       RecEmcShower *emcTrk = (*itTrk)->emcShower();
       emc.status[track] = emcTrk->status();
@@ -452,9 +438,7 @@ StatusCode JPsi::execute()
     }
 
 
-    cout << "After emc " << endl;
     m_nchtr=evtRecEvent->totalCharged();
-    cout << "After m_nchtr " << endl;
     m_nneutr=evtRecEvent->totalNeutral();
     m_ntrack=evtRecEvent->totalCharged()+evtRecEvent->totalNeutral();
     m_Etotal = emc.Etotal+mdc.Emdc;
@@ -463,7 +447,6 @@ StatusCode JPsi::execute()
 
 
 
-    cout << "Before write" << endl;
 		/* now fill the data */
 		main_tuple->write();
 		dedx_tuple->write();
@@ -478,11 +461,9 @@ StatusCode JPsi::execute()
 		// big angles, two neutral track,  no charged.
 		if(evtRecEvent->totalNeutral()==2 && evtRecEvent->totalCharged()==0)
 		{
-      cout << "Hit gg EMC" << endl;
 			double r[2];
 			for(int track = 0; track<evtRecEvent->totalNeutral(); track++)
 			{
-        cout << "gg neutrk " << track;
 				gg_nntrk=track+1;
 				EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + track;
 				if((*itTrk)->isEmcShowerValid())
