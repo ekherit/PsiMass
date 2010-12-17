@@ -261,16 +261,15 @@ StatusCode JPsi::execute()
         std::cout << "proceed event " << event_proceed << std::endl;
     }
     event_proceed++;
-    if(event_proceed<51861) return StatusCode::SUCCESS;
-    cout << "Proceeding event # " << event_proceed << endl;
+    //DEBUG code
+    //if(event_proceed<51861) return StatusCode::SUCCESS;
+    //cout << "Proceeding event # " << event_proceed << endl;
 
     /*  Get information about reconstructed events */
     SmartDataPtr<EvtRecEvent> evtRecEvent(eventSvc(), EventModel::EvtRec::EvtRecEvent);
     SmartDataPtr<EvtRecTrackCol> evtRecTrkCol(eventSvc(),  EventModel::EvtRec::EvtRecTrackCol);
 
-    cout << "Before Init data" << endl;
     InitData(evtRecEvent->totalCharged(), evtRecEvent->totalNeutral());
-    cout << "After Init data" << endl;
 
     /************    Multihadron event and BhaBha selection ****************/
     /*  the selection is based on charged tracks */
@@ -421,10 +420,9 @@ StatusCode JPsi::execute()
         emc.ntrack=evtRecEvent->totalNeutral();
         int track=0; //index for neutral tracks
         emc.Etotal=0;
-        cout << event_proceed << " ncharged=" << evtRecEvent->totalCharged() << " nneutral=" << evtRecEvent->totalNeutral() << endl;
-        for(int idx = evtRecEvent->totalCharged(); idx<evtRecEvent->totalTracks(); idx++, track++)
+        //cout << event_proceed << " ncharged=" << evtRecEvent->totalCharged() << " nneutral=" << evtRecEvent->totalNeutral() << endl;
+        for(int idx = evtRecEvent->totalCharged(); idx<evtRecEvent->totalTracks() && track<MAX_TRACK_NUMBER; idx++, track++)
         {
-            cout << "idx = " << idx << " track=" << track << endl;
             EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + track;
             //emc.ntrack=track+1;
             if(!(*itTrk)->isEmcShowerValid()) continue;
@@ -443,7 +441,6 @@ StatusCode JPsi::execute()
             emc.Etotal+=emcTrk->energy();
         }
 
-        cout << "After ECM hit" << endl;
 
         m_nchtr=evtRecEvent->totalCharged();
         m_nneutr=evtRecEvent->totalNeutral();
@@ -451,17 +448,12 @@ StatusCode JPsi::execute()
         m_Etotal = emc.Etotal+mdc.Emdc;
         m_Eemc = emc.Etotal+mdc.Eemc;
         m_time = eventHeader->time();
-        cout << "Before tuple write" << endl;
 
         /* now fill the data */
         main_tuple->write();
-        cout << "Before dedx tuple write" << endl;
         dedx_tuple->write();
-        cout << "Before mdc tuple write" << endl;
         mdc_tuple->write();
-        cout << "Before emc tuple write" << endl;
         emc_tuple->write();
-        cout << "After emc tuple write" << endl;
         event_write++;
     }
     else 
@@ -471,7 +463,6 @@ StatusCode JPsi::execute()
         // big angles, two neutral track,  no charged.
         if(evtRecEvent->totalNeutral()==2 && evtRecEvent->totalCharged()==0)
         {
-            cout << "Hit gg" << endl;
             double r[2];
             for(int track = 0; track<evtRecEvent->totalNeutral(); track++)
             {
