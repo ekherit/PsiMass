@@ -281,7 +281,6 @@ StatusCode JPsi::execute()
     bool ispt100=true;
 		for(int i = 0; i < evtRecEvent->totalCharged(); i++)
 		{
-      cout << "Track number " << i << endl;
 			EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + i;
       mdc.ntrack=i+1;
 			if(!(*itTrk)->isMdcTrackValid()) continue; 
