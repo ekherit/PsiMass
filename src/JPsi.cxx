@@ -261,7 +261,7 @@ StatusCode JPsi::execute()
 		std::cout << "proceed event " << event_proceed << std::endl;
 	}
 
-  if(event_proceed<78000) return StatusCode::SUCCESS;
+  if(event<78000) return StatusCode::SUCCESS;
 
 	/*  Get information about reconstructed events */
   SmartDataPtr<EvtRecEvent> evtRecEvent(eventSvc(), EventModel::EvtRec::EvtRecEvent);
