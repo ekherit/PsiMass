@@ -261,6 +261,7 @@ StatusCode JPsi::execute()
 		std::cout << "proceed event " << event_proceed << std::endl;
 	}
 	event_proceed++;
+	if(event_proceed<45000) return StatusCode::SUCCESS;
 
 	/*  Get information about reconstructed events */
   SmartDataPtr<EvtRecEvent> evtRecEvent(eventSvc(), EventModel::EvtRec::EvtRecEvent);
@@ -417,8 +418,10 @@ StatusCode JPsi::execute()
     emc.ntrack=0;
     int track=0; //index for neutral tracks
     emc.Etotal=0;
+	cout << event_proceed << " ncharged=" << evtRecEvent->totalCharged() << " nneutral=" << evtRecEvent->totalNeutral() << endl;
     for(int idx = evtRecEvent->totalCharged(); idx<evtRecEvent->totalTracks(); idx++, track++)
     {
+	cout << "idx = " << idx << " track=" << track << endl;
       EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + track;
       emc.ntrack=track+1;
       if(!(*itTrk)->isEmcShowerValid()) continue;
