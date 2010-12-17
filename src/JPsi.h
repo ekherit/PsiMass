@@ -83,7 +83,7 @@ class JPsi : public Algorithm
     NTuple::Item<double> Eemc; //total energy using emc
     NTuple::Item<double> Emdc; //total energy using only mdc
     NTuple::Item<double> S; //Sphericity
-    //NTuple::Item<long>   idx1, idx2; //Highest energy tracks indexes
+    NTuple::Item<long>    nhp; //number of high energy tracks.
     NTuple::Array<long> hpidx; //index for two high energy track.
     NTuple::Array<double> hpipr; //interaction point distance for two high energy track
     NTuple::Item<double> hpcos; //cos angle beween highest energy tracks

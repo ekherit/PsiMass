@@ -124,8 +124,9 @@ StatusCode JPsi::initialize(void)
             status = mdc_tuple->addItem ("Eemc", mdc.Eemc);
             status = mdc_tuple->addItem ("nemc", mdc.nemc);
             status = mdc_tuple->addItem ("nip", mdc.nip);
-            status = mdc_tuple->addIndexedItem ("hpidx", 2, mdc.hpidx);
-            status = mdc_tuple->addIndexedItem ("hpipr", 2, mdc.hpipr);
+            status = mdc_tuple->addItem ("nhp", mdc.nhp, 0, MAX_TRACK_NUMBER);
+            status = mdc_tuple->addIndexedItem ("hpidx", mdc.nhp, mdc.hpidx);
+            status = mdc_tuple->addIndexedItem ("hpipr", mdc.nhp, mdc.hpipr);
             status = mdc_tuple->addItem ("hpcos", mdc.hpcos);
             status = mdc_tuple->addItem ("pt50", mdc.pt50);
             status = mdc_tuple->addItem ("pt100", mdc.pt100);
@@ -338,6 +339,7 @@ StatusCode JPsi::execute()
 
 
                 /* find two high energy track */
+                mdc.nhp = 2;
                 if(emcTrk->energy() >= Eh[0])
                 {
                     //if we'v found energy more then highest finded energy
@@ -394,7 +396,7 @@ StatusCode JPsi::execute()
         if(mdc.nemc<2) return StatusCode::SUCCESS;
 
         //Two tracks from interaction points. The same condion for BhaBha and for multihadron
-        for(int i=0;i<2;i++)
+        for(int i=0;i<mdc.nhp;i++)
         {
             mdc.hpipr[i] = sqrt(sq(mdc.x[mdc.hpidx[i]]-0.1)+sq(mdc.y[mdc.hpidx[i]]+0.1));
             if(USE_IPCUT && mdc.hpipr[i]> IPR) return StatusCode::SUCCESS;
@@ -522,17 +524,15 @@ void JPsi::InitData(long nchtrack, long nneutrack)
     mdc.Eemc=0;
     mdc.Emdc=0;
     mdc.S=0;
-    for(int i=0;i<2;i++)
-    {
-        mdc.hpidx[i]=-1000;
-        mdc.hpipr[i]=-1000;
-    }
     mdc.hpcos=-1000;
+    mdc.nhp=-1000;
     mdc.pt50=-1000;
     mdc.pt100=-1000;
     mdc.ntrack=0;
     for(int i=0;i<MAX_TRACK_NUMBER; i++)
     {
+        mdc.hpidx[i]=-1000;
+        mdc.hpipr[i]=-1000;
         mdc.p[i]=-1000;
         mdc.px[i]=-1000;
         mdc.py[i]=-1000;
