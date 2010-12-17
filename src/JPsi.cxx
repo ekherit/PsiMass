@@ -384,6 +384,7 @@ StatusCode JPsi::execute()
 
     /* Use data at least two charged track with signal in EMC */
     if(mdc.nemc<2) return StatusCode::SUCCESS;
+    cout << "idx1=" << mdc.idx1 << " idx2=" << mdc.idx2 << endl;
 
 		//Two tracks from interaction points. The same condion for BhaBha and for multihadron
 		if( USE_IPCUT 
