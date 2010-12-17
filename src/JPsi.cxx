@@ -261,7 +261,8 @@ StatusCode JPsi::execute()
 		std::cout << "proceed event " << event_proceed << std::endl;
 	}
 	event_proceed++;
-  if(event_proceed<70000) return StatusCode::SUCCESS;
+  if(event_proceed<84000) return StatusCode::SUCCESS;
+  cout << event_proceed << endl;
 
 
 	/*  Get information about reconstructed events */
@@ -284,7 +285,7 @@ StatusCode JPsi::execute()
     bool ispt100=true;
 		for(int i = 0; i < evtRecEvent->totalCharged(); i++)
 		{
-      cout << "tarck i" << endl;
+      cout << "charged track #" <<  i << endl;
 			EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + i;
       mdc.ntrack=i+1;
 			if(!(*itTrk)->isMdcTrackValid()) continue; 
@@ -381,7 +382,7 @@ StatusCode JPsi::execute()
     mdc.pt50 = ispt50;
     mdc.pt100 = ispt100;
 
-    /* Use data with only two charged track with signal in EMC */
+    /* Use data at least two charged track with signal in EMC */
     if(mdc.nemc<2) return StatusCode::SUCCESS;
 
 		//Two tracks from interaction points. The same condion for BhaBha and for multihadron
@@ -460,9 +461,11 @@ StatusCode JPsi::execute()
 		// big angles, two neutral track,  no charged.
 		if(evtRecEvent->totalNeutral()==2 && evtRecEvent->totalCharged()==0)
 		{
+      cout << "Hit gg EMC" << endl;
 			double r[2];
 			for(int track = 0; track<evtRecEvent->totalNeutral(); track++)
 			{
+        cout << "gg neutrk " << track;
 				gg_nntrk=track+1;
 				EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + track;
 				if((*itTrk)->isEmcShowerValid())
@@ -504,7 +507,6 @@ StatusCode JPsi::finalize()
 
 void JPsi::InitData(long nchtrack, long nneutrack)
 {
-  cout << "Init data" << endl;
   m_ntrack=nchtrack+nneutrack;
 	m_nchtr=nchtrack;
 	m_nneutr=nneutrack;
