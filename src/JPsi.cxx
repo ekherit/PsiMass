@@ -347,8 +347,6 @@ StatusCode JPsi::execute()
         }
       }
 
-      /* Use data with only two charged track with signal in EMC */
-      if(mdc.nemc<2) return StatusCode::SUCCESS;
 
       /* Check muon system information for this track */
       mdc.ismu[i]=(*itTrk)->isMucTrackValid();
@@ -374,6 +372,9 @@ StatusCode JPsi::execute()
         m_pid[i]=dedxTrk->particleId();
 			}
 		}
+
+    /* Use data with only two charged track with signal in EMC */
+    if(mdc.nemc<2) return StatusCode::SUCCESS;
 
 		//Two tracks from interaction points. The same condion for BhaBha and for multihadron
 		if( USE_IPCUT 
