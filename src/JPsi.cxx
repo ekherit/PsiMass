@@ -436,7 +436,7 @@ StatusCode JPsi::execute()
         //cout << event_proceed << " ncharged=" << evtRecEvent->totalCharged() << " nneutral=" << evtRecEvent->totalNeutral() << endl;
         for(int idx = evtRecEvent->totalCharged(); idx<evtRecEvent->totalTracks() && track<MAX_TRACK_NUMBER; idx++, track++)
         {
-            EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + track;
+            EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + idx;
             if(!(*itTrk)->isEmcShowerValid()) continue;
             RecEmcShower *emcTrk = (*itTrk)->emcShower();
             emc.status[track] = emcTrk->status();
