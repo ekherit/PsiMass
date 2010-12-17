@@ -127,7 +127,9 @@ StatusCode JPsi::initialize(void)
             status = mdc_tuple->addItem ("nhp", mdc.nhp, 0, MAX_TRACK_NUMBER);
             status = mdc_tuple->addIndexedItem ("hpidx", mdc.nhp, mdc.hpidx);
             status = mdc_tuple->addIndexedItem ("hpipr", mdc.nhp, mdc.hpipr);
+            status = mdc_tuple->addIndexedItem ("hpipz", mdc.nhp, mdc.hpipz);
             status = mdc_tuple->addItem ("hpcos", mdc.hpcos);
+            status = mdc_tuple->addItem ("hpip", mdc.hpip);
             status = mdc_tuple->addItem ("pt50", mdc.pt50);
             status = mdc_tuple->addItem ("pt100", mdc.pt100);
             status = mdc_tuple->addIndexedItem ("p", mdc.ntrack, mdc.p);
@@ -399,8 +401,12 @@ StatusCode JPsi::execute()
         for(int i=0;i<mdc.nhp;i++)
         {
             mdc.hpipr[i] = sqrt(sq(mdc.x[mdc.hpidx[i]]-0.1)+sq(mdc.y[mdc.hpidx[i]]+0.1));
-            if(USE_IPCUT && mdc.hpipr[i]> IPR) return StatusCode::SUCCESS;
+            mdc.hpipz[i] = mdc.z[mdc.hpidx[i]];
+            if(USE_IPCUT && ( mdc.hpipr[i]> IPR || mdc.hpipz[i] > DELTA_Z) ) return StatusCode::SUCCESS;
         }
+
+        bool ishpip =  mdc.hpipr[0]<0.2 && mdc.hpipz[0] < 3 && mdc.hpipr[1]<0.2 && mdc.hpipz[1] < 3 ;
+        mdc.hpip =ishpip;
 
         double tmp = ph[0].mag()*ph[1].mag()<=0 ? -10 : (ph[0].dot(ph[1]))/(ph[0].mag()*ph[1].mag());
         mdc.hpcos=tmp;
@@ -528,11 +534,13 @@ void JPsi::InitData(long nchtrack, long nneutrack)
     mdc.nhp=-1000;
     mdc.pt50=-1000;
     mdc.pt100=-1000;
+    mdc.hpip=-1000;
     mdc.ntrack=0;
     for(int i=0;i<MAX_TRACK_NUMBER; i++)
     {
         mdc.hpidx[i]=-1000;
         mdc.hpipr[i]=-1000;
+        mdc.hpipz[i]=-1000;
         mdc.p[i]=-1000;
         mdc.px[i]=-1000;
         mdc.py[i]=-1000;

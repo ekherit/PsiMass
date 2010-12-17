@@ -86,9 +86,11 @@ class JPsi : public Algorithm
     NTuple::Item<long>    nhp; //number of high energy tracks.
     NTuple::Array<long> hpidx; //index for two high energy track.
     NTuple::Array<double> hpipr; //interaction point distance for two high energy track
+    NTuple::Array<double> hpipz; //interaction point z for two high energy track
     NTuple::Item<double> hpcos; //cos angle beween highest energy tracks
     NTuple::Item<long>   pt50; //flag for higher 50 MeV pt
     NTuple::Item<long>   pt100;//flag for higher 100 MeV pt.
+    NTuple::Item<long>   hpip; //flag for strict ip cut
   };
 
   /* ElecroMagnetic Calorimeter Information */
