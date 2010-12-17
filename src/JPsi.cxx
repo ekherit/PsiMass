@@ -261,6 +261,8 @@ StatusCode JPsi::execute()
 		std::cout << "proceed event " << event_proceed << std::endl;
 	}
 
+  if(event_proceed<78000) return StatusCode::SUCCESS;
+
 	/*  Get information about reconstructed events */
   SmartDataPtr<EvtRecEvent> evtRecEvent(eventSvc(), EventModel::EvtRec::EvtRecEvent);
   SmartDataPtr<EvtRecTrackCol> evtRecTrkCol(eventSvc(),  EventModel::EvtRec::EvtRecTrackCol);
@@ -281,6 +283,7 @@ StatusCode JPsi::execute()
     bool ispt100=true;
 		for(int i = 0; i < evtRecEvent->totalCharged(); i++)
 		{
+      cout << "tarck i" << endl;
 			EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + i;
       mdc.ntrack=i+1;
 			if(!(*itTrk)->isMdcTrackValid()) continue; 
@@ -314,6 +317,7 @@ StatusCode JPsi::execute()
       mdc.isemc[i]=(*itTrk)->isEmcShowerValid();
       if(mdc.isemc[i]) 
       {
+        cout << "Hit emc" << endl;
         mdc.nemc++;//increase number of emc clasters
         RecEmcShower *emcTrk = (*itTrk)->emcShower(); //Electro Magnet Calorimeer
 
@@ -500,6 +504,7 @@ StatusCode JPsi::finalize()
 
 void JPsi::InitData(long nchtrack, long nneutrack)
 {
+  cout << "Init data" << endl;
   m_ntrack=nchtrack+nneutrack;
 	m_nchtr=nchtrack;
 	m_nneutr=nneutrack;
@@ -516,7 +521,7 @@ void JPsi::InitData(long nchtrack, long nneutrack)
   mdc.hp_cos=-1000;
   mdc.pt50=-1000;
   mdc.pt100=-1000;
-  //mdc.ntrack=nchtrack;
+  mdc.ntrack=0;
   for(int i=0;i<MAX_TRACK_NUMBER; i++)
   {
     mdc.p[i]=-1000;
@@ -566,7 +571,7 @@ void JPsi::InitData(long nchtrack, long nneutrack)
 			S[i][j]=0;
 
   // emc information init.
-  //emc.ntrack=nneutrack;
+  emc.ntrack=0;
   emc.Etotal=0;
   for(int i=0;i<MAX_TRACK_NUMBER;i++)
   {
