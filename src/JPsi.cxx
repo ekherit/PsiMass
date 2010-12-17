@@ -397,12 +397,13 @@ StatusCode JPsi::execute()
         && fabs(mdc.x[mdc.idx1]) > DELTA_X && fabs(mdc.y[mdc.idx1]) > DELTA_Y && fabs(mdc.z[mdc.idx1]) > DELTA_Z
         && fabs(mdc.x[mdc.idx2]) > DELTA_X && fabs(mdc.y[mdc.idx2]) > DELTA_Y && fabs(mdc.z[mdc.idx2]) > DELTA_Z
         ) return StatusCode::SUCCESS;
-
+    cout << "Before hp_cos " << endl;
 		/*  calculate angles of high energy tracks */
 		double tmp = ph[0].mag()*ph[1].mag()<=0 ? -10 : (ph[0].dot(ph[1]))/(ph[0].mag()*ph[1].mag());
 		mdc.hp_cos=tmp;
 
 
+    cout << "Before sphericity" << endl;
 		//normalize sphericity tensor
 		for(int i=0;i<3;i++)
 			for(int j=0;j<3;j++)
@@ -420,12 +421,14 @@ StatusCode JPsi::execute()
 			exit(1);
 		}
 
+    cout << "Before neutral" << endl;
     /*  fill data for neutral tracks */
     emc.ntrack=0;
     int track=0; //index for neutral tracks
     emc.Etotal=0;
     for(int idx = evtRecEvent->totalCharged(); idx<evtRecEvent->totalTracks(); ++idx, ++track)
     {
+      cout << "neuetarl track = " << track;
       EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + track;
       emc.ntrack=track+1;
       if(!(*itTrk)->isEmcShowerValid()) continue;
@@ -445,6 +448,7 @@ StatusCode JPsi::execute()
     }
 
 
+    cout << "After emc " << endl;
     m_nchtr=evtRecEvent->totalCharged();
     m_nneutr=evtRecEvent->totalNeutral();
     m_ntrack=evtRecEvent->totalCharged()+evtRecEvent->totalNeutral();
@@ -454,6 +458,7 @@ StatusCode JPsi::execute()
 
 
 
+    cout << "Before write" << endl;
 		/* now fill the data */
 		main_tuple->write();
 		dedx_tuple->write();
