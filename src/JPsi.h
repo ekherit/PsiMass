@@ -84,6 +84,8 @@ class JPsi : public Algorithm
     NTuple::Item<double> S; //Sphericity
     NTuple::Item<long>   idx1, idx2; //Highest energy tracks indexes
     NTuple::Item<double> hp_cos; //cos angle beween highest energy tracks
+    NTuple::Item<long>   pt50; //flag for higher 50 MeV pt
+    NTuple::Item<long>   pt100;//flag for higher 100 MeV pt.
   };
 
   /* ElecroMagnetic Calorimeter Information */

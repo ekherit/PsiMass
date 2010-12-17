@@ -124,6 +124,8 @@ StatusCode JPsi::initialize(void)
       status = mdc_tuple->addItem ("idx1", mdc.idx1);
       status = mdc_tuple->addItem ("idx2", mdc.idx2);
       status = mdc_tuple->addItem ("hp_cos", mdc.hp_cos);
+      status = mdc_tuple->addItem ("pt50", mdc.pt50);
+      status = mdc_tuple->addItem ("pt100", mdc.p5100);
       status = mdc_tuple->addIndexedItem ("p", mdc.ntrack, mdc.p);
       status = mdc_tuple->addIndexedItem ("pt", mdc.ntrack, mdc.pt);
       status = mdc_tuple->addIndexedItem ("px", mdc.ntrack, mdc.px);
@@ -256,12 +258,8 @@ StatusCode JPsi::execute()
   time_t t=eventHeader->time();
 	if(event_proceed%1000==0)
 	{
-		log << MSG::DEBUG <<"run, evtnum = "
-			<< runNo << " , "
-			<< event <<endreq;
 		std::cout << "proceed event " << event_proceed << std::endl;
 	}
-  std::cout << "proceed event " << event_proceed << std::endl;
 
 	/*  Get information about reconstructed events */
   SmartDataPtr<EvtRecEvent> evtRecEvent(eventSvc(), EventModel::EvtRec::EvtRecEvent);
@@ -279,7 +277,8 @@ StatusCode JPsi::execute()
 		/*  loop over charged track */
     //mdc.ntrack=evtRecEvent->totalCharged();
     mdc.ntrack=0;
-    cout << "charged tracks: " <<  evtRecEvent->totalCharged();
+    bool ispt50=true;
+    bool ispt100=true;
 		for(int i = 0; i < evtRecEvent->totalCharged(); i++)
 		{
       cout << "Track number " << i << endl;
@@ -289,6 +288,8 @@ StatusCode JPsi::execute()
 			RecMdcTrack *mdcTrk = (*itTrk)->mdcTrack();  //main drift chambe
 			mdc.p[i]=mdcTrk->p();
       mdc.pt[i]=mdcTrk->p()*sin(mdcTrk->theta());
+      ispt50 = ispt50 && mdc.pt[i]>0.05;
+      spt100 = ispt100 && mdc.pt[i]>0.1;
 			mdc.px[i]=mdcTrk->px();
 			mdc.py[i]=mdcTrk->py();
 			mdc.pz[i]=mdcTrk->pz();
@@ -372,6 +373,9 @@ StatusCode JPsi::execute()
         m_pid[i]=dedxTrk->particleId();
 			}
 		}
+
+    mdc.pt50 = ispt50;
+    mdc.pt100 = ispt100;
 
     /* Use data with only two charged track with signal in EMC */
     if(mdc.nemc<2) return StatusCode::SUCCESS;
@@ -511,6 +515,8 @@ void JPsi::InitData(long nchtrack, long nneutrack)
   mdc.idx1=-1000;
   mdc.idx2=-1000;
   mdc.hp_cos=-1000;
+  mdc.pt50=-1000;
+  mdc.pt100=-1000;
   //mdc.ntrack=nchtrack;
   for(int i=0;i<MAX_TRACK_NUMBER; i++)
   {
@@ -579,15 +585,15 @@ void JPsi::InitData(long nchtrack, long nneutrack)
   }
 	for(int i=0; i<2;i++)
 	{
-		gg_x [i]=-9999;
-		gg_y [i]=-9999;
-		gg_z [i]=-9999;
-		gg_theta [i]=-9999;
-		gg_phi [i]=-9999;
-		gg_E [i]=-9999;
-		gg_dE [i]=-9999;
-		gg_module [i]=-9999;
-		gg_n[i]=-9999;
+		gg_x [i]=-1000;
+		gg_y [i]=-1000;
+		gg_z [i]=-1000;
+		gg_theta [i]=-1000;
+		gg_phi [i]=-1000;
+		gg_E [i]=-1000;
+		gg_dE [i]=-1000;
+		gg_module [i]=-1000;
+		gg_n[i]=-1000;
 	}
 }
 // for particle id look /ihepbatch/bes/alex/workarea/Analysis/Physics/PsiPrime/G2MuMuAlg-00-00-01/PipiJpsiAlg/src
