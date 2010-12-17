@@ -592,7 +592,8 @@ void JPsi::InitData(long nchtrack, long nneutrack)
   // emc information init.
   emc.ntrack=0;
   emc.Etotal=0;
-  for(int i=0;i<MAX_TRACK_NUMBER;i++)
+  emc.ntrack=nneutrack;
+  for(int i=0;i<nneutrack;i++)
   {
     emc.status[i]=-1000;
     emc.ncrstl[i]=-1000;
