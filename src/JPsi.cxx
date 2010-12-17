@@ -431,7 +431,7 @@ StatusCode JPsi::execute()
     cout << "Before cycle over neutral" << endl;
     for(int idx = evtRecEvent->totalCharged(); idx<evtRecEvent->totalTracks(); idx++, track++)
     {
-      cout << "neuetarl track = " << track;
+      cout << "neuetarl track = " << track << endl;
       EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + track;
       emc.ntrack=track+1;
       cout << "Before shower valid" << endl;
