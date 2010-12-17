@@ -289,7 +289,7 @@ StatusCode JPsi::execute()
 			mdc.p[i]=mdcTrk->p();
       mdc.pt[i]=mdcTrk->p()*sin(mdcTrk->theta());
       ispt50 = ispt50 && mdc.pt[i]>0.05;
-      spt100 = ispt100 && mdc.pt[i]>0.1;
+      ispt100 = ispt100 && mdc.pt[i]>0.1;
 			mdc.px[i]=mdcTrk->px();
 			mdc.py[i]=mdcTrk->py();
 			mdc.pz[i]=mdcTrk->pz();
