@@ -262,12 +262,15 @@ StatusCode JPsi::execute()
     }
     event_proceed++;
     if(event_proceed<45000) return StatusCode::SUCCESS;
+    cout << "Proceeding event # " << event_proceed << endl;
 
     /*  Get information about reconstructed events */
     SmartDataPtr<EvtRecEvent> evtRecEvent(eventSvc(), EventModel::EvtRec::EvtRecEvent);
     SmartDataPtr<EvtRecTrackCol> evtRecTrkCol(eventSvc(),  EventModel::EvtRec::EvtRecTrackCol);
 
+    cout << "Before Init data" << endl;
     InitData(evtRecEvent->totalCharged(), evtRecEvent->totalNeutral());
+    cout << "After Init data" << endl;
 
     /************    Multihadron event and BhaBha selection ****************/
     /*  the selection is based on charged tracks */
@@ -458,6 +461,7 @@ StatusCode JPsi::execute()
         mdc_tuple->write();
         cout << "Before emc tuple write" << endl;
         emc_tuple->write();
+        cout << "After emc tuple write" << endl;
         event_write++;
     }
     else 
@@ -467,6 +471,7 @@ StatusCode JPsi::execute()
         // big angles, two neutral track,  no charged.
         if(evtRecEvent->totalNeutral()==2 && evtRecEvent->totalCharged()==0)
         {
+            cout << "Hit gg" << endl;
             double r[2];
             for(int track = 0; track<evtRecEvent->totalNeutral(); track++)
             {
