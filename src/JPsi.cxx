@@ -372,6 +372,7 @@ StatusCode JPsi::execute()
             /* dEdx information */
             if(prop_check_dedx == 1 && (*itTrk)->isMdcDedxValid())
             {
+		trdedx_idx=i+1;
                 RecMdcDedx* dedxTrk = (*itTrk)->mdcDedx();
                 m_chie[i] = dedxTrk->chiE();
                 m_chimu[i] = dedxTrk->chiMu();
