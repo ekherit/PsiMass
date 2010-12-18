@@ -75,7 +75,8 @@ class JPsi : public Algorithm
     NTuple::Array<long> module;
     NTuple::Array<double> E,dE;
     NTuple::Array<double> M;
-    NTuple::Array<double> ismu; //has muon track information
+    NTuple::Array<long> ismu; //has muon track information
+    NTuple::Array<long> istof; //has tof track information
     /*  Additional section */
     NTuple::Array<double> X, Y, Z; //pivot 
     NTuple::Item<long>   nemc; //Number of clusters in calorimeter
@@ -136,6 +137,61 @@ class JPsi : public Algorithm
   };
   NTuple::Tuple * dedx_tuple;
   DEDX_t dedx;
+
+
+  struct TOF_t
+  {
+	  NTuple::Item<long> ntrack; //number of tracks
+	  NTuple::Array<long>  trackID; //track id 
+	  NTuple::Array<long>  tofID; //TOF counter ID
+	  NTuple::Array<long>  tofTrackID; //Cluster (Group of TOF Hits) ID
+	  NTuple::Array<long>  status; //Raw/Readout/Counter/TrackEnd/Layer/Barrel
+	  NTuple::Array<double>  path;   //distance of flight
+	  NTuple::Array<double>  zrhit;  //hit position , for barrel, it is z, for endcap, it is r
+	  NTuple::Array<double>  ph;     //Pulse height (adc) unit: channel
+	  NTuple::Array<double>  tof;    //Time of flight, unit: to be determined
+	  NTuple::Array<double>  errtof; //Error of time of flight
+	  NTuple::Array<double>  beta;   //Beta value of the particle
+	  NTuple::Array<double>  texpe;  //Expected time of flight. electron 2 pion, 3 kaon, 4 proton
+	  NTuple::Array<double>  texpmu; //Expected time of flight muon
+	  NTuple::Array<double>  texppi; //Expected time of fligh pion
+	  NTuple::Array<double>  texpK;  //Expected time of fligh Kaon
+	  NTuple::Array<double>  texpp;  //Expected time of fligh proton
+	  NTuple::Array<double>  tofsete; //Time offset of electron
+	  NTuple::Array<double>  tofsetmu;//Time offset of muon
+	  NTuple::Array<double>  tofsetpi;//Time offset of pion
+	  NTuple::Array<double>  tofsetK; //Time offset of kaon
+	  NTuple::Array<double>  tofsetp; //Time offset of proton
+	  NTuple::Array<double>  tofsetap;//Time offset of anti proton
+	  NTuple::Array<double>  sigmae;  //Time resolution(sigma) of electron
+	  NTuple::Array<double>  sigmamu; //Time resolution(sigma) of muon
+	  NTuple::Array<double>  sigmapi; //Time resolution(sigma) of pion
+	  NTuple::Array<double>  sigmaK;  //Time resolution(sigma) of kaon
+	  NTuple::Array<double>  sigmap;  //Time resolution(sigma) of proton
+	  NTuple::Array<double>  sigmaap; //Time resolution(sigma) of antiproton
+	  NTuple::Array<long>    quality; 
+	  /* Data quality of reconstruction.
+0: ZT-ZTDC didnot match
+1: good charged track
+2: neutral track with good hit
+3: no hit in counter
+4: two hits in counter
+5: more than two hits in counter
+6: only single end output of one layer
+7: two hits in counter with bad match with ZTDC
+10: initialize
+	   */
+	  NTuple::Array<double> t0;   //Event start time
+	  NTuple::Array<double> errt0;//Error of event start time
+	  NTuple::Array<double> errz; //Error of hit position (for neutral track)
+	  NTuple::Array<double> phi;  //Hit position, phi angle (barrel) (for neutral track)
+	  NTuple::Array<double> errphi; //Error of hit position phi
+	  NTuple::Array<double> E;      //Energy deposit in TOF (for neutral track)
+	  NTuple::Array<double> errE;   //error of Energy deposit in TOF (for neutral track)
+  }
+
+  NTuple::Tuple * tof_tuple;
+  TOF_t dedx;
 
   void InitData(long number_charged_track, long number_neutral_track);
   TMatrixD S; //sphericity tensor
