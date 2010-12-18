@@ -102,10 +102,9 @@ struct RunInfo_t
 
 void make_result(void)
 {
-  const char * signal_cut = "Sum$(E)>-100 && nchtrk>2  &&  S>0.05  && Etotal<2.5";
-  //const char * bhabha_cut = "Sum$(E)>-100 && nchtrk==2 &&  S<0.05  && Etotal>2.5 && abs(cos(theta))>0.88";
-  const char * bhabha_cut = "Sum$(E)>-100 && nchtrk==2 &&  S<0.05  && Etotal>2.5 &&  sin(theta[0])<0.45 && sin(theta[1])<0.45";
-  const char * gg_cut =     "Sum$(E)>-100 && Etotal > 3 && Etotal < 4  && abs(z[1]+z[0])< 1 && abs(x[1]+x[0]-2.5)<5 && abs(y[1]+y[0]) < 5";
+  const char * signal_cut = "nemc>2  && S>0.05 && hpip && pt50";
+  const char * bhabha_cut = "nemc==2 && S<0.05 && hpip && pt50";
+  const char * gg_cut =     "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<3 && abs(Sum$(z))<9";
   list<RunInfo_t> runinfo;
   runinfo.push_back(RunInfo_t());
   runinfo.push_back(RunInfo_t(20334,	8352	,15402	,314	,852	,2219	  ,0.00795939	  ,68.8556	,26.137));
@@ -180,6 +179,10 @@ void make_result(void)
     if(file.IsOpen())
     {
       TTree * mhadr = (TTree*)file.Get("mhadr");
+      TTree * mdc = (TTree*)file.Get("mdc");
+      TTree * emc = (TTree*)file.Get("emc");
+      mhadr->AddFriend(mdc);
+      mhadr->AddFriend(emc);
       TTree * gg = (TTree*)file.Get("gg");
       mhadr->Draw("Etotal",signal_cut,"goff");
       unsigned Nsignal = mhadr->GetSelectedRows();
