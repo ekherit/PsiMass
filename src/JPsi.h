@@ -115,26 +115,30 @@ class JPsi : public Algorithm
   EMC_t emc;
 
 
+  struct DeDx_t
+  {
+	  NTuple::Item<long> ntrack;
+	  NTuple::Array<long>   pid; //particle id (dedx)
+	  NTuple::Array<double> chie; //chi2_dEdx for electron
+	  NTuple::Array<double> chimu;//chi2_dEdx for muon
+	  NTuple::Array<double> chipi;//chi2_dEdx pion
+	  NTuple::Array<double> chik; //chi2_dEdx kaon
+	  NTuple::Array<double> chip; //chi2_dEdx proton
+	  NTuple::Array<double> ghit; //number of good de/dx hits (excluding overflow)
+	  NTuple::Array<double> thit; //nuber of total de/dx including overflow
+	  NTuple::Array<double> probPH; //most probable pulse height from trucated mean 
+	  NTuple::Array<double> normPH; //normalized pulse height
+	  NTuple::Array<double> e; //dedx for electron
+	  NTuple::Array<double> mu; //muon
+	  NTuple::Array<double> pi; //pion
+	  NTuple::Array<double> K; //Kaon
+	  NTuple::Array<double> p; //proton
+  };
+  NTuple::Tuple * dedx_tuple;
+  Dedx_t dedx;
 
-	NTuple::Tuple * dedx_tuple;
-  NTuple::Item<long> trdedx_idx;
-  NTuple::Array<long> m_pid; //particle id (dedx)
-	NTuple::Array<double> m_chie; //chi2_dEdx for electron
-	NTuple::Array<double> m_chimu;//chi2_dEdx for muon
-	NTuple::Array<double> m_chipi;//chi2_dEdx pion
-	NTuple::Array<double> m_chik; //chi2_dEdx kaon
-	NTuple::Array<double> m_chip; //chi2_dEdx proton
-	NTuple::Array<double> m_ghit; //number of good de/dx hits (excluding overflow)
-	NTuple::Array<double> m_thit; //nuber of total de/dx including overflow
-  NTuple::Array<double> m_probPH; //most probable pulse height from trucated mean 
-  NTuple::Array<double> m_normPH; //normalized pulse height
-  NTuple::Array<double> m_dedx_e; //dedx for electron
-  NTuple::Array<double> m_dedx_mu; //muon
-  NTuple::Array<double> m_dedx_pi; //pion
-  NTuple::Array<double> m_dedx_K; //Kaon
-  NTuple::Array<double> m_dedx_p; //proton
-	void InitData(long number_charged_track, long number_neutral_track);
-	TMatrixD S; //sphericity tensor
+  void InitData(long number_charged_track, long number_neutral_track);
+  TMatrixD S; //sphericity tensor
 
 	//gamma-gamma annihilation selection
 	long gg_event_writed;

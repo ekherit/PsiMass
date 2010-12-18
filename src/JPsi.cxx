@@ -201,22 +201,22 @@ StatusCode JPsi::initialize(void)
         dedx_tuple = ntupleSvc()->book("FILE1/dedx", CLID_ColumnWiseTuple, "dedx information");
         if(dedx_tuple)
         {
-            status = dedx_tuple->addItem ("nchtr", trdedx_idx, 0, MAX_TRACK_NUMBER);
-            status = dedx_tuple->addIndexedItem ("pid", trdedx_idx, m_pid );
-            status = dedx_tuple->addIndexedItem ("chie", trdedx_idx, m_chie );
-            status = dedx_tuple->addIndexedItem ("chimu",trdedx_idx, m_chimu );
-            status = dedx_tuple->addIndexedItem ("chipi", trdedx_idx, m_chipi );
-            status = dedx_tuple->addIndexedItem ("chik", trdedx_idx, m_chik );
-            status = dedx_tuple->addIndexedItem ("chip", trdedx_idx, m_chip );
-            status = dedx_tuple->addIndexedItem ("ghit", trdedx_idx, m_ghit );
-            status = dedx_tuple->addIndexedItem ("thit", trdedx_idx, m_thit );
-            status = dedx_tuple->addIndexedItem ("probPH", trdedx_idx, m_probPH );
-            status = dedx_tuple->addIndexedItem ("normPH", trdedx_idx, m_normPH );
-            status = dedx_tuple->addIndexedItem ("dedx_e", trdedx_idx, m_dedx_e );
-            status = dedx_tuple->addIndexedItem ("dedx_mu", trdedx_idx, m_dedx_mu );
-            status = dedx_tuple->addIndexedItem ("dedx_pi", trdedx_idx, m_dedx_pi );
-            status = dedx_tuple->addIndexedItem ("dedx_K", trdedx_idx, m_dedx_K );
-            status = dedx_tuple->addIndexedItem ("dedx_p", trdedx_idx, m_dedx_p );
+            status = dedx_tuple->addItem ("dedx.ntrack", dedx.ntrack, 0, MAX_TRACK_NUMBER);
+            status = dedx_tuple->addIndexedItem ("pid", dedx.ntrack, dedx.pid );
+            status = dedx_tuple->addIndexedItem ("chie", dedx.ntrack, dedx.chie );
+            status = dedx_tuple->addIndexedItem ("chimu",dedx.ntrack, dedx.chimu );
+            status = dedx_tuple->addIndexedItem ("chipi", dedx.ntrack, dedx.chipi );
+            status = dedx_tuple->addIndexedItem ("chik", dedx.ntrack, dedx.chik );
+            status = dedx_tuple->addIndexedItem ("chip", dedx.ntrack, dedx.chip );
+            status = dedx_tuple->addIndexedItem ("ghit", dedx.ntrack, dedx.ghit );
+            status = dedx_tuple->addIndexedItem ("thit", dedx.ntrack, dedx.thit );
+            status = dedx_tuple->addIndexedItem ("probPH", dedx.ntrack, dedx.probPH );
+            status = dedx_tuple->addIndexedItem ("normPH", dedx.ntrack, dedx.normPH );
+            status = dedx_tuple->addIndexedItem ("dedx_e", dedx.ntrack, dedx.e );
+            status = dedx_tuple->addIndexedItem ("dedx_mu", dedx.ntrack, dedx.mu );
+            status = dedx_tuple->addIndexedItem ("dedx_pi", dedx.ntrack, dedx.pi );
+            status = dedx_tuple->addIndexedItem ("dedx_K", dedx.ntrack, dedx.K );
+            status = dedx_tuple->addIndexedItem ("dedx_p", dedx.ntrack, dedx.p );
         }
         else
         {
@@ -224,6 +224,7 @@ StatusCode JPsi::initialize(void)
             return StatusCode::FAILURE;
         }
     }
+
     NTuplePtr nt_gg(ntupleSvc(), "FILE1/gg");
     if(nt_gg) gg_tuple=nt_gg;
     else
@@ -372,23 +373,23 @@ StatusCode JPsi::execute()
             /* dEdx information */
             if(prop_check_dedx == 1 && (*itTrk)->isMdcDedxValid())
             {
-		trdedx_idx=i+1;
+		dedx.ntrack=i+1;
                 RecMdcDedx* dedxTrk = (*itTrk)->mdcDedx();
-                m_chie[i] = dedxTrk->chiE();
-                m_chimu[i] = dedxTrk->chiMu();
-                m_chipi[i] = dedxTrk->chiPi();
-                m_chik[i] = dedxTrk->chiK();
-                m_chip[i] = dedxTrk->chiP();
-                m_ghit[i] = dedxTrk->numGoodHits();
-                m_thit[i] = dedxTrk->numTotalHits();
-                m_probPH[i] = dedxTrk->probPH();
-                m_normPH[i] = dedxTrk->normPH();
-                m_dedx_e[i] = dedxTrk->getDedxExpect(0);
-                m_dedx_mu[i] = dedxTrk->getDedxExpect(1);
-                m_dedx_pi[i] = dedxTrk->getDedxExpect(2);
-                m_dedx_K[i] = dedxTrk->getDedxExpect(3);
-                m_dedx_p[i] = dedxTrk->getDedxExpect(4);
-                m_pid[i]=dedxTrk->particleId();
+                dedx.chie[i] = dedxTrk->chiE();
+                dedx.chimu[i] = dedxTrk->chiMu();
+                dedx.chipi[i] = dedxTrk->chiPi();
+                dedx.chik[i] = dedxTrk->chiK();
+                dedx.chip[i] = dedxTrk->chiP();
+                dedx.ghit[i] = dedxTrk->numGoodHits();
+                dedx.thit[i] = dedxTrk->numTotalHits();
+                dedx.probPH[i] = dedxTrk->probPH();
+                dedx.normPH[i] = dedxTrk->normPH();
+                dedx.e[i] = dedxTrk->getDedxExpect(0);
+                dedx.mu[i] = dedxTrk->getDedxExpect(1);
+                dedx.pi[i] = dedxTrk->getDedxExpect(2);
+                dedx.K[i] = dedxTrk->getDedxExpect(3);
+                dedx.p[i] = dedxTrk->getDedxExpect(4);
+                dedx.pid[i]=dedxTrk->particleId();
             }
         }
 
@@ -567,21 +568,21 @@ void JPsi::InitData(long nchtrack, long nneutrack)
         mdc.Z[i]=-1000;
 
         //dedx information
-        m_pid[i]=-1000;
-        m_chie[i] = -1000;
-        m_chimu[i] = -1000;
-        m_chipi[i] = -1000;
-        m_chik[i] = -1000;
-        m_chip[i] = -1000;
-        m_ghit[i] = -1000;
-        m_thit[i] = -1000;
-        m_probPH[i] = -1000;
-        m_normPH[i] = -1000;
-        m_dedx_e[i]=-1000;
-        m_dedx_mu[i]=-1000;
-        m_dedx_pi[i]=-1000;
-        m_dedx_K[i]=-1000;
-        m_dedx_p[i]=-1000;
+        dedx.pid[i]=-1000;
+        dedx.chie[i] = -1000;
+        dedx.chimu[i] = -1000;
+        dedx.chipi[i] = -1000;
+        dedx.chik[i] = -1000;
+        dedx.chip[i] = -1000;
+        dedx.ghit[i] = -1000;
+        dedx.thit[i] = -1000;
+        dedx.probPH[i] = -1000;
+        dedx.normPH[i] = -1000;
+        dedx.e[i]=-1000;
+        dedx.mu[i]=-1000;
+        dedx.pi[i]=-1000;
+        dedx.K[i]=-1000;
+        dedx.p[i]=-1000;
     }
     //sphericity initialization
     for(int i=0;i<3;i++)
