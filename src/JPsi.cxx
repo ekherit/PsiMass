@@ -226,8 +226,8 @@ StatusCode JPsi::initialize(void)
         }
     }
 
-    NTuplePtr nt2(ntupleSvc(), "FILE1/tof");
-    if(nt2) tof_tuple=nt2;
+    NTuplePtr nt_tof(ntupleSvc(), "FILE1/tof");
+    if(nt_tof) tof_tuple=nt2;
     else
     {
         tof_tuple = ntupleSvc()->book("FILE1/tof", CLID_ColumnWiseTuple, "tof information");
@@ -249,12 +249,12 @@ StatusCode JPsi::initialize(void)
             status = tof_tuple->addIndexedItem ("texppi", tof.ntrack, tof.texppi);
             status = tof_tuple->addIndexedItem ("texpK", tof.ntrack, tof.texpK);
             status = tof_tuple->addIndexedItem ("texpp", tof.ntrack, tof.texpp);
-            status = tof_tuple->addIndexedItem ("tofsete", tof.ntrack, tof.tofsete);
-            status = tof_tuple->addIndexedItem ("tofsetmu", tof.ntrack, tof.tofsetmu);
-            status = tof_tuple->addIndexedItem ("tofsetpi", tof.ntrack, tof.tofsetpi);
-            status = tof_tuple->addIndexedItem ("tofsetK", tof.ntrack, tof.tofsetK);
-            status = tof_tuple->addIndexedItem ("tofsetp", tof.ntrack, tof.tofsetp);
-            status = tof_tuple->addIndexedItem ("tofsetap", tof.ntrack, tof.tofsetap);
+            status = tof_tuple->addIndexedItem ("toffsete", tof.ntrack, tof.toffsete);
+            status = tof_tuple->addIndexedItem ("toffsetmu", tof.ntrack, tof.toffsetmu);
+            status = tof_tuple->addIndexedItem ("toffsetpi", tof.ntrack, tof.toffsetpi);
+            status = tof_tuple->addIndexedItem ("toffsetK", tof.ntrack, tof.toffsetK);
+            status = tof_tuple->addIndexedItem ("toffsetp", tof.ntrack, tof.toffsetp);
+            status = tof_tuple->addIndexedItem ("toffsetap", tof.ntrack, tof.toffsetap);
             status = tof_tuple->addIndexedItem ("sigmae", tof.ntrack, tof.sigmae);
             status = tof_tuple->addIndexedItem ("sigmamu", tof.ntrack, tof.sigmamu);
             status = tof_tuple->addIndexedItem ("sigmapi", tof.ntrack, tof.sigmapi);
@@ -464,12 +464,12 @@ StatusCode JPsi::execute()
               	tof.texppi[i]  = tofTrk->texpPion();
               	tof.texpK[i]  = tofTrk->texpKaon();
               	tof.texpp[i]  = tofTrk->texpProton();
-              	tof.tofsete[i]  = tofTrk->tofsetElectron();
-              	tof.tofsetmu[i]  = tofTrk->tofsetMuon();
-              	tof.tofsetpi[i]  = tofTrk->tofsetPion();
-              	tof.tofsetK[i]  = tofTrk->tofsetKaon();
-              	tof.tofsetp[i]  = tofTrk->tofsetProton();
-              	tof.tofsetap[i]  = tofTrk->tofsetAntiProton();
+              	tof.toffsete[i]  = tofTrk->toffsetElectron();
+              	tof.toffsetmu[i]  = tofTrk->toffsetMuon();
+              	tof.toffsetpi[i]  = tofTrk->toffsetPion();
+              	tof.toffsetK[i]  = tofTrk->toffsetKaon();
+              	tof.toffsetp[i]  = tofTrk->toffsetProton();
+              	tof.toffsetap[i]  = tofTrk->toffsetAntiProton();
               	tof.sigmae[i]  = tofTrk->sigmaElectron();
               	tof.sigmamu[i]  = tofTrk->sigmaMuon();
               	tof.sigmapi[i]  = tofTrk->sigmaPion();
@@ -713,12 +713,12 @@ void JPsi::InitData(long nchtrack, long nneutrack)
 	tof.texppi[i]  =-1000;
 	tof.texpK[i]  =-1000;
 	tof.texpp[i]  =-1000;
-	tof.tofsete[i]  =-1000;
-	tof.tofsetmu[i]  =-1000;
-	tof.tofsetpi[i]  =-1000;
-	tof.tofsetK[i]  =-1000;
-	tof.tofsetp[i]  =-1000;
-	tof.tofsetap[i]  =-1000;
+	tof.toffsete[i]  =-1000;
+	tof.toffsetmu[i]  =-1000;
+	tof.toffsetpi[i]  =-1000;
+	tof.toffsetK[i]  =-1000;
+	tof.toffsetp[i]  =-1000;
+	tof.toffsetap[i]  =-1000;
 	tof.sigmae[i]  =-1000;
 	tof.sigmamu[i]  =-1000;
 	tof.sigmapi[i]  =-1000;

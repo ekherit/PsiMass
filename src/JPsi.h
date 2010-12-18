@@ -157,12 +157,12 @@ class JPsi : public Algorithm
 	  NTuple::Array<double>  texppi; //Expected time of fligh pion
 	  NTuple::Array<double>  texpK;  //Expected time of fligh Kaon
 	  NTuple::Array<double>  texpp;  //Expected time of fligh proton
-	  NTuple::Array<double>  tofsete; //Time offset of electron
-	  NTuple::Array<double>  tofsetmu;//Time offset of muon
-	  NTuple::Array<double>  tofsetpi;//Time offset of pion
-	  NTuple::Array<double>  tofsetK; //Time offset of kaon
-	  NTuple::Array<double>  tofsetp; //Time offset of proton
-	  NTuple::Array<double>  tofsetap;//Time offset of anti proton
+	  NTuple::Array<double>  toffsete; //Time offset of electron
+	  NTuple::Array<double>  toffsetmu;//Time offset of muon
+	  NTuple::Array<double>  toffsetpi;//Time offset of pion
+	  NTuple::Array<double>  toffsetK; //Time offset of kaon
+	  NTuple::Array<double>  toffsetp; //Time offset of proton
+	  NTuple::Array<double>  toffsetap;//Time offset of anti proton
 	  NTuple::Array<double>  sigmae;  //Time resolution(sigma) of electron
 	  NTuple::Array<double>  sigmamu; //Time resolution(sigma) of muon
 	  NTuple::Array<double>  sigmapi; //Time resolution(sigma) of pion
@@ -188,10 +188,10 @@ class JPsi : public Algorithm
 	  NTuple::Array<double> errphi; //Error of hit position phi
 	  NTuple::Array<double> E;      //Energy deposit in TOF (for neutral track)
 	  NTuple::Array<double> errE;   //error of Energy deposit in TOF (for neutral track)
-  }
+  };
 
   NTuple::Tuple * tof_tuple;
-  TOF_t dedx;
+  TOF_t tof;
 
   void InitData(long number_charged_track, long number_neutral_track);
   TMatrixD S; //sphericity tensor
