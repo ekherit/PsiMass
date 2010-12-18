@@ -447,7 +447,7 @@ StatusCode JPsi::execute()
 	    mdc.istof[i]=(*itTrk)->isTofTrackValid();
 	    if(mdc.istof[i])
 	    {
-                RecTofTrack* tofTrk = (*itTrk)->tofTrack();
+                SmartRefVector<RecTofTrack> tofTrk = (*itTrk)->tofTrack();
 		tof.ntrack=i+1;
 		tof.trackID[i]=tofTrk->trackID();
 		tof.tofID[i]=tofTrk->tofID();
