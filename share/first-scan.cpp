@@ -26,6 +26,8 @@
 #include <list>
 #include <vector>
 #include <iostream>
+#include <strstream>
+#include <fstream>
 using namespace std;
 
 #include "first-scan.h"
@@ -43,7 +45,7 @@ TTree * get_tree(const char * file)
 }
 struct ScanPoint_t
 {
-  list <int> runs; //list of runs
+  list <unsigned> runs; //list of runs
   double lum;
   double E;
   double Eerror;
@@ -102,8 +104,9 @@ struct RunInfo_t
 
 void make_result(void)
 {
-  const char * signal_cut = "nemc>2  && S>0.05 && hpip && pt50";
-  const char * bhabha_cut = "nemc==2 && S<0.05 && hpip && pt50";
+  const char * signal_cut = "nemc>2  && S>0.05  && pt100 && Eemc<2.5 && Emdc<4";
+  //const char * bhabha_cut = "nemc==2 && S<0.05 && hpip && pt50 && sin(theta[0])<0.45 && sin(theta[1])<0.45 && Emdc<5 && Eemc>2.5";
+  const char * bhabha_cut = "nemc==2 && S<0.05  && pt100 && sin(theta[0])<0.54 && sin(theta[1])<0.54 && Emdc<5 && Eemc>2.5";
   const char * gg_cut =     "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<3 && abs(Sum$(z))<9";
   list<RunInfo_t> runinfo;
   runinfo.push_back(RunInfo_t());
@@ -156,11 +159,10 @@ void make_result(void)
   cout << setw(10) << "Run #" << setw(20) << "Multihadron" << setw(20) << "Bhabha" << setw(20) << "GammaGamma" << endl;
 
   //reset luminosity in order to fill it from runinfo table.
-  for(int point=0;point<pv.size();++point)
+  for(unsigned point=0;point<pv.size();++point)
   {
     pv[point].lum=0;
-    bool found=false;
-    for(list<int>::iterator i=pv[point].runs.begin();i!=pv[point].runs.end(); ++i)
+    for(list<unsigned>::iterator i=pv[point].runs.begin();i!=pv[point].runs.end(); ++i)
     {
       for(list<RunInfo_t>::iterator ri=runinfo.begin(); ri!=runinfo.end(); ++ri)
       {
@@ -195,7 +197,7 @@ void make_result(void)
       for(unsigned pn=0; pn<13; pn++)
       {
         bool found=false;
-        for(list<int>::iterator i=pv[pn].runs.begin();i!=pv[pn].runs.end(); ++i)
+        for(list<unsigned>::iterator i=pv[pn].runs.begin();i!=pv[pn].runs.end(); ++i)
         {
           if(*i==run) found=true;
         }
@@ -212,13 +214,22 @@ void make_result(void)
   cout.precision(8);
   cout << setw(3) << "#point" << setw(20) << "lum, nb^-1" << setw(20) << "energy, MeV" << setw(20)  << "error, MeV" << setw(20) << "signal (mhadr)" << setw(20) << "bhabha" << setw(20) << "gamma-gamma" << endl;
   TGraphErrors * result_g = new TGraphErrors;
+  ofstream scan1("scan1.txt");
+  ofstream scan2("scan2.txt");
+  ofstream scan12("scan12.txt");
   for(unsigned i=0; i<pv.size(); i++)
   {
-    cout << setw(3) << pv[i].pn << setw(20) << pv[i].lum  << 
+    ostrstream os;
+    os << setw(3) << pv[i].pn << setw(20) << pv[i].lum  << 
       setw(20)<< pv[i].E   << setw(20) << pv[i].Eerror << 
       setw(20)<< pv[i].Nh  << 
       setw(20)<< pv[i].Nee <<
-      setw(20)<< pv[i].Ngg << endl;
+      setw(20)<< pv[i].Ngg << endl << ends;
+    cout << os.str();
+    scan12 << os.str();
+    if(i<6) scan1 << os.str();
+    else scan2 << os.str();
+    
     result_g->SetPoint(i,pv[i].E, double(pv[i].Nh)/pv[i].Nee);
     result_g->SetPointError(i,pv[i].Eerror, 0);
   }
