@@ -115,7 +115,7 @@ class JPsi : public Algorithm
   EMC_t emc;
 
 
-  struct DeDx_t
+  struct DEDX_t
   {
 	  NTuple::Item<long> ntrack;
 	  NTuple::Array<long>   pid; //particle id (dedx)
@@ -135,7 +135,7 @@ class JPsi : public Algorithm
 	  NTuple::Array<double> p; //proton
   };
   NTuple::Tuple * dedx_tuple;
-  Dedx_t dedx;
+  DEDX_t dedx;
 
   void InitData(long number_charged_track, long number_neutral_track);
   TMatrixD S; //sphericity tensor
