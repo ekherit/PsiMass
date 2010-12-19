@@ -447,11 +447,8 @@ StatusCode JPsi::execute()
 	    mdc.istof[i]=(*itTrk)->isTofTrackValid();
 	    if(mdc.istof[i])
 	    {
-		cout << "Hit tof" << endl;
 		SmartRefVector<RecTofTrack> tofTrkCol = (*itTrk)->tofTrack();
-		cout << "Before tofTrk" << endl;
 		SmartRefVector<RecTofTrack>::iterator tofTrk = tofTrkCol.begin();
-		cout << "Before init" << endl;
 	        tof.ntrack=i+1;
 	        tof.trackID[i]=(*tofTrk)->trackID();
 	        tof.tofID[i]=(*tofTrk)->tofID();
@@ -487,7 +484,6 @@ StatusCode JPsi::execute()
               	tof.E[i]  = (*tofTrk)->energy();
               	tof.errE[i]  = (*tofTrk)->errenergy();
 	    }
-		cout << "After tof trk hit" << endl;
         }
 
         mdc.pt50 = ispt50;
@@ -704,7 +700,6 @@ void JPsi::InitData(long nchtrack, long nneutrack)
         emc.z[i]=-1000;
         emc.theta[i]=-1000;
         emc.phi[i]=-1000;
-	cout << "Init tof " << endl;
 	tof.trackID[i]=-1000;
 	tof.tofID[i]=-1000;
 	tof.tofTrackID[i]=-1000;
