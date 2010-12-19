@@ -226,56 +226,57 @@ StatusCode JPsi::initialize(void)
         }
     }
 
-    NTuplePtr nt_tof(ntupleSvc(), "FILE1/tof");
-    if(nt_tof) tof_tuple=nt2;
-    else
-    {
-        tof_tuple = ntupleSvc()->book("FILE1/tof", CLID_ColumnWiseTuple, "tof information");
-        if(tof_tuple)
-        {
-            status = tof_tuple->addItem ("tof.ntrack", tof.ntrack, 0, MAX_TRACK_NUMBER);
-            status = tof_tuple->addIndexedItem ("trackID", tof.ntrack, tof.trackID );
-            status = tof_tuple->addIndexedItem ("tofID", tof.ntrack, tof.tofID);
-            status = tof_tuple->addIndexedItem ("tofTrackID", tof.ntrack, tof.tofTrackID);
-            status = tof_tuple->addIndexedItem ("status", tof.ntrack, tof.status);
-            status = tof_tuple->addIndexedItem ("path", tof.ntrack, tof.path);
-            status = tof_tuple->addIndexedItem ("zrhit", tof.ntrack, tof.zrhit);
-            status = tof_tuple->addIndexedItem ("ph", tof.ntrack, tof.ph);
-            status = tof_tuple->addIndexedItem ("tof", tof.ntrack, tof.tof);
-            status = tof_tuple->addIndexedItem ("errtof", tof.ntrack, tof.errtof);
-            status = tof_tuple->addIndexedItem ("beta", tof.ntrack, tof.beta);
-            status = tof_tuple->addIndexedItem ("texpe", tof.ntrack, tof.texpe);
-            status = tof_tuple->addIndexedItem ("texpmu", tof.ntrack, tof.texpmu);
-            status = tof_tuple->addIndexedItem ("texppi", tof.ntrack, tof.texppi);
-            status = tof_tuple->addIndexedItem ("texpK", tof.ntrack, tof.texpK);
-            status = tof_tuple->addIndexedItem ("texpp", tof.ntrack, tof.texpp);
-            status = tof_tuple->addIndexedItem ("toffsete", tof.ntrack, tof.toffsete);
-            status = tof_tuple->addIndexedItem ("toffsetmu", tof.ntrack, tof.toffsetmu);
-            status = tof_tuple->addIndexedItem ("toffsetpi", tof.ntrack, tof.toffsetpi);
-            status = tof_tuple->addIndexedItem ("toffsetK", tof.ntrack, tof.toffsetK);
-            status = tof_tuple->addIndexedItem ("toffsetp", tof.ntrack, tof.toffsetp);
-            status = tof_tuple->addIndexedItem ("toffsetap", tof.ntrack, tof.toffsetap);
-            status = tof_tuple->addIndexedItem ("sigmae", tof.ntrack, tof.sigmae);
-            status = tof_tuple->addIndexedItem ("sigmamu", tof.ntrack, tof.sigmamu);
-            status = tof_tuple->addIndexedItem ("sigmapi", tof.ntrack, tof.sigmapi);
-            status = tof_tuple->addIndexedItem ("sigmaK", tof.ntrack, tof.sigmaK);
-            status = tof_tuple->addIndexedItem ("sigmap", tof.ntrack, tof.sigmap);
-            status = tof_tuple->addIndexedItem ("sigmaap", tof.ntrack, tof.sigmaap);
-            status = tof_tuple->addIndexedItem ("quality", tof.ntrack, tof.quality);
-            status = tof_tuple->addIndexedItem ("t0", tof.ntrack, tof.t0);
-            status = tof_tuple->addIndexedItem ("errt0", tof.ntrack, tof.errt0);
-            status = tof_tuple->addIndexedItem ("errz", tof.ntrack, tof.errz);
-            status = tof_tuple->addIndexedItem ("phi", tof.ntrack, tof.phi);
-            status = tof_tuple->addIndexedItem ("errphi", tof.ntrack, tof.errphi);
-            status = tof_tuple->addIndexedItem ("E", tof.ntrack, tof.E);
-            status = tof_tuple->addIndexedItem ("errE", tof.ntrack, tof.errE);
-        }
-        else
-        {
-            log << MSG::ERROR << "    Cannot book N-tuple:" << long(tof_tuple) << endmsg;
-            return StatusCode::FAILURE;
-        }
-    }
+    //temporary remove
+    //NTuplePtr nt_tof(ntupleSvc(), "FILE1/tof");
+    //if(nt_tof) tof_tuple=nt2;
+    //else
+    //{
+    //    tof_tuple = ntupleSvc()->book("FILE1/tof", CLID_ColumnWiseTuple, "tof information");
+    //    if(tof_tuple)
+    //    {
+    //        status = tof_tuple->addItem ("tof.ntrack", tof.ntrack, 0, MAX_TRACK_NUMBER);
+    //        status = tof_tuple->addIndexedItem ("trackID", tof.ntrack, tof.trackID );
+    //        status = tof_tuple->addIndexedItem ("tofID", tof.ntrack, tof.tofID);
+    //        status = tof_tuple->addIndexedItem ("tofTrackID", tof.ntrack, tof.tofTrackID);
+    //        status = tof_tuple->addIndexedItem ("status", tof.ntrack, tof.status);
+    //        status = tof_tuple->addIndexedItem ("path", tof.ntrack, tof.path);
+    //        status = tof_tuple->addIndexedItem ("zrhit", tof.ntrack, tof.zrhit);
+    //        status = tof_tuple->addIndexedItem ("ph", tof.ntrack, tof.ph);
+    //        status = tof_tuple->addIndexedItem ("tof", tof.ntrack, tof.tof);
+    //        status = tof_tuple->addIndexedItem ("errtof", tof.ntrack, tof.errtof);
+    //        status = tof_tuple->addIndexedItem ("beta", tof.ntrack, tof.beta);
+    //        status = tof_tuple->addIndexedItem ("texpe", tof.ntrack, tof.texpe);
+    //        status = tof_tuple->addIndexedItem ("texpmu", tof.ntrack, tof.texpmu);
+    //        status = tof_tuple->addIndexedItem ("texppi", tof.ntrack, tof.texppi);
+    //        status = tof_tuple->addIndexedItem ("texpK", tof.ntrack, tof.texpK);
+    //        status = tof_tuple->addIndexedItem ("texpp", tof.ntrack, tof.texpp);
+    //        status = tof_tuple->addIndexedItem ("toffsete", tof.ntrack, tof.toffsete);
+    //        status = tof_tuple->addIndexedItem ("toffsetmu", tof.ntrack, tof.toffsetmu);
+    //        status = tof_tuple->addIndexedItem ("toffsetpi", tof.ntrack, tof.toffsetpi);
+    //        status = tof_tuple->addIndexedItem ("toffsetK", tof.ntrack, tof.toffsetK);
+    //        status = tof_tuple->addIndexedItem ("toffsetp", tof.ntrack, tof.toffsetp);
+    //        status = tof_tuple->addIndexedItem ("toffsetap", tof.ntrack, tof.toffsetap);
+    //        status = tof_tuple->addIndexedItem ("sigmae", tof.ntrack, tof.sigmae);
+    //        status = tof_tuple->addIndexedItem ("sigmamu", tof.ntrack, tof.sigmamu);
+    //        status = tof_tuple->addIndexedItem ("sigmapi", tof.ntrack, tof.sigmapi);
+    //        status = tof_tuple->addIndexedItem ("sigmaK", tof.ntrack, tof.sigmaK);
+    //        status = tof_tuple->addIndexedItem ("sigmap", tof.ntrack, tof.sigmap);
+    //        status = tof_tuple->addIndexedItem ("sigmaap", tof.ntrack, tof.sigmaap);
+    //        status = tof_tuple->addIndexedItem ("quality", tof.ntrack, tof.quality);
+    //        status = tof_tuple->addIndexedItem ("t0", tof.ntrack, tof.t0);
+    //        status = tof_tuple->addIndexedItem ("errt0", tof.ntrack, tof.errt0);
+    //        status = tof_tuple->addIndexedItem ("errz", tof.ntrack, tof.errz);
+    //        status = tof_tuple->addIndexedItem ("phi", tof.ntrack, tof.phi);
+    //        status = tof_tuple->addIndexedItem ("errphi", tof.ntrack, tof.errphi);
+    //        status = tof_tuple->addIndexedItem ("E", tof.ntrack, tof.E);
+    //        status = tof_tuple->addIndexedItem ("errE", tof.ntrack, tof.errE);
+    //    }
+    //    else
+    //    {
+    //        log << MSG::ERROR << "    Cannot book N-tuple:" << long(tof_tuple) << endmsg;
+    //        return StatusCode::FAILURE;
+    //    }
+    //}
 
     NTuplePtr nt_gg(ntupleSvc(), "FILE1/gg");
     if(nt_gg) gg_tuple=nt_gg;
@@ -444,45 +445,46 @@ StatusCode JPsi::execute()
                 dedx.pid[i]=dedxTrk->particleId();
             }
 	    //check tof information
-	    mdc.istof[i]=(*itTrk)->isTofTrackValid();
-	    if(mdc.istof[i])
-	    {
-                SmartRefVector<RecTofTrack> tofTrk = (*itTrk)->tofTrack();
-		tof.ntrack=i+1;
-		tof.trackID[i]=tofTrk->trackID();
-		tof.tofID[i]=tofTrk->tofID();
-              	tof.tofTrackID[i]=tofTrk->tofTrackID();
-              	tof.status[i] = tofTrk->status();
-              	tof.path[i]  = tofTrk->path();
-              	tof.zrhit[i]  = tofTrk->zrhit();
-              	tof.ph[i]  = tofTrk->ph();
-              	tof.tof[i]  = tofTrk->tof();
-              	tof.errtof[i]  = tofTrk->errtof();
-              	tof.beta[i]  = tofTrk->beta();
-              	tof.texpe[i]  = tofTrk->texpElectron();
-              	tof.texpmu[i]  = tofTrk->texpMuon();
-              	tof.texppi[i]  = tofTrk->texpPion();
-              	tof.texpK[i]  = tofTrk->texpKaon();
-              	tof.texpp[i]  = tofTrk->texpProton();
-              	tof.toffsete[i]  = tofTrk->toffsetElectron();
-              	tof.toffsetmu[i]  = tofTrk->toffsetMuon();
-              	tof.toffsetpi[i]  = tofTrk->toffsetPion();
-              	tof.toffsetK[i]  = tofTrk->toffsetKaon();
-              	tof.toffsetp[i]  = tofTrk->toffsetProton();
-              	tof.toffsetap[i]  = tofTrk->toffsetAntiProton();
-              	tof.sigmae[i]  = tofTrk->sigmaElectron();
-              	tof.sigmamu[i]  = tofTrk->sigmaMuon();
-              	tof.sigmapi[i]  = tofTrk->sigmaPion();
-              	tof.sigmaK[i]  = tofTrk->sigmaKaon();
-              	tof.sigmap[i]  = tofTrk->sigmaProton();
-              	tof.sigmaap[i]  = tofTrk->sigmaAntiProton();
-              	tof.t0[i]  = tofTrk->t0();
-              	tof.errt0[i]  = tofTrk->errt0();
-              	tof.errz[i]  = tofTrk->errz();
-              	tof.phi[i]  = tofTrk->phi();
-              	tof.E[i]  = tofTrk->energy();
-              	tof.errE[i]  = tofTrk->errenergy();
-	    }
+		//temporary remove
+	    //mdc.istof[i]=(*itTrk)->isTofTrackValid();
+	    //if(mdc.istof[i])
+	    //{
+            //    SmartRefVector<RecTofTrack> tofTrk = (*itTrk)->tofTrack();
+	    //    tof.ntrack=i+1;
+	    //    tof.trackID[i]=tofTrk->trackID();
+	    //    tof.tofID[i]=tofTrk->tofID();
+            //  	tof.tofTrackID[i]=tofTrk->tofTrackID();
+            //  	tof.status[i] = tofTrk->status();
+            //  	tof.path[i]  = tofTrk->path();
+            //  	tof.zrhit[i]  = tofTrk->zrhit();
+            //  	tof.ph[i]  = tofTrk->ph();
+            //  	tof.tof[i]  = tofTrk->tof();
+            //  	tof.errtof[i]  = tofTrk->errtof();
+            //  	tof.beta[i]  = tofTrk->beta();
+            //  	tof.texpe[i]  = tofTrk->texpElectron();
+            //  	tof.texpmu[i]  = tofTrk->texpMuon();
+            //  	tof.texppi[i]  = tofTrk->texpPion();
+            //  	tof.texpK[i]  = tofTrk->texpKaon();
+            //  	tof.texpp[i]  = tofTrk->texpProton();
+            //  	tof.toffsete[i]  = tofTrk->toffsetElectron();
+            //  	tof.toffsetmu[i]  = tofTrk->toffsetMuon();
+            //  	tof.toffsetpi[i]  = tofTrk->toffsetPion();
+            //  	tof.toffsetK[i]  = tofTrk->toffsetKaon();
+            //  	tof.toffsetp[i]  = tofTrk->toffsetProton();
+            //  	tof.toffsetap[i]  = tofTrk->toffsetAntiProton();
+            //  	tof.sigmae[i]  = tofTrk->sigmaElectron();
+            //  	tof.sigmamu[i]  = tofTrk->sigmaMuon();
+            //  	tof.sigmapi[i]  = tofTrk->sigmaPion();
+            //  	tof.sigmaK[i]  = tofTrk->sigmaKaon();
+            //  	tof.sigmap[i]  = tofTrk->sigmaProton();
+            //  	tof.sigmaap[i]  = tofTrk->sigmaAntiProton();
+            //  	tof.t0[i]  = tofTrk->t0();
+            //  	tof.errt0[i]  = tofTrk->errt0();
+            //  	tof.errz[i]  = tofTrk->errz();
+            //  	tof.phi[i]  = tofTrk->phi();
+            //  	tof.E[i]  = tofTrk->energy();
+            //  	tof.errE[i]  = tofTrk->errenergy();
+	    //}
         }
 
         mdc.pt50 = ispt50;
