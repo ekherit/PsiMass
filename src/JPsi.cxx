@@ -561,6 +561,7 @@ StatusCode JPsi::execute()
         dedx_tuple->write();
         mdc_tuple->write();
         emc_tuple->write();
+        tof_tuple->write();
         event_write++;
     }
     else 
