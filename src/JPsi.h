@@ -41,6 +41,7 @@ class JPsi : public Algorithm
 	private:
   int prop_check_dedx;
 	int USE_IPCUT; //use interection point cut
+	int CHECK_TOF; //use toff.
 	double IPR;
 	int IPTRACKS; //tracks number from interection point
 	int MIN_CHARGED_TRACKS; //minimum charged tracks in selection

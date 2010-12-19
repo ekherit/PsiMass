@@ -2,6 +2,7 @@
 ApplicationMgr.DLLs += {"JPsi"};
 ApplicationMgr.TopAlg += {"JPsi"};
 JPsi.CheckDedx = 1;
+JPsi.CHECK_TOF = 0;
 JPsi.DELTA_X=1.0;
 JPsi.DELTA_Y=1.0;
 JPsi.DELTA_Z=10.0;
