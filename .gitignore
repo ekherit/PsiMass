@@ -1,3 +1,5 @@
 i386_linux26
 *~
 *.swp
+*.o
+share/fit/fitscan
