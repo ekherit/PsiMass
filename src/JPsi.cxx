@@ -450,7 +450,7 @@ StatusCode JPsi::execute()
             }
 	    //check tof information
 	    mdc.istof[i]=(*itTrk)->isTofTrackValid();
-	    if(CHECK_TOFF && mdc.istof[i])
+	    if(CHECK_TOF && mdc.istof[i])
 	    {
 		SmartRefVector<RecTofTrack> tofTrkCol = (*itTrk)->tofTrack();
 		SmartRefVector<RecTofTrack>::iterator tofTrk = tofTrkCol.begin();
