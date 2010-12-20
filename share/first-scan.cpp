@@ -19,15 +19,18 @@
 #include <TCanvas.h>
 #include <TGraph.h>
 #include <TFile.h>
+#include <TH1F.h>
 #include <TGraphErrors.h>
+#include <TDirectory.h>
 
 #include <iomanip>
 #include <map>
 #include <list>
 #include <vector>
 #include <iostream>
-#include <strstream>
+#include <sstream>
 #include <fstream>
+#include "averager.h"
 using namespace std;
 
 #include "first-scan.h"
@@ -43,6 +46,8 @@ TTree * get_tree(const char * file)
   else
     return 0;
 }
+
+inline double sq(double x) {return  x*x; }
 struct ScanPoint_t
 {
   list <unsigned> runs; //list of runs
@@ -52,6 +57,7 @@ struct ScanPoint_t
   unsigned long Nh; //number of multihadron
   unsigned long Nee; //number of e+e- (bhabha)
   unsigned long Ngg;  //number of gamma gamma
+  ibn::averager<double> Nchtr, Nntr; //number of charged tracks and it rms
   unsigned pn;
   ScanPoint_t(void)
   {
@@ -190,6 +196,16 @@ void make_result(void)
       unsigned Nsignal = mhadr->GetSelectedRows();
       mhadr->Draw("Etotal",bhabha_cut,"goff");
       unsigned Nbhabha = mhadr->GetSelectedRows();
+      //draw  number of charged tracks
+      mhadr->Draw("mdc.ntrack>>hnchtr","","goff");
+      TH1F * hnchtr = (TH1F*)gDirectory->Get("hnchtr");
+      double nchtr=0, nntr=0, nchtr_rms=1, nntr_rms=1;
+      nchtr = hnchtr->GetMean();
+      nchtr_rms = hnchtr->GetRMS();
+      mhadr->Draw("emc.ntrack>>hnntr","","goff");
+      TH1F * hnntr = (TH1F*)gDirectory->Get("hnntr");
+      nntr = hnntr->GetMean();
+      nntr_rms = hnntr->GetRMS();
       gg->Draw("Etotal",gg_cut,"goff");
       unsigned Ngg = gg->GetSelectedRows();
       cout << setw(10) << run << setw(20) << Nsignal << setw(20)<< Nbhabha << setw(20)<< Ngg <<  setw(20)<< double(Nbhabha)/double(Ngg) << endl;
@@ -206,6 +222,8 @@ void make_result(void)
           pv[pn].Nh+=Nsignal;
           pv[pn].Nee+=Nbhabha;
           pv[pn].Ngg+=Ngg;
+	  pv[pn].Nchtr.add(nchtr,1./sq(nchtr_rms));
+	  pv[pn].Nntr.add(nntr,1./sq(nntr_rms));
         }
       }
     }
@@ -219,7 +237,7 @@ void make_result(void)
   ofstream scan12("scan12.txt");
   for(unsigned i=0; i<pv.size(); i++)
   {
-    ostrstream os;
+    ostringstream os;
     os << setw(3) << pv[i].pn << setw(20) << pv[i].lum  << 
       setw(20)<< pv[i].E   << setw(20) << pv[i].Eerror << 
       setw(20)<< pv[i].Nh  << 
