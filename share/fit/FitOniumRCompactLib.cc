@@ -169,8 +169,8 @@ return rI;
 Double_t K_FuncRInterfJPsi(Double_t W, Double_t* parf)
 {
       Double_t Bll=_BllJPsi;
-      Double_t  Rrat=2.5;
-      Double_t Ratio=Rrat*Bll/(1.-2.*Bll);      
+      Double_t  Rrat=2;
+      Double_t Ratio=Rrat*Bll/(1.-3.*Bll);      
       Double_t  Bhadr= parf[idBhadr];
       Double_t  beta=parf[idbeta];
       Double_t  M=parf[idM];
