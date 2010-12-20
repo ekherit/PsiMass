@@ -296,7 +296,7 @@ int main(int argc, char **argv)
       AP[Aind][AMHEv]=AllMH[i][MHNh];
       AP[Aind][AEE]=AllMH[i][MHNee];            
       if(arguments.NeeFlag==1){
-	AP[Aind][AEE]=AllMH[i][MHNgg];
+        AP[Aind][AEE]=AllMH[i][MHNgg];
       }     
       Aind++;
     }
@@ -405,6 +405,7 @@ int main(int argc, char **argv)
       NbbInScan[is]=Nbb[is];       
       ECorrBB=1./CrossSBhabhaPP(En[is],&arguments.CrBhabha);
       LumInScan[is]=NbbInScan[is]*ECorrBB;
+      //if(arguments.NeeFlag==1) LumInScan[is]*=9.54; //this is for gamma gamma luminocity
       LG+=TMath::Max(Le[is],Lp[is]);
       Lee+= LumInScan[is];
       cout<<"LumG:"<<Le[is]<<" Lp:"<<Lp[is]<<" LumInScan[is]:"<<LumInScan[is]<<endl;
@@ -540,6 +541,7 @@ int main(int argc, char **argv)
     }
       
   int nf=MinuitRes->GetNumFreePars();
+  if(FreeEnergyFit==1) nf-=NEp;
  
   cout<<"Minuit Mass= "<<3686.111+parRes[2]*2.<<endl;
   cout<<"parRes[2]*2.:"<<parRes[2]*2.<<endl;
@@ -575,7 +577,7 @@ int main(int argc, char **argv)
   TLatex*  latexM1=new TLatex();
   latexM1->SetTextSize(0.038);
   latexM1->SetTextColor(2);       
-  sprintf(Info1,"#\chi^{2}_{#\psi(2S)}=%3.3f/ (%d -%d) =%3.3f",MinChi2,NpPP,nf-NEp,MinChi2/(NpPP-nf+NEp)); 
+  sprintf(Info1,"#\chi^{2}_{#\psi(2S)}=%3.3f/ (%d -%d) =%3.3f",MinChi2,NpPP,nf,MinChi2/(NpPP-nf)); 
   double xx=1837*ScaleEGr;
   latexM1->DrawLatex(xx,100,Info1);
   sprintf(Info1,"#\delta M_{#\psi(2S)}=%3.3f#\pm%3.3f [MeV]",_MPsiPrime+parRes[2]*2.-3686.111,parErrRes[2]*2.);
