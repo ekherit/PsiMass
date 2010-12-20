@@ -20,8 +20,12 @@
 #include <TGraph.h>
 #include <TFile.h>
 #include <TH1F.h>
+#include <TF1.h>
 #include <TGraphErrors.h>
+#include <TMultiGraph.h>
 #include <TDirectory.h>
+#include <TStyle.h>
+#include <TLegend.h>
 
 #include <iomanip>
 #include <map>
@@ -111,9 +115,10 @@ struct RunInfo_t
 void make_result(void)
 {
   const char * signal_cut = "nemc>2  && S>0.05  && pt100 && Eemc<2.5 && Emdc<4";
-  //const char * bhabha_cut = "nemc==2 && S<0.05 && hpip && pt50 && sin(theta[0])<0.45 && sin(theta[1])<0.45 && Emdc<5 && Eemc>2.5";
-  const char * bhabha_cut = "nemc==2 && S<0.05  && pt100 && sin(theta[0])<0.54 && sin(theta[1])<0.54 && Emdc<5 && Eemc>2.5";
-  const char * gg_cut =     "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<3 && abs(Sum$(z))<9";
+  const char * bhabha_cut = "(nemc==2 || nemc==3)&& S<0.05  && pt50 && sin(theta[0])<0.45 && sin(theta[1])<0.45 && Emdc<5 && Eemc>2.5";
+  //const char * bhabha_cut = "(nemc==2 || nemc==3) && S<0.05  && pt50 && sin(theta[0])<0.5 && sin(theta[1])<0.5 && Emdc<5 && Eemc>2.5";
+  const char * gg_cut =     "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<6 && abs(Sum$(z))<9 && Sum$(theta>0.45)==2";
+  const char * mult_cut = "nemc>2";
   list<RunInfo_t> runinfo;
   runinfo.push_back(RunInfo_t());
   runinfo.push_back(RunInfo_t(20334,	8352	,15402	,314	,852	,2219	  ,0.00795939	  ,68.8556	,26.137));
@@ -200,12 +205,12 @@ void make_result(void)
       mhadr->Draw("mdc.ntrack>>hnchtr","","goff");
       TH1F * hnchtr = (TH1F*)gDirectory->Get("hnchtr");
       double nchtr=0, nntr=0, nchtr_rms=1, nntr_rms=1;
-      nchtr = hnchtr->GetMean();
-      nchtr_rms = hnchtr->GetRMS();
+      nchtr = hnchtr->GetMean(); //number of charged tracks
+      nchtr_rms = hnchtr->GetRMS(); //RMS of charged tracks.
       mhadr->Draw("emc.ntrack>>hnntr","","goff");
       TH1F * hnntr = (TH1F*)gDirectory->Get("hnntr");
-      nntr = hnntr->GetMean();
-      nntr_rms = hnntr->GetRMS();
+      nntr = hnntr->GetMean(); //number of neutral tracks
+      nntr_rms = hnntr->GetRMS(); //RMS of number of neutral tracks.
       gg->Draw("Etotal",gg_cut,"goff");
       unsigned Ngg = gg->GetSelectedRows();
       cout << setw(10) << run << setw(20) << Nsignal << setw(20)<< Nbhabha << setw(20)<< Ngg <<  setw(20)<< double(Nbhabha)/double(Ngg) << endl;
@@ -222,36 +227,140 @@ void make_result(void)
           pv[pn].Nh+=Nsignal;
           pv[pn].Nee+=Nbhabha;
           pv[pn].Ngg+=Ngg;
-	  pv[pn].Nchtr.add(nchtr,1./sq(nchtr_rms));
-	  pv[pn].Nntr.add(nntr,1./sq(nntr_rms));
+          pv[pn].Nchtr.add(nchtr,1./sq(nchtr_rms));
+          pv[pn].Nntr.add(nntr,1./sq(nntr_rms));
         }
       }
     }
   }
 
+
+
   cout.precision(8);
   cout << setw(3) << "#point" << setw(20) << "lum, nb^-1" << setw(20) << "energy, MeV" << setw(20)  << "error, MeV" << setw(20) << "signal (mhadr)" << setw(20) << "bhabha" << setw(20) << "gamma-gamma" << endl;
-  TGraphErrors * result_g = new TGraphErrors;
+  TGraphErrors * nchtr_g = new TGraphErrors;
+  TGraphErrors * nntr_g = new TGraphErrors;
+  TGraphErrors * bb_lum_g = new TGraphErrors;
+  TGraphErrors * bb_gg_g = new TGraphErrors;
   ofstream scan1("scan1.txt");
   ofstream scan2("scan2.txt");
   ofstream scan12("scan12.txt");
   for(unsigned i=0; i<pv.size(); i++)
   {
     ostringstream os;
-    os << setw(3) << pv[i].pn << setw(20) << pv[i].lum  << 
+    os << setw(2) << pv[i].pn << setw(20) << pv[i].lum  << 
       setw(20)<< pv[i].E   << setw(20) << pv[i].Eerror << 
       setw(20)<< pv[i].Nh  << 
       setw(20)<< pv[i].Nee <<
-      setw(20)<< pv[i].Ngg << endl << ends;
+      setw(20)<< pv[i].Ngg << endl;
     cout << os.str();
     scan12 << os.str();
     if(i<6) scan1 << os.str();
     else scan2 << os.str();
     
-    result_g->SetPoint(i,pv[i].E, double(pv[i].Nh)/pv[i].Nee);
-    result_g->SetPointError(i,pv[i].Eerror, 0);
+    nchtr_g->SetPoint(i,i, pv[i].Nchtr.average());
+    nchtr_g->SetPointError(i, 0,pv[i].Nchtr.sigma());
+
+    nntr_g->SetPoint(i,i, pv[i].Nntr.average());
+    nntr_g->SetPointError(i, 0,pv[i].Nntr.sigma());
+    bb_lum_g->SetPoint(i,i+1, pv[i].Nee/pv[i].lum);
+    bb_lum_g->SetTitle("N_{ee} / L");
+    bb_lum_g->GetXaxis()->SetTitle("point");
+    bb_lum_g->SetPointError(i,0, sqrt(double(pv[i].Nee))/pv[i].lum);
+    bb_gg_g->SetPoint(i,i+1, double(pv[i].Nee)/pv[i].Ngg);
+    bb_gg_g->SetPointError(i,0, double(pv[i].Nee)/pv[i].Ngg*sqrt(1./pv[i].Nee+1./pv[i].Ngg));
+    bb_gg_g->SetTitle("N_{ee} / N_{#gamma#gamma}");
+    bb_gg_g->GetXaxis()->SetTitle("point");
   }
-  result_g->Draw("ap");
-  result_g->SetMarkerStyle(21);
+  TCanvas * ch_c= new TCanvas;
+  ch_c->Divide(1,2);
+  ch_c->cd(1);
+  nchtr_g->Draw("a*");
+  nchtr_g->GetXaxis()->SetTitle("point");
+  nchtr_g->GetYaxis()->SetTitle("charged tracks");
+  ch_c->cd(2);
+  nntr_g->Draw("a*");
+  nntr_g->GetXaxis()->SetTitle("point");
+  nntr_g->GetYaxis()->SetTitle("neutral tracks");
+
+  TCanvas * rat_c = new TCanvas;
+  rat_c->Divide(1,2);
+  rat_c->cd(1);
+  gStyle->SetOptFit();
+  bb_lum_g->Draw("a*");
+  bb_lum_g->SetMarkerStyle(21);
+  bb_lum_g->SetMarkerSize(1.5);
+  bb_lum_g->SetLineWidth(2);
+  bb_lum_g->Fit("pol0");
+  TF1 * flum = bb_lum_g->GetFunction("pol0");
+  flum->Print();
+  double Kee =   flum->GetParameter(0);
+  cout << "bb_lum: " << flum->GetParameter(0) << "+-"<< flum->GetParError(0) 
+    << " ch2/ndf=" << flum->GetChisquare()/(flum->GetNumberFitPoints()-flum->GetNumberFreeParameters()) << endl;
+  rat_c->cd(2);
+  bb_gg_g->Draw("ap");
+  bb_gg_g->SetMarkerStyle(21);
+  bb_gg_g->SetMarkerSize(1.5);
+  bb_gg_g->SetLineWidth(2);
+  bb_gg_g->Fit("pol0");
+  TF1 * fgg = bb_gg_g->GetFunction("pol0");
+  fgg->Print();
+  double Kbbgg =   fgg->GetParameter(0);
+  //double Kgg = Kbbgg/Kee;
+  double Kgg = Kee/Kbbgg;
+  cout << "Kgg=" << Kgg << endl;
+  cout << "bb_gg: " << fgg->GetParameter(0) << "+-"<< fgg->GetParError(0) 
+    << " ch2/ndf=" << fgg->GetChisquare()/(fgg->GetNumberFitPoints()-fgg->GetNumberFreeParameters()) << endl;
+  //Draw result for different lums
+  TMultiGraph * mg =new TMultiGraph;
+  TGraphErrors * RLg[2]; 
+  TGraphErrors * REEg[2];
+  TGraphErrors * RGGg[2];
+  TLegend * l = new TLegend(0.6,0.8,1.0,1.0);
+  for(int i=0;i<2;i++)
+  {
+    RLg[i] = new TGraphErrors;
+    REEg[i] = new TGraphErrors;
+    RGGg[i] = new TGraphErrors;
+    RLg[i]->SetMarkerStyle(20+i);
+    REEg[i]->SetMarkerStyle(20+i);
+    RGGg[i]->SetMarkerStyle(20+i);
+    RLg[i]->SetMarkerColor(1);
+    REEg[i]->SetMarkerColor(2);
+    RGGg[i]->SetMarkerColor(4);
+    mg->Add(RLg[i],"p");
+    mg->Add(REEg[i],"p");
+    mg->Add(RGGg[i],"p");
+    char buf[1024];
+    sprintf(buf, "scan %d,  online lum",i+1);
+    l->AddEntry(RLg[i],buf,"p");
+    sprintf(buf, "scan %d,  bhabha lum",i+1);
+    l->AddEntry(REEg[i],buf,"p");
+    sprintf(buf, "scan %d,  #gamma#gamma lum",i+1);
+    l->AddEntry(RGGg[i],buf,"p");
+  }
+  int Nscan1=6;
+  for(unsigned i=0; i<Nscan1; i++)
+  {
+    RLg[0]->SetPoint(i,pv[i].E, double(pv[i].Nh)/pv[i].lum);
+    REEg[0]->SetPoint(i,pv[i].E, double(pv[i].Nh)/pv[i].Nee*Kee);
+    RGGg[0]->SetPoint(i,pv[i].E, double(pv[i].Nh)/pv[i].Ngg*Kgg);
+    RLg[0]->SetPointError(i,pv[i].Eerror, sqrt(double(pv[i].Nh))/pv[i].lum);
+    REEg[0]->SetPointError(i,pv[i].Eerror,double(pv[i].Nh)/pv[i].Nee*Kee*sqrt(1./pv[i].Nh+1./pv[i].Nee));
+    RGGg[0]->SetPointError(i,pv[i].Eerror,double(pv[i].Nh)/pv[i].Ngg*Kgg*sqrt(1./pv[i].Nh+1./pv[i].Ngg));
+  }
+  for(unsigned i=Nscan1; i<pv.size(); i++)
+  {
+    RLg[1]->SetPoint(i-Nscan1,pv[i].E, double(pv[i].Nh)/pv[i].lum);
+    REEg[1]->SetPoint(i-Nscan1,pv[i].E, double(pv[i].Nh)/pv[i].Nee*Kee);
+    RGGg[1]->SetPoint(i-Nscan1,pv[i].E, double(pv[i].Nh)/pv[i].Ngg*Kgg);
+     RLg[1]->SetPointError(i-Nscan1,pv[i].Eerror, sqrt(double(pv[i].Nh))/pv[i].lum);
+    REEg[1]->SetPointError(i-Nscan1,pv[i].Eerror,double(pv[i].Nh)/pv[i].Nee*Kee*sqrt(1./pv[i].Nh+1./pv[i].Nee));
+    RGGg[1]->SetPointError(i-Nscan1,pv[i].Eerror,double(pv[i].Nh)/pv[i].Ngg*Kgg*sqrt(1./pv[i].Nh+1./pv[i].Ngg));
+  }
+
+  TCanvas * result_c = new TCanvas;
+  mg->Draw("a");
+  l->Draw();
 }
 
