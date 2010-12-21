@@ -218,11 +218,11 @@ class JPsi : public Algorithm
   NTuple::Item<long> head_event_selected;
   NTuple::Item<long> head_run;
   NTuple::Item<double> head_ncharged_tracks;
-  NTuple::Item<double> head_rms_ncharged_tracks;
+  NTuple::Item<double> head_ncharged_tracks_rms;
   NTuple::Item<double> head_nneutral_tracks;
-  NTuple::Item<double> head_rms_nneutral_tracks;
+  NTuple::Item<double> head_nneutral_tracks_rms;
   NTuple::Item<double> head_ntotal_tracks;
-  NTuple::Item<double> head_rms_ntotal_tracks;
+  NTuple::Item<double> head_ntotal_tracks_rms;
   
   ibn::averager <double> nchtr_a; //averager for number of charged tracks
   ibn::averager <double> nntr_a; //averager for number of neutral tracks
