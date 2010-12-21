@@ -659,7 +659,7 @@ StatusCode JPsi::finalize()
   head_nneutral_tracks_rms=nntr_a.rms();
   head_ntotal_tracks=nttr_a.average();
   head_ntotal_tracks_rms=nttr_a.rms();
-  head_tuple.write();
+  head_tuple->write();
   return StatusCode::SUCCESS;
 }
 
