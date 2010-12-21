@@ -114,9 +114,21 @@ struct RunInfo_t
 
 void make_result(void)
 {
-  const char * signal_cut = "nemc>2  && S>0.05  && pt100 && Eemc<2.5 && Emdc<4";
-  const char * bhabha_cut = "(nemc==2 || nemc==3)&& S<0.05  && pt50 && sin(theta[0])<0.45 && sin(theta[1])<0.45 && Emdc<5 && Eemc>2.5";
-  //const char * bhabha_cut = "(nemc==2 || nemc==3) && S<0.05  && pt50 && sin(theta[0])<0.5 && sin(theta[1])<0.5 && Emdc<5 && Eemc>2.5";
+  /*  standart scan */
+  //const char * signal_cut = "nemc>2  && S>0.05  && pt50 && Eemc<2.5 && Emdc<4";
+  //const char * bhabha_cut = "nemc==2 && S<0.05  && pt50 && sin(theta[0])<0.45 && sin(theta[1])<0.45 && Emdc<5 && Eemc>2.5";
+  //const char * gg_cut =     "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<6 && abs(Sum$(z))<9 && Sum$(theta>0.45)==2";
+  /*  modif */
+  //const char * signal_cut = "nemc>2  && S>0.05  && pt100 && Eemc<2.5 && Emdc<4";
+  //const char * bhabha_cut = "nemc==2 && S<0.05  && pt100 && sin(theta[0])<0.45 && sin(theta[1])<0.45 && Emdc<5 && Eemc>2.5";
+  //const char * gg_cut =     "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<6 && abs(Sum$(z))<9 && Sum$(theta>0.45)==2";
+  /*  modif hpipr<0.3 */
+  //const char * signal_cut = "nemc>2  && S>0.05  && pt100 && Eemc<2.5 && Emdc<4 &&  Sum$(hpipr<0.3)==2";
+  //const char * bhabha_cut = "nemc==2 && S<0.05  && pt100 && sin(theta[0])<0.45 && sin(theta[1])<0.45 && Emdc<5 && Eemc>2.5";
+  //const char * gg_cut =     "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<6 && abs(Sum$(z))<9 && Sum$(theta>0.45)==2";
+  /* modif p[0]>p[1] for highest  and q[0]!=q[1]*/
+  const char * signal_cut = "nemc>2  && S>0.05  && pt100 && Eemc<2.5 && Emdc<4 && p[hpidx[0]]>p[hpidx[1]] && q[hpidx[0]]!=q[hpidx[1]]";
+  const char * bhabha_cut = "nemc==2 && S<0.05  && pt100 && sin(theta[0])<0.45 && sin(theta[1])<0.45 && Emdc<5 && Eemc>2.5 && p[hpidx[0]]>p[hpidx[1]] && q[hpidx[0]]!=q[hpidx[1]] ";
   const char * gg_cut =     "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<6 && abs(Sum$(z))<9 && Sum$(theta>0.45)==2";
   const char * mult_cut = "nemc>2";
   list<RunInfo_t> runinfo;
@@ -339,7 +351,7 @@ void make_result(void)
     sprintf(buf, "scan %d,  #gamma#gamma lum",i+1);
     l->AddEntry(RGGg[i],buf,"p");
   }
-  int Nscan1=6;
+  unsigned Nscan1=6;
   for(unsigned i=0; i<Nscan1; i++)
   {
     RLg[0]->SetPoint(i,pv[i].E, double(pv[i].Nh)/pv[i].lum);
@@ -362,5 +374,9 @@ void make_result(void)
   TCanvas * result_c = new TCanvas;
   mg->Draw("a");
   l->Draw();
+
+  ofstream kfile("CrBhabha.txt");
+  kfile << Kee << endl;
+  kfile << Kgg << endl;
 }
 

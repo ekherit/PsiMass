@@ -436,7 +436,7 @@ StatusCode JPsi::execute()
 
         /* find two high energy track */
         mdc.nhp = 2;
-        if(emcTrk->energy() >= Eh[0])
+        if(emcTrk->energy() > Eh[0])
         {
           //if we'v found energy more then highest finded energy
           //then we should save old value to lower one.
@@ -450,7 +450,7 @@ StatusCode JPsi::execute()
         }
         else
         {
-          if(emcTrk->energy() >= Eh[1])
+          if(emcTrk->energy() > Eh[1])
           {
             mdc.hpidx[1]=i;
             ph[1]=mdcTrk->p3();

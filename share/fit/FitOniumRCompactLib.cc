@@ -406,7 +406,7 @@ void SumPointsByQuant(Int_t npini,Int_t npfin,Int_t* UsePoints,Double_t* v,Doubl
 	else     sn[i]=sqrt(w/sq(norma));
     }
 };
-int GetNumRows(char *FileName,int npar)
+int GetNumRows(const char *FileName,int npar)
 {
     int counter=-1;
     Double_t Spool;
@@ -431,7 +431,7 @@ int GetNumRows(char *FileName,int npar)
    } 
     return counter;
 }
-void FillArrayFromFile(char* FileName,Double_t** Array,int npar,int nps)
+void FillArrayFromFile(const char* FileName,Double_t** Array,int npar,int nps)
 {
      ifstream readingfile(FileName,ios::in);
      if(!readingfile) cout<<"there is no file:"<<FileName<<endl;
@@ -450,7 +450,7 @@ void FillArrayFromFile(char* FileName,Double_t** Array,int npar,int nps)
      readingfile.close();
 }
 
-void FillArrayFromFile(char* FileName,Double_t** Array,int npar,int nparNew,int nps)
+void FillArrayFromFile(const char* FileName,Double_t** Array,int npar,int nparNew,int nps)
 {
     ifstream readingfile(FileName,ios::in);
     
