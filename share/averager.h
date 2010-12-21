@@ -127,6 +127,7 @@ namespace ibn 	{
 
   template <class T, class W>  
     inline void averager<T,W>::reset(void) { 
+      using namespace std;
       wsum=0; 
       xwsum=0;
       x2wsum=0;
