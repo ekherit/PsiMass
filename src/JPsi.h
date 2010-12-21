@@ -30,6 +30,8 @@
 //#include "EventModel/Event.h"
 #include "EventModel/EventHeader.h"
 
+#include "../share/averager.h"
+
 class JPsi : public Algorithm 
 {
 	public:
@@ -208,6 +210,23 @@ class JPsi : public Algorithm
 	NTuple::Array<double> gg_E, gg_dE; //energy and error
 	NTuple::Array<long> gg_n; //number of clasters
 	NTuple::Array<long> gg_module; //module=0: east endcap;  module=1: barrel;  module=2: west endcap.
+
+
+  /*  Averagin number of tracks */
+  NTuple::Tuple * head_tuple;
+  NTuple::Item<long> head_event_number;
+  NTuple::Item<long> head_event_selected;
+  NTuple::Item<long> head_run;
+  NTuple::Item<double> head_ncharged_tracks;
+  NTuple::Item<double> head_rms_ncharged_tracks;
+  NTuple::Item<double> head_nneutral_tracks;
+  NTuple::Item<double> head_rms_nneutral_tracks;
+  NTuple::Item<double> head_ntotal_tracks;
+  NTuple::Item<double> head_rms_ntotal_tracks;
+  
+  ibn::averager <double> nchtr_a; //averager for number of charged tracks
+  ibn::averager <double> nntr_a; //averager for number of neutral tracks
+  ibn::averager <double> nttr_a; //averager for number of total tracks
 };
 
 #endif
