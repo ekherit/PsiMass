@@ -84,6 +84,8 @@ Double_t MinChi2=1e+7;
 Int_t   FreeEnergyFit=0;
 //id fcnResChi2(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 void fcnResMult    (Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
+void fcnResMult2    (Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
+void fcnResMult3    (Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 /* Program documentation. */
 
 static char doc[] ="Поиск узких резонансов";
@@ -103,6 +105,7 @@ static char args_doc[] = "";
 
 #define OPT_sel             11
 #define OPT_lumbb           12
+#define OPT_both           13
 
 
 
@@ -125,6 +128,7 @@ static struct argp_option options[] = {
   {"scan",OPT_scan,"scan",0,"scan",10}, 
   {"sel",OPT_sel,"sel",0,"sel",11}, 
   {"lumbb",OPT_lumbb,"lumbb",0,"lumbb",12},     
+  {"both",OPT_both,"both",0,"both",12},     
 
 
   {0}
@@ -149,6 +153,7 @@ struct arguments
 
   int sel;
   int lumbb;
+  int both;
   int scan;
 
 };
@@ -180,6 +185,7 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
     case OPT_scan:arg_union.arguments->scan=atoi(arg);break;            
     case OPT_sel:arg_union.arguments->sel=atoi(arg);break;            
     case OPT_lumbb:arg_union.arguments->lumbb=atoi(arg);break;            
+    case OPT_both:arg_union.arguments->both=atoi(arg);break;            
 
 
   }
@@ -211,6 +217,7 @@ int main(int argc, char **argv)
   // arguments.CrBhabha=535;  
 
   arguments.CrBhabha=80; 
+  arguments.both=0; 
 
 
 
@@ -338,17 +345,21 @@ int main(int argc, char **argv)
   NumParForC[1] = ARun;
   CUpDown[1]  = 1;
 
-  for(Int_t i=0;i<npAP;i++) // simplest bubble's method for each condition
+  /*  SKIP SORTING OF POINTS IF separate scan*/
+  if(arguments.both==0)
   {
-    for(Int_t j=0;j<i;j++)
+    for(Int_t i=0;i<npAP;i++) // simplest bubble's method for each condition
     {
-      for(Int_t ic=1;ic>=0;ic--)
+      for(Int_t j=0;j<i;j++)
       {
-
-        if(comparDRows(CUpDown[ic],AP[i],AP[j],NumParForC[ic])<0)
+        for(Int_t ic=1;ic>=0;ic--)
         {
-          swapDRows(AP[i],AP[j],dimAP);
 
+          if(comparDRows(CUpDown[ic],AP[i],AP[j],NumParForC[ic])<0)
+          {
+            swapDRows(AP[i],AP[j],dimAP);
+
+          }
         }
       }
     }
@@ -420,6 +431,7 @@ int main(int argc, char **argv)
   NumEpoints=NEp;
   int numpar=4;
   if(FreeEnergyFit==1) numpar+=NEp;
+  if(arguments.both==1) numpar+=2;
   Double_t ECorrBB=0;
   Double_t LG=0,Lee=0;
   for(int is=0;is<NEp;is++)
@@ -490,17 +502,14 @@ int main(int argc, char **argv)
 
     }
   }    
-  //    GrRes=new TGraphErrors(NEp,WInScan,CrossSInScan,WErrInScan,CrossSErrInScan);
-  //   GrRes->Fit("pol0","Q0");
-  ///    double par0=GrRes->GetFunction("pol0")->GetParameter(0);
-  //    cout<<"par0:"<<par0<<endl;
-
-
 
   MinuitRes = new TMinuit(numpar);
   if(arguments.Chi2==0){
     MinuitRes->SetFCN(fcnResMult);  
-
+    if(arguments.both==1 && FreeEnergyFit==1)
+    MinuitRes->SetFCN(fcnResMult2);  
+    if(arguments.both==1 && FreeEnergyFit==0)
+    MinuitRes->SetFCN(fcnResMult3);  
   }
   else {
     // !!     MinuitRes->SetFCN(fcnResChi2);  
@@ -538,12 +547,26 @@ int main(int argc, char **argv)
   MinuitRes->DefineParameter(1,"eff",vstartRes[1],stepRes[1],0.1,1.0);      
   MinuitRes->DefineParameter(2,"dM/2.",vstartRes[2],stepRes[2],-1.,1);      
   MinuitRes->DefineParameter(3,"SigmaW",vstartRes[3],stepRes[3],0.5,1.78);        
-  if(FreeEnergyFit==1){
+  if(FreeEnergyFit==1)
+  {
     for(int j=0;j<NEp;j++){
       char  NameP[10];
       sprintf(NameP,"dE%d",j);         
       MinuitRes->DefineParameter(j+4,NameP,0,0.01,-0.3,0.3);        
     }
+  }
+
+  if(arguments.both==1 && FreeEnergyFit==1 && arguments.scan==3)
+  {
+    MinuitRes->DefineParameter(0+4+NEp,"bg2",vstartRes[0],stepRes[0],-150,150.0);
+    MinuitRes->DefineParameter(1+4+NEp,"eff2",vstartRes[1],stepRes[1],0.1,1.0);      
+    cout << "Fit both scan"<< endl;
+  }
+  if(arguments.both==1 && FreeEnergyFit==0 && arguments.scan==3)
+  {
+    MinuitRes->DefineParameter(0+4,"bg2",vstartRes[0],stepRes[0],-150,150.0);
+    MinuitRes->DefineParameter(1+4,"eff2",vstartRes[1],stepRes[1],0.1,1.0);      
+    cout << "Fit both scan"<< endl;
   }
 
 
@@ -572,12 +595,40 @@ int main(int argc, char **argv)
   cout<<"Minuit Mass= "<<3686.111+parRes[2]*2.<<endl;
   cout<<"parRes[2]*2.:"<<parRes[2]*2.<< " +-" << parErrRes[2]*2. <<  " MeV. chi2/ndf = " <<MinChi2 << "/(" << NpPP<<"-"<<nf<<") = "  << MinChi2/(NpPP-nf) <<endl;
   Double_t* parPsiPF    = new Double_t [idRNP];
+  Double_t* parPsiPF2    = new Double_t [idRNP];
   parPsiPF[idRbg]=parRes[0];
   parPsiPF[idRM]=parRes[2];//parPsiP[Iscan][ippeff];   
   parPsiPF[idRSw]=parRes[3];   
   parPsiPF[idReff]=parRes[1];
   parPsiPF[idRFreeGee]=0;
   parPsiPF[idRTauEff]=0;
+
+  if(arguments.both==1)
+  {
+    if(arguments.FreeEnergy==0)
+    {
+      parPsiPF2[idRbg]=parRes[0+4];
+      parPsiPF2[idReff]=parRes[1+4];
+      parPsiPF2[idRM]=parRes[2];
+      parPsiPF2[idRSw]=parRes[3];   
+      parPsiPF2[idRFreeGee]=0;
+      parPsiPF2[idRTauEff]=0;
+    }
+    else 
+    {
+      parPsiPF2[idRbg]=parRes[0+4+NEp];
+      parPsiPF2[idReff]=parRes[1+4+NEp];
+      parPsiPF2[idRM]=parRes[2];
+      parPsiPF2[idRSw]=parRes[3];   
+      parPsiPF2[idRFreeGee]=0;
+      parPsiPF2[idRTauEff]=0;
+    }
+    for(unsigned i=0; i<idRNP;i++)
+    {
+      cout << i << " " << parPsiPF2[i] << endl;
+    }
+  }
+
 
   for(int is=0;is<NEp;is++)
   {       
@@ -594,11 +645,18 @@ int main(int argc, char **argv)
   }
   GrRes=new TGraphErrors(NEp,WInScan,CrossSInScan,WErrInScan,CrossSErrInScan);
   TF1* FitPsiP=new TF1("FitPsiP",FCrSPPrimeAzimov,1836.*ScaleEGr,1855*ScaleEGr,idRNP);  
+  TF1* FitPsiP2=new TF1("FitPsiP",FCrSPPrimeAzimov,1836.*ScaleEGr,1855*ScaleEGr,idRNP);  
   FitPsiP->SetParameters( parPsiPF);
+  FitPsiP2->SetParameters( parPsiPF2);
   TCanvas* TestCanv=new TCanvas("TestCanv","TestCanv",900,700); 
   TestCanv->cd();
   GrRes->Draw("AP");     
   FitPsiP->Draw("SAME");
+  if(arguments.both==1)
+  {
+    FitPsiP2->SetLineColor(kBlue);
+    FitPsiP2->Draw("SAME");
+  }
   char Info1[100];
   TLatex*  latexM1=new TLatex();
   latexM1->SetTextSize(0.038);
@@ -715,18 +773,311 @@ void fcnResMult(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
 
 
     }
-    /*            chisqbb= sq(sigmaBB*LumLgammaInScan[i]-NbbInScan[i])/sq(NbbInScan[i]+1);
-                  chisqbb= sq(sigmaBB-CrossSBBInScan[i])/sq(CrossSBBErrInScan[i]);
-
-                  chisq+=  chisqbb;        
-
-                  }*/               
+  }
+  f = chisq;
+  if(FreeEnergyFit==1) f+=EnergyChi2;//;    
+  if(MinChi2>f) MinChi2=f;
+  FCNcall=1;
 }
 
+void fcnResMult2(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
+{
+  //calculate chisquare
+  Double_t chisq =0;
+  Double_t chisqbb = 0;
+  Double_t chisqmh =0 ;
+  Double_t sigmaFull;
+  Double_t sigmaMH;
+  Double_t sigmaBB;
+  Double_t nFull;
+  Double_t lumFull;
+  Double_t Energy;
+  Double_t parmh[idRNP];
+  Double_t EnergyChi2=0;
+  Double_t parbb[1];        
+  parmh[idRbg]=par[0];
+  parmh[idReff]=par[1];
+  parmh[idRM]=par[2];
+  parmh[idRSw]=par[3];   
+  parmh[idRFreeGee]=0;       
+  parmh[idRTauEff]=0;       
+  parbb[0]=CrossBhabha;        
+  for (Int_t i=0;i<6;i++)
+  {
+    Energy=EInScan[i];
+    if(FreeEnergyFit==1){ 
+      Energy+=par[4+i];
+      EnergyChi2+=(par[4+i]*par[4+i]/(EErrInScan[i]*EErrInScan[i]));
+    }
+    sigmaMH=CrSOniumR(_MethodAzimov,_IdPsiPrime,Energy,parmh);  
+    sigmaBB=CrossSBhabhaPP(Energy,parbb);                        
+    sigmaFull=sigmaMH+sigmaBB;
+    nFull=NbbInScan[i]+NmhInScan[i];                                
+    lumFull=nFull/sigmaFull;
+    if(UseLumBB==0)  {
+      lumFull=LumLgammaInScan[i];
+      nFull=NmhInScan[i];
+      sigmaFull=sigmaMH;
+    }
 
-f = chisq;
-if(FreeEnergyFit==1) f+=EnergyChi2;//;    
-if(MinChi2>f) MinChi2=f;
-FCNcall=1;
+    if( FCNcall ==0 ){
+      cout<<"Point "<< i << " E " << Energy
+        << " Nmh " << NmhInScan[i]<<"Nbb:"<<NbbInScan[i]<<
+        " sigmaBB:"<<sigmaBB<<
+        " sigmaMH:"<<sigmaMH<<" rmh:"<<NmhInScan[i]/ sigmaMH<<
+        " rbb: "<<NbbInScan[i] / sigmaBB<<" LumFull:"<<lumFull<<
+        " LG:"<<LumLgammaInScan[i]<<
+        " parmh0:"<<parmh[0]<<"parmh[1]:"<<parmh[1]<<
+        "parmh[2]:"<<parmh[2]<<"parmh[3]:"<<parmh[3]
+        <<endl;
+      NpPP++;
+    }
+    chisqmh=0;
+    if(NmhInScan[i]>0)
+    {
+      chisqmh= (NmhInScan[i]*log(NmhInScan[i]/(sigmaMH*lumFull))
+          +sigmaMH*lumFull-NmhInScan[i]);            
+    }
+    else if(NmhInScan[i]==0)  
+    {
+      chisqmh =  sigmaMH*lumFull;
+    }
+    chisq+=  (2*chisqmh);
 
+
+    if(UseLumBB!=0){
+      if(NbbInScan[i]>0)
+      {
+        chisqbb= (NbbInScan[i]*log(NbbInScan[i]/(sigmaBB*lumFull))+
+            sigmaBB*lumFull-NbbInScan[i]);
+
+      }
+      else if(NbbInScan[i]==0)
+      {
+        chisqbb =  sigmaBB*lumFull;
+
+      }
+      chisq+=  (2*chisqbb);
+
+
+    }
+  }
+  parmh[idRbg]=par[4+NumEpoints];
+  parmh[idReff]=par[5+NumEpoints];
+
+  for (Int_t i=6;i<NumEpoints;i++)
+  {
+    Energy=EInScan[i];
+    if(FreeEnergyFit==1){ 
+      Energy+=par[4+i];
+      EnergyChi2+=(par[4+i]*par[4+i]/(EErrInScan[i]*EErrInScan[i]));
+    }
+    sigmaMH=CrSOniumR(_MethodAzimov,_IdPsiPrime,Energy,parmh);  
+    sigmaBB=CrossSBhabhaPP(Energy,parbb);                        
+    sigmaFull=sigmaMH+sigmaBB;
+    nFull=NbbInScan[i]+NmhInScan[i];                                
+    lumFull=nFull/sigmaFull;
+    if(UseLumBB==0)  {
+      lumFull=LumLgammaInScan[i];
+      nFull=NmhInScan[i];
+      sigmaFull=sigmaMH;
+    }
+
+    if( FCNcall ==0 ){
+      cout<<"Point "<< i << " E " << Energy
+        << " Nmh " << NmhInScan[i]<<"Nbb:"<<NbbInScan[i]<<
+        " sigmaBB:"<<sigmaBB<<
+        " sigmaMH:"<<sigmaMH<<" rmh:"<<NmhInScan[i]/ sigmaMH<<
+        " rbb: "<<NbbInScan[i] / sigmaBB<<" LumFull:"<<lumFull<<
+        " LG:"<<LumLgammaInScan[i]<<
+        " parmh0:"<<parmh[0]<<"parmh[1]:"<<parmh[1]<<
+        "parmh[2]:"<<parmh[2]<<"parmh[3]:"<<parmh[3]
+        <<endl;
+      NpPP++;
+    }
+    chisqmh=0;
+    if(NmhInScan[i]>0)
+    {
+      chisqmh= (NmhInScan[i]*log(NmhInScan[i]/(sigmaMH*lumFull))
+          +sigmaMH*lumFull-NmhInScan[i]);            
+    }
+    else if(NmhInScan[i]==0)  
+    {
+      chisqmh =  sigmaMH*lumFull;
+    }
+    chisq+=  (2*chisqmh);
+
+
+    if(UseLumBB!=0){
+      if(NbbInScan[i]>0)
+      {
+        chisqbb= (NbbInScan[i]*log(NbbInScan[i]/(sigmaBB*lumFull))+
+            sigmaBB*lumFull-NbbInScan[i]);
+
+      }
+      else if(NbbInScan[i]==0)
+      {
+        chisqbb =  sigmaBB*lumFull;
+
+      }
+      chisq+=  (2*chisqbb);
+
+
+    }
+  }
+  f = chisq;
+  if(FreeEnergyFit==1) f+=EnergyChi2;//;    
+  if(MinChi2>f) MinChi2=f;
+  FCNcall=1;
+}
+
+void fcnResMult3(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
+{
+  //calculate chisquare
+  Double_t chisq =0;
+  Double_t chisqbb = 0;
+  Double_t chisqmh =0 ;
+  Double_t sigmaFull;
+  Double_t sigmaMH;
+  Double_t sigmaBB;
+  Double_t nFull;
+  Double_t lumFull;
+  Double_t Energy;
+  Double_t parmh[idRNP];
+  Double_t EnergyChi2=0;
+  Double_t parbb[1];        
+  parmh[idRbg]=par[0];
+  parmh[idReff]=par[1];
+  parmh[idRM]=par[2];
+  parmh[idRSw]=par[3];   
+  parmh[idRFreeGee]=0;       
+  parmh[idRTauEff]=0;       
+  parbb[0]=CrossBhabha;        
+  for (Int_t i=0;i<6;i++)
+  {
+    Energy=EInScan[i];
+    if(FreeEnergyFit==1){ 
+      Energy+=par[4+i];
+      EnergyChi2+=(par[4+i]*par[4+i]/(EErrInScan[i]*EErrInScan[i]));
+    }
+    sigmaMH=CrSOniumR(_MethodAzimov,_IdPsiPrime,Energy,parmh);  
+    sigmaBB=CrossSBhabhaPP(Energy,parbb);                        
+    sigmaFull=sigmaMH+sigmaBB;
+    nFull=NbbInScan[i]+NmhInScan[i];                                
+    lumFull=nFull/sigmaFull;
+    if(UseLumBB==0)  {
+      lumFull=LumLgammaInScan[i];
+      nFull=NmhInScan[i];
+      sigmaFull=sigmaMH;
+    }
+
+    if( FCNcall ==0 ){
+      cout<<"Point "<< i << " E " << Energy
+        << " Nmh " << NmhInScan[i]<<"Nbb:"<<NbbInScan[i]<<
+        " sigmaBB:"<<sigmaBB<<
+        " sigmaMH:"<<sigmaMH<<" rmh:"<<NmhInScan[i]/ sigmaMH<<
+        " rbb: "<<NbbInScan[i] / sigmaBB<<" LumFull:"<<lumFull<<
+        " LG:"<<LumLgammaInScan[i]<<
+        " parmh0:"<<parmh[0]<<"parmh[1]:"<<parmh[1]<<
+        "parmh[2]:"<<parmh[2]<<"parmh[3]:"<<parmh[3]
+        <<endl;
+      NpPP++;
+    }
+    chisqmh=0;
+    if(NmhInScan[i]>0)
+    {
+      chisqmh= (NmhInScan[i]*log(NmhInScan[i]/(sigmaMH*lumFull))
+          +sigmaMH*lumFull-NmhInScan[i]);            
+    }
+    else if(NmhInScan[i]==0)  
+    {
+      chisqmh =  sigmaMH*lumFull;
+    }
+    chisq+=  (2*chisqmh);
+
+
+    if(UseLumBB!=0){
+      if(NbbInScan[i]>0)
+      {
+        chisqbb= (NbbInScan[i]*log(NbbInScan[i]/(sigmaBB*lumFull))+
+            sigmaBB*lumFull-NbbInScan[i]);
+
+      }
+      else if(NbbInScan[i]==0)
+      {
+        chisqbb =  sigmaBB*lumFull;
+
+      }
+      chisq+=  (2*chisqbb);
+
+
+    }
+  }
+  parmh[idRbg]=par[4];
+  parmh[idReff]=par[5];
+
+  for (Int_t i=6;i<NumEpoints;i++)
+  {
+    Energy=EInScan[i];
+    if(FreeEnergyFit==1){ 
+      Energy+=par[4+i];
+      EnergyChi2+=(par[4+i]*par[4+i]/(EErrInScan[i]*EErrInScan[i]));
+    }
+    sigmaMH=CrSOniumR(_MethodAzimov,_IdPsiPrime,Energy,parmh);  
+    sigmaBB=CrossSBhabhaPP(Energy,parbb);                        
+    sigmaFull=sigmaMH+sigmaBB;
+    nFull=NbbInScan[i]+NmhInScan[i];                                
+    lumFull=nFull/sigmaFull;
+    if(UseLumBB==0)  {
+      lumFull=LumLgammaInScan[i];
+      nFull=NmhInScan[i];
+      sigmaFull=sigmaMH;
+    }
+
+    if( FCNcall ==0 ){
+      cout<<"Point "<< i << " E " << Energy
+        << " Nmh " << NmhInScan[i]<<"Nbb:"<<NbbInScan[i]<<
+        " sigmaBB:"<<sigmaBB<<
+        " sigmaMH:"<<sigmaMH<<" rmh:"<<NmhInScan[i]/ sigmaMH<<
+        " rbb: "<<NbbInScan[i] / sigmaBB<<" LumFull:"<<lumFull<<
+        " LG:"<<LumLgammaInScan[i]<<
+        " parmh0:"<<parmh[0]<<"parmh[1]:"<<parmh[1]<<
+        "parmh[2]:"<<parmh[2]<<"parmh[3]:"<<parmh[3]
+        <<endl;
+      NpPP++;
+    }
+    chisqmh=0;
+    if(NmhInScan[i]>0)
+    {
+      chisqmh= (NmhInScan[i]*log(NmhInScan[i]/(sigmaMH*lumFull))
+          +sigmaMH*lumFull-NmhInScan[i]);            
+    }
+    else if(NmhInScan[i]==0)  
+    {
+      chisqmh =  sigmaMH*lumFull;
+    }
+    chisq+=  (2*chisqmh);
+
+
+    if(UseLumBB!=0){
+      if(NbbInScan[i]>0)
+      {
+        chisqbb= (NbbInScan[i]*log(NbbInScan[i]/(sigmaBB*lumFull))+
+            sigmaBB*lumFull-NbbInScan[i]);
+
+      }
+      else if(NbbInScan[i]==0)
+      {
+        chisqbb =  sigmaBB*lumFull;
+
+      }
+      chisq+=  (2*chisqbb);
+
+
+    }
+  }
+  f = chisq;
+  if(FreeEnergyFit==1) f+=EnergyChi2;//;    
+  if(MinChi2>f) MinChi2=f;
+  FCNcall=1;
 }

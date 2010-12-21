@@ -127,8 +127,12 @@ void make_result(void)
   //const char * bhabha_cut = "nemc==2 && S<0.05  && pt100 && sin(theta[0])<0.45 && sin(theta[1])<0.45 && Emdc<5 && Eemc>2.5";
   //const char * gg_cut =     "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<6 && abs(Sum$(z))<9 && Sum$(theta>0.45)==2";
   /* modif p[0]>p[1] for highest  and q[0]!=q[1]*/
-  const char * signal_cut = "nemc>2  && S>0.05  && pt100 && Eemc<2.5 && Emdc<4 && p[hpidx[0]]>p[hpidx[1]] && q[hpidx[0]]!=q[hpidx[1]]";
-  const char * bhabha_cut = "nemc==2 && S<0.05  && pt100 && sin(theta[0])<0.45 && sin(theta[1])<0.45 && Emdc<5 && Eemc>2.5 && p[hpidx[0]]>p[hpidx[1]] && q[hpidx[0]]!=q[hpidx[1]] ";
+  //const char * signal_cut = "nemc>2  && S>0.05  && pt100 && Eemc<2.5 && Emdc<4 && p[hpidx[0]]>p[hpidx[1]] && q[hpidx[0]]!=q[hpidx[1]]";
+  //const char * bhabha_cut = "nemc==2 && S<0.05  && pt100 && sin(theta[0])<0.45 && sin(theta[1])<0.45 && Emdc<5 && Eemc>2.5 && p[hpidx[0]]>p[hpidx[1]] && q[hpidx[0]]!=q[hpidx[1]] ";
+  //const char * gg_cut =     "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<6 && abs(Sum$(z))<9 && Sum$(theta>0.45)==2";
+  /* modif  q[0]!=q[1]*/
+  const char * signal_cut = "nemc>2  && S>0.05  && pt100 && Eemc<2.5 && Emdc<4 && q[hpidx[0]]!=q[hpidx[1]]";
+  const char * bhabha_cut = "nemc==2 && S<0.05  && pt100 && sin(theta[0])<0.45 && sin(theta[1])<0.45 && Emdc<5 && Eemc>2.5 &&  q[hpidx[0]]!=q[hpidx[1]] ";
   const char * gg_cut =     "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<6 && abs(Sum$(z))<9 && Sum$(theta>0.45)==2";
   const char * mult_cut = "nemc>2";
   list<RunInfo_t> runinfo;
