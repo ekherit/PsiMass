@@ -372,6 +372,19 @@ StatusCode JPsi::execute()
   nchtr_a.add(evtRecEvent->totalCharged());
   nntr_a.add(evtRecEvent->totalNeutral());
   nttr_a.add(evtRecEvent->totalTracks());
+
+  /*  Reconstruct the vertex */
+  IVertexDbSvc*  vtxsvc;
+  Gaudi::svcLocator()->service("VertexDbSvc", vtxsvc);
+  if(vtxsvc->isVertexValid())
+  {
+    double* dbv = vtxsvc->PrimaryVertex(); 
+    double*  vv = vtxsvc->SigmaPrimaryVertex();  
+    xorigin.setX(dbv[0]);
+    xorigin.setY(dbv[1]);
+    xorigin.setZ(dbv[2]);
+  }
+
   /************    Multihadron event and BhaBha selection ****************/
   /*  the selection is based on charged tracks */
   if(MIN_CHARGED_TRACKS<=evtRecEvent->totalCharged() && evtRecEvent->totalCharged() <=MAX_TRACK_NUMBER)
@@ -400,8 +413,10 @@ StatusCode JPsi::execute()
       mdc.theta[i]=mdcTrk->theta();
       mdc.phi[i]=mdcTrk->phi();
       mdc.q[i]=mdcTrk->charge();
-      mdc.x[i]=mdcTrk->x();
-      mdc.y[i]=mdcTrk->y();
+      double x[i]=xorigin.x();
+      double y[i]=xorigin.y();
+      //mdc.x[i]=mdcTrk->x();
+      //mdc.y[i]=mdcTrk->y();
       mdc.z[i]=mdcTrk->z();
       mdc.X[i]=mdcTrk->getVX0();
       mdc.Y[i]=mdcTrk->getVY0();
