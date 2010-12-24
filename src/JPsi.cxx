@@ -414,8 +414,8 @@ StatusCode JPsi::execute()
       mdc.theta[i]=mdcTrk->theta();
       mdc.phi[i]=mdcTrk->phi();
       mdc.q[i]=mdcTrk->charge();
-      double x[i]=xorigin.x();
-      double y[i]=xorigin.y();
+      double mdc.x[i]=xorigin.x();
+      double mdc.y[i]=xorigin.y();
       //mdc.x[i]=mdcTrk->x();
       //mdc.y[i]=mdcTrk->y();
       mdc.z[i]=mdcTrk->z();
