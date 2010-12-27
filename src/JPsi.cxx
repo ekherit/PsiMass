@@ -440,7 +440,7 @@ StatusCode JPsi::execute()
       double  Rvphi0=vecipa[1];
       mdc.rvxy=Rvxy0;
       mdc.rvz=Rvz0;
-      mdc.rvphi=Rvphi;
+      mdc.rvphi=Rvphi0;
       mdc.Emdc+=sqrt(mdc.p[i]*mdc.p[i]+PI_MESON_MASS*PI_MESON_MASS);
       /* Calculate sphericity tensor */
       for(int i=0;i<3;i++)
