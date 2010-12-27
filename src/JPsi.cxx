@@ -462,7 +462,7 @@ StatusCode JPsi::execute()
       mdc.isemc[i]=(*itTrk)->isEmcShowerValid();
       mdc.nhp = 2;
       /*  find two high momentum tracks */
-      if(emcTrk->p() > hP[0])
+      if(mdcTrk->p() > hP[0])
       {
         //if we'v found energy more then highest finded energy
         //then we should save old value to lower one.
@@ -476,7 +476,7 @@ StatusCode JPsi::execute()
       }
       else
       {
-        if(emcTrk->p() > hP[1])
+        if(mdcTrk->p() > hP[1])
         {
           mdc.hpidx[1]=i;
           hP[1]=emcTrk->p();
