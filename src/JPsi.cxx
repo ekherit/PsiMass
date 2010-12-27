@@ -471,7 +471,7 @@ StatusCode JPsi::execute()
         hP[1]=hP[0];
         hPp[1]=hPp[0];
         mdc.hpidx[0]=i;
-        hP[0]=emcTrk->p();
+        hP[0]=mdcTrk->p();
         hPp[0]=mdcTrk->p3();
       }
       else
@@ -479,7 +479,7 @@ StatusCode JPsi::execute()
         if(mdcTrk->p() > hP[1])
         {
           mdc.hpidx[1]=i;
-          hP[1]=emcTrk->p();
+          hP[1]=mdcTrk->p();
           hPp[1]=mdcTrk->p3();
         }
       }
