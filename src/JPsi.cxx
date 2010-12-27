@@ -137,6 +137,7 @@ StatusCode JPsi::initialize(void)
       status = mdc_tuple->addIndexedItem ("hEr", mdc.nhp, mdc.hEr);
       status = mdc_tuple->addIndexedItem ("hEz", mdc.nhp, mdc.hEz);
       status = mdc_tuple->addItem ("hEcos", mdc.hEcos);
+      status = mdc_tuple->addItem ("hEip", mdc.hEip);
 
       status = mdc_tuple->addItem ("pt50", mdc.pt50);
       status = mdc_tuple->addItem ("pt100", mdc.pt100);
