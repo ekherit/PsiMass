@@ -613,7 +613,7 @@ StatusCode JPsi::execute()
     bool ishEip=fabs(mdc.hEr[0])<IPR && fabs(mdc.hEz[0]) < DELTA_Z && fabs(mdc.hEr[1])<IPR && mdc.hEz[1]<DELTA_Z;
     mdc.hEip =ishEip;
 
-    bool ishpip =  fabs(mdc.hpipr[0]<0.3) && fabs(mdc.hpipz[0]) < 3 && fabs(mdc.hpipr[1])<0.2 && fabs(mdc.hpipz[1])<3;
+    bool ishpip =  fabs(mdc.hpr[0]<0.3) && fabs(mdc.hpz[0]) < 3 && fabs(mdc.hpr[1])<0.2 && fabs(mdc.hpz[1])<3;
     mdc.hpip =ishpip;
 
     double tmp_hpcos = hPp[0].mag()*hPp[1].mag()<=0 ? 100 : (hPp[0].dot(hPp[1]))/(hPp[0].mag()*hPp[1].mag());
