@@ -600,9 +600,9 @@ StatusCode JPsi::execute()
     if(mdc.nemc<2) return StatusCode::SUCCESS;
 
     //Two tracks from interaction points. The same condion for BhaBha and for multihadron
-    cout << "track " << i << " before cycle ip cut " << endl;
     for(int i=0;i<mdc.nhp;i++)
     {
+      cout << "track " << i << "  cycle ip cut " << endl;
       mdc.hpr[i] = sqrt(sq(mdc.x[mdc.hpidx[i]]-0.1)+sq(mdc.y[mdc.hpidx[i]]+0.1));
       mdc.hpz[i] = mdc.z[mdc.hpidx[i]];
       if(USE_IPCUT && ( mdc.hpr[i]> IPR || fabs(mdc.hpz[i]) > DELTA_Z) ) return StatusCode::SUCCESS;
