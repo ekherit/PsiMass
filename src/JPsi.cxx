@@ -760,11 +760,16 @@ void JPsi::InitData(long nchtrack, long nneutrack)
   mdc.pt50=-1000;
   mdc.pt100=-1000;
   mdc.ntrack=0;
-
+  
+  cout << "Before nhp" << endl;
   mdc.nhp=-1000;
+  cout << "Before nhcos" << endl;
   mdc.hpcos=-1000;
+  cout << "Before hpip" << endl;
   mdc.hpip=-1000;
+  cout << "Before hpEcos" << endl;
   mdc.hEcos = -1000;
+  cout << "Before hEip" << endl;
   mdc.hEip=-1000;
 
   for(int i=0;i<MAX_TRACK_NUMBER; i++)
