@@ -438,9 +438,9 @@ StatusCode JPsi::execute()
       double  Rvxy0=fabs(vecipa[0]);  //the nearest distance to IP in xy plane
       double  Rvz0=vecipa[3];         //the nearest distance to IP in z direction
       double  Rvphi0=vecipa[1];
-      mdc.rvxy=Rvxy0;
-      mdc.rvz=Rvz0;
-      mdc.rvphi=Rvphi0;
+      mdc.rvxy[i]=Rvxy0;
+      mdc.rvz[i]=Rvz0;
+      mdc.rvphi[i]=Rvphi0;
       mdc.Emdc+=sqrt(mdc.p[i]*mdc.p[i]+PI_MESON_MASS*PI_MESON_MASS);
       /* Calculate sphericity tensor */
       for(int i=0;i<3;i++)
