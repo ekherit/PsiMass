@@ -603,7 +603,6 @@ StatusCode JPsi::execute()
     //Two tracks from interaction points. The same condion for BhaBha and for multihadron
     for(int i=0;i<mdc.nhp;i++)
     {
-      cout << "track " << i << "  cycle ip cut " << endl;
       mdc.hpr[i] = sqrt(sq(mdc.x[mdc.hpidx[i]]-0.1)+sq(mdc.y[mdc.hpidx[i]]+0.1));
       mdc.hpz[i] = mdc.z[mdc.hpidx[i]];
       if(USE_IPCUT && ( mdc.hpr[i]> IPR || fabs(mdc.hpz[i]) > DELTA_Z) ) return StatusCode::SUCCESS;
@@ -612,19 +611,15 @@ StatusCode JPsi::execute()
       mdc.hEz[i] = mdc.z[mdc.hEidx[i]];
     }
 
-    cout << "Before ishEip " << endl;
     bool ishEip=fabs(mdc.hEr[0])<IPR && fabs(mdc.hEz[0]) < DELTA_Z && fabs(mdc.hEr[1])<IPR && mdc.hEz[1]<DELTA_Z;
     mdc.hEip =ishEip;
 
-    cout << "Before hpip " << endl;
     bool ishpip =  fabs(mdc.hpr[0]<0.3) && fabs(mdc.hpz[0]) < 3 && fabs(mdc.hpr[1])<0.2 && fabs(mdc.hpz[1])<3;
     mdc.hpip =ishpip;
 
-    cout << "Before hpcos" << endl;
     double tmp_hpcos = hPp[0].mag()*hPp[1].mag()<=0 ? 100 : (hPp[0].dot(hPp[1]))/(hPp[0].mag()*hPp[1].mag());
     mdc.hpcos=tmp_hpcos;
 
-    cout << "before hEcos " << endl;
     double tmp_hEcos = hEp[0].mag()*hEp[1].mag()<=0 ? 100 : (hEp[0].dot(hEp[1]))/(hEp[0].mag()*hEp[1].mag());
     mdc.hEcos=tmp_hEcos;
 
@@ -762,32 +757,20 @@ void JPsi::InitData(long nchtrack, long nneutrack)
   mdc.pt100=-1000;
   mdc.ntrack=0;
   
-  cout << "Before nhp" << endl;
   mdc.nhp=-1000;
-  cout << "Before nhcos" << endl;
   mdc.hpcos=-1000;
-  cout << "Before hpip" << endl;
   mdc.hpip=-1000;
-  cout << "Before hpEcos" << endl;
   mdc.hEcos = -1000;
-  cout << "Before hEip" << endl;
   mdc.hEip=-1000;
 
   for(int i=0;i<MAX_TRACK_NUMBER; i++)
   {
-    cout << "Init " << i << "before hpidx" << endl;
     mdc.hpidx[i]=-1000;
-    cout << "Init " << i << "before hpr" << endl;
     mdc.hpr[i]=-1000;
-    cout << "Init " << i << "before hpz" << endl;
     mdc.hpz[i]=-1000;
-    cout << "Init " << i << "before hEidx" << endl;
     mdc.hEidx[i]=-1000;
-    cout << "Init " << i << "before hEEr" << endl;
     mdc.hEr[i]=-1000;
-    cout << "Init " << i << "before hEz" << endl;
     mdc.hEz[i]=-1000;
-    cout << "Init after hp hE" << endl;
 
     mdc.p[i]=-1000;
     mdc.px[i]=-1000;
