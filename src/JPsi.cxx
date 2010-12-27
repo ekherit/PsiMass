@@ -512,7 +512,7 @@ StatusCode JPsi::execute()
 		      hEp[1]=hEp[0];
 		      mdc.hEidx[0]=i;
 		      hE[0]=emcTrk->energy();
-          hEp[0]=emcTrk->p3();
+          hEp[0]=mdcTrk->p3();
 	      }
 	      else
 	      {
@@ -520,7 +520,7 @@ StatusCode JPsi::execute()
 		      {
 			      mdc.hEidx[1]=i;
 			      hE[1]=emcTrk->energy();
-            hEp[1]=emcTrk->p3();
+            hEp[1]=mdcTrk->p3();
 		      }
 	      }
       }
