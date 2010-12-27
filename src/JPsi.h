@@ -92,13 +92,13 @@ class JPsi : public Algorithm
     NTuple::Item<long>    nhp; //number of high energy tracks. 
     NTuple::Item<double>  hpcos; //cos angle beween highest energy tracks
     NTuple::Array<long>   hpidx; //index for two high energy track.
-    NTuple::Array<double> hpipr; //interaction point distance for two high energy track
-    NTuple::Array<double> hpipz; //interaction point z for two high energy track
+    NTuple::Array<double> hpr; //interaction point distance for two high energy track
+    NTuple::Array<double> hpz; //interaction point z for two high energy track
 
     NTuple::Item<double>  hEcos; //cos angle beween highest energy tracks
     NTuple::Array<long>   hEidx; //index for two high energy track.
-    NTuple::Array<double> hEipr; //interaction point distance for two high energy track
-    NTuple::Array<double> hEipz; //interaction point z for two high energy track
+    NTuple::Array<double> hEr; //interaction point distance for two high energy track
+    NTuple::Array<double> hEz; //interaction point z for two high energy track
 
     NTuple::Item<long>   pt50; //flag for higher 50 MeV pt
     NTuple::Item<long>   pt100;//flag for higher 100 MeV pt.

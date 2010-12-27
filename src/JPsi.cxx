@@ -128,14 +128,14 @@ StatusCode JPsi::initialize(void)
       status = mdc_tuple->addItem ("nip", mdc.nip);
       status = mdc_tuple->addItem ("nhp", mdc.nhp, 0, MAX_TRACK_NUMBER);
       status = mdc_tuple->addIndexedItem ("hpidx", mdc.nhp, mdc.hpidx);
-      status = mdc_tuple->addIndexedItem ("hpipr", mdc.nhp, mdc.hpipr);
-      status = mdc_tuple->addIndexedItem ("hpipz", mdc.nhp, mdc.hpipz);
+      status = mdc_tuple->addIndexedItem ("hpr", mdc.nhp, mdc.hpr);
+      status = mdc_tuple->addIndexedItem ("hpz", mdc.nhp, mdc.hpz);
       status = mdc_tuple->addItem ("hpcos", mdc.hpcos);
       status = mdc_tuple->addItem ("hpip", mdc.hpip);
 
       status = mdc_tuple->addIndexedItem ("hEidx", mdc.nhp, mdc.hEidx);
-      status = mdc_tuple->addIndexedItem ("hEipr", mdc.nhp, mdc.hEipr);
-      status = mdc_tuple->addIndexedItem ("hEipz", mdc.nhp, mdc.hEipz);
+      status = mdc_tuple->addIndexedItem ("hEr", mdc.nhp, mdc.hEr);
+      status = mdc_tuple->addIndexedItem ("hEz", mdc.nhp, mdc.hEz);
       status = mdc_tuple->addItem ("hEcos", mdc.hEcos);
 
       status = mdc_tuple->addItem ("pt50", mdc.pt50);
@@ -602,15 +602,15 @@ StatusCode JPsi::execute()
     //Two tracks from interaction points. The same condion for BhaBha and for multihadron
     for(int i=0;i<mdc.nhp;i++)
     {
-      mdc.hpipr[i] = sqrt(sq(mdc.x[mdc.hpidx[i]]-0.1)+sq(mdc.y[mdc.hpidx[i]]+0.1));
-      mdc.hpipz[i] = mdc.z[mdc.hpidx[i]];
-      if(USE_IPCUT && ( mdc.hpipr[i]> IPR || fabs(mdc.hpipz[i]) > DELTA_Z) ) return StatusCode::SUCCESS;
+      mdc.hpr[i] = sqrt(sq(mdc.x[mdc.hpidx[i]]-0.1)+sq(mdc.y[mdc.hpidx[i]]+0.1));
+      mdc.hpz[i] = mdc.z[mdc.hpidx[i]];
+      if(USE_IPCUT && ( mdc.hpr[i]> IPR || fabs(mdc.hpz[i]) > DELTA_Z) ) return StatusCode::SUCCESS;
 
-      mdc.hEipr[i] = sqrt(sq(mdc.x[mdc.hEidx[i]]-0.1)+sq(mdc.y[mdc.hEidx[i]]+0.1));
-      mdc.hEipz[i] = mdc.z[mdc.hEidx[i]];
+      mdc.hEr[i] = sqrt(sq(mdc.x[mdc.hEidx[i]]-0.1)+sq(mdc.y[mdc.hEidx[i]]+0.1));
+      mdc.hEz[i] = mdc.z[mdc.hEidx[i]];
     }
 
-    bool ishEip=fabs(mdc.hEipr[0])<IPR && fabs(mdc.hEipz[0]) < DELTA_Z && fabs(mdc.hEipr[1])<IPR && mdc.hEipz[1]<DELTA_Z;
+    bool ishEip=fabs(mdc.hEr[0])<IPR && fabs(mdc.hEz[0]) < DELTA_Z && fabs(mdc.hEr[1])<IPR && mdc.hEz[1]<DELTA_Z;
     mdc.hEip =ishEip;
 
     bool ishpip =  fabs(mdc.hpipr[0]<0.3) && fabs(mdc.hpipz[0]) < 3 && fabs(mdc.hpipr[1])<0.2 && fabs(mdc.hpipz[1])<3;
@@ -759,21 +759,18 @@ void JPsi::InitData(long nchtrack, long nneutrack)
   mdc.nhp=-1000;
   mdc.hpcos=-1000;
   mdc.hpip=-1000;
-
   mdc.hEcos = -1000;
-  for(int i =0;i<2;i++)
-  {
-    mdc.hpidx[i]=-1000;
-    mdc.hpipr[i]=-1000;
-    mdc.hpipz[i]=-1000;
-
-    mdc.hEidx[i]=-1000;
-    mdc.hEipr[i]=-1000;
-    mdc.hEipz[i]=-1000;
-  }
+  mdc.hEip=-1000;
 
   for(int i=0;i<MAX_TRACK_NUMBER; i++)
   {
+    mdc.hpidx[i]=-1000;
+    mdc.hpr[i]=-1000;
+    mdc.hpz[i]=-1000;
+    mdc.hEidx[i]=-1000;
+    mdc.hEr[i]=-1000;
+    mdc.hEz[i]=-1000;
+
     mdc.p[i]=-1000;
     mdc.px[i]=-1000;
     mdc.py[i]=-1000;
