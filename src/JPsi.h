@@ -67,7 +67,8 @@ class JPsi : public Algorithm
     NTuple::Array<double> p; //Momentum
     NTuple::Array<double> px,py,pz; //Componets of momentum
     NTuple::Array<double> pt; //transvese momentum
-    NTuple::Array<double> x, y, z; //poca coordinate of track
+    NTuple::Array<double> x, y, z, r; //poca coordinate of track
+    NTuple::Array<double> rvxy, rvz, rvphi; //poca coordinate of track
     NTuple::Array<double> theta,phi;
     NTuple::Array<double> q; //charge of the track
     NTuple::Array<long> isemc; //has emc information

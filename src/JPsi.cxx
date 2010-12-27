@@ -144,6 +144,10 @@ StatusCode JPsi::initialize(void)
       status = mdc_tuple->addIndexedItem ("x", mdc.ntrack, mdc.x);
       status = mdc_tuple->addIndexedItem ("y", mdc.ntrack, mdc.y);
       status = mdc_tuple->addIndexedItem ("z", mdc.ntrack, mdc.z);
+      status = mdc_tuple->addIndexedItem ("r", mdc.ntrack, mdc.r);
+      status = mdc_tuple->addIndexedItem ("rvxy", mdc.ntrack, mdc.rvxy);
+      status = mdc_tuple->addIndexedItem ("rvz", mdc.ntrack, mdc.rvz);
+      status = mdc_tuple->addIndexedItem ("rvphi", mdc.ntrack, mdc.rvphi);
       status = mdc_tuple->addIndexedItem ("q", mdc.ntrack, mdc.q);
       // EMC information for charged tracks
       status = mdc_tuple->addIndexedItem ("isemc", mdc.ntrack, mdc.isemc);
@@ -414,14 +418,29 @@ StatusCode JPsi::execute()
       mdc.theta[i]=mdcTrk->theta();
       mdc.phi[i]=mdcTrk->phi();
       mdc.q[i]=mdcTrk->charge();
-      mdc.x[i]=xorigin.x();
-      mdc.y[i]=xorigin.y();
-      //mdc.x[i]=mdcTrk->x();
-      //mdc.y[i]=mdcTrk->y();
+
+      mdc.x[i]=mdcTrk->x();
+      mdc.y[i]=mdcTrk->y();
       mdc.z[i]=mdcTrk->z();
-      mdc.X[i]=mdcTrk->getVX0();
-      mdc.Y[i]=mdcTrk->getVY0();
-      mdc.Z[i]=mdcTrk->getVZ0();
+      /* Vertex game. copy from rhophi analysis */
+      double phi0=mdcTrk->helix(1);
+      double xv=xorigin.x();
+      double yv=xorigin.y();
+      double Rxy=(mdc.x[i]-xv)*cos(phi0)+(mdc.y[i]-yv)*sin(phi0);
+      mdc.r[i]=Rxy;
+      HepVector a = mdcTrk->helix();
+      HepSymMatrix Ea = mdcTrk->err();
+      HepPoint3D point0(0.,0.,0.);   // the initial point for MDC recosntruction
+      HepPoint3D IP(xorigin[0],xorigin[1],xorigin[2]); 
+      VFHelix helixip(point0,a,Ea); 
+      helixip.pivot(IP);
+      HepVector vecipa = helixip.a();
+      double  Rvxy0=fabs(vecipa[0]);  //the nearest distance to IP in xy plane
+      double  Rvz0=vecipa[3];         //the nearest distance to IP in z direction
+      double  Rvphi0=vecipa[1];
+      mdc.rvxy=Rvxy0;
+      mdc.rvz=Rvz0;
+      mdc.rvphi=Rvphi;
       mdc.Emdc+=sqrt(mdc.p[i]*mdc.p[i]+PI_MESON_MASS*PI_MESON_MASS);
       /* Calculate sphericity tensor */
       for(int i=0;i<3;i++)
@@ -713,6 +732,10 @@ void JPsi::InitData(long nchtrack, long nneutrack)
     mdc.x[i]=-1000;
     mdc.y[i]=-1000;
     mdc.z[i]=-1000;
+    mdc.r[i]=-1000;
+    mdc.rvxy[i]=-1000;
+    mdc.rvz[i]=-1000;
+    mdc.rvphi[i]=-1000;
     mdc.theta[i]=-1000;
     mdc.phi[i]=-1000;
     mdc.q[i]=-1000;
