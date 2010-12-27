@@ -760,7 +760,6 @@ void JPsi::InitData(long nchtrack, long nneutrack)
   mdc.hpcos=-1000;
   mdc.hpip=-1000;
 
-  mdc.nhE = -1000;
   mdc.hEcos = -1000;
   for(int i =0;i<2;i++)
   {
