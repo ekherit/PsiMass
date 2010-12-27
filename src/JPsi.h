@@ -88,14 +88,22 @@ class JPsi : public Algorithm
     NTuple::Item<double> Eemc; //total energy using emc
     NTuple::Item<double> Emdc; //total energy using only mdc
     NTuple::Item<double> S; //Sphericity
-    NTuple::Item<long>    nhp; //number of high energy tracks.
-    NTuple::Array<long> hpidx; //index for two high energy track.
+
+    NTuple::Item<long>    nhp; //number of high energy tracks. 
+    NTuple::Item<double>  hpcos; //cos angle beween highest energy tracks
+    NTuple::Array<long>   hpidx; //index for two high energy track.
     NTuple::Array<double> hpipr; //interaction point distance for two high energy track
     NTuple::Array<double> hpipz; //interaction point z for two high energy track
-    NTuple::Item<double> hpcos; //cos angle beween highest energy tracks
+
+    NTuple::Item<double>  hEcos; //cos angle beween highest energy tracks
+    NTuple::Array<long>   hEidx; //index for two high energy track.
+    NTuple::Array<double> hEipr; //interaction point distance for two high energy track
+    NTuple::Array<double> hEipz; //interaction point z for two high energy track
+
     NTuple::Item<long>   pt50; //flag for higher 50 MeV pt
     NTuple::Item<long>   pt100;//flag for higher 100 MeV pt.
     NTuple::Item<long>   hpip; //flag for strict ip cut
+    NTuple::Item<long>   hEip; //flag for  energy cut	
   };
 
   /* ElecroMagnetic Calorimeter Information */

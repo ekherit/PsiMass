@@ -132,6 +132,12 @@ StatusCode JPsi::initialize(void)
       status = mdc_tuple->addIndexedItem ("hpipz", mdc.nhp, mdc.hpipz);
       status = mdc_tuple->addItem ("hpcos", mdc.hpcos);
       status = mdc_tuple->addItem ("hpip", mdc.hpip);
+
+      status = mdc_tuple->addIndexedItem ("hEidx", mdc.nhp, mdc.hEidx);
+      status = mdc_tuple->addIndexedItem ("hEipr", mdc.nhp, mdc.hEipr);
+      status = mdc_tuple->addIndexedItem ("hEipz", mdc.nhp, mdc.hEipz);
+      status = mdc_tuple->addItem ("hEcos", mdc.hEcos);
+
       status = mdc_tuple->addItem ("pt50", mdc.pt50);
       status = mdc_tuple->addItem ("pt100", mdc.pt100);
       status = mdc_tuple->addIndexedItem ("p", mdc.ntrack, mdc.p);
@@ -395,8 +401,10 @@ StatusCode JPsi::execute()
   if(MIN_CHARGED_TRACKS<=evtRecEvent->totalCharged() && evtRecEvent->totalCharged() <=MAX_TRACK_NUMBER)
   {
     double p2sum=0;
-    double  Eh[2]={0, 0};
-    Hep3Vector ph[2];//Two high momentum
+    double  hP[2]={0,0}; //to save maximum momentum
+    Hep3Vector hPp[2];//Two high momentum
+    double  hE[2]={0, 0};
+    Hep3Vector hEp[2];//Two high momentum
     /*  loop over charged track */
     //mdc.ntrack=evtRecEvent->totalCharged();
     mdc.ntrack=0;
@@ -452,46 +460,69 @@ StatusCode JPsi::execute()
 
       /*  If we have EMC information for this charged track */
       mdc.isemc[i]=(*itTrk)->isEmcShowerValid();
+      mdc.nhp = 2;
+      /*  find two high momentum tracks */
+      if(emcTrk->p() > hP[0])
+      {
+        //if we'v found energy more then highest finded energy
+        //then we should save old value to lower one.
+        long tmp=mdc.hpidx[0];
+        mdc.hpidx[1]=tmp;
+        hP[1]=hP[0];
+        hPp[1]=hPp[0];
+        mdc.hpidx[0]=i;
+        hP[0]=emcTrk->p();
+        hPp[0]=mdcTrk->p3();
+      }
+      else
+      {
+        if(emcTrk->p() > hP[1])
+        {
+          mdc.hpidx[1]=i;
+          hP[1]=emcTrk->p();
+          hPp[1]=mdcTrk->p3();
+        }
+      }
+
       if(mdc.isemc[i]) 
       {
-        mdc.nemc++;//increase number of emc clasters
-        RecEmcShower *emcTrk = (*itTrk)->emcShower(); //Electro Magnet Calorimeer
+	      mdc.nemc++;//increase number of emc clasters
+	      RecEmcShower *emcTrk = (*itTrk)->emcShower(); //Electro Magnet Calorimeer
 
-        mdc.E[i]=emcTrk->energy();
-        mdc.dE[i]=emcTrk->dE();
-        mdc.ncrstl[i]=emcTrk->numHits();
-        mdc.status[i]=emcTrk->status();
-        mdc.cellId[i]=emcTrk->cellId();
-        mdc.module[i]=emcTrk->module();
-        mdc.Eemc+=mdc.E[i];
+	      mdc.E[i]=emcTrk->energy();
+	      mdc.dE[i]=emcTrk->dE();
+	      mdc.ncrstl[i]=emcTrk->numHits();
+	      mdc.status[i]=emcTrk->status();
+	      mdc.cellId[i]=emcTrk->cellId();
+	      mdc.module[i]=emcTrk->module();
+	      mdc.Eemc+=mdc.E[i];
 
-        HepLorentzVector P(mdc.px[i], mdc.py[i], mdc.pz[i], mdc.E[i]);
-        mdc.M[i]=P.m();
+	      HepLorentzVector P(mdc.px[i], mdc.py[i], mdc.pz[i], mdc.E[i]);
+	      mdc.M[i]=P.m();
 
 
-        /* find two high energy track */
-        mdc.nhp = 2;
-        if(emcTrk->energy() > Eh[0])
-        {
-          //if we'v found energy more then highest finded energy
-          //then we should save old value to lower one.
-          long tmp=mdc.hpidx[0];
-          mdc.hpidx[1]=tmp;
-          Eh[1]=Eh[0];
-          ph[1]=ph[0];
-          mdc.hpidx[0]=i;
-          Eh[0]=emcTrk->energy();
-          ph[0]=mdcTrk->p3();
-        }
-        else
-        {
-          if(emcTrk->energy() > Eh[1])
-          {
-            mdc.hpidx[1]=i;
-            ph[1]=mdcTrk->p3();
-            Eh[1]=emcTrk->energy();
-          }
-        }
+	      /* find two high energy track */
+	      if(emcTrk->energy() > hE[0])
+	      {
+		      //if we'v found energy more then highest finded energy
+		      //then we should save old value to lower one.
+		      long tmp=mdc.hEidx[0];
+		      mdc.hEidx[1]=tmp;
+		      hE[1]=hE[0];
+		      hEp[1]=hEp[0];
+		      mdc.hEidx[0]=i;
+		      hE[0]=emcTrk->energy();
+          hEp[0]=emcTrk->p3();
+	      }
+	      else
+	      {
+		      if(emcTrk->energy() > hE[1])
+		      {
+			      mdc.hEidx[1]=i;
+			      hE[1]=emcTrk->energy();
+            hEp[1]=emcTrk->p3();
+		      }
+	      }
       }
 
 
@@ -574,14 +605,22 @@ StatusCode JPsi::execute()
       mdc.hpipr[i] = sqrt(sq(mdc.x[mdc.hpidx[i]]-0.1)+sq(mdc.y[mdc.hpidx[i]]+0.1));
       mdc.hpipz[i] = mdc.z[mdc.hpidx[i]];
       if(USE_IPCUT && ( mdc.hpipr[i]> IPR || fabs(mdc.hpipz[i]) > DELTA_Z) ) return StatusCode::SUCCESS;
+
+      mdc.hEipr[i] = sqrt(sq(mdc.x[mdc.hEidx[i]]-0.1)+sq(mdc.y[mdc.hEidx[i]]+0.1));
+      mdc.hEipz[i] = mdc.z[mdc.hEidx[i]];
     }
 
-    bool ishpip =  mdc.hpipr[0]<0.2 && fabs(mdc.hpipz[0]) < 3 && fabs(mdc.hpipr[1])<0.2 && mdc.hpipz[1] < 3 ;
+    bool ishEip=fabs(mdc.hEipr[0])<IPR && fabs(mdc.hEipz[0]) < DELTA_Z && fabs(mdc.hEipr[1])<IPR && mdc.hEipz[1]<DELTA_Z;
+    mdc.hEip =ishEip;
+
+    bool ishpip =  fabs(mdc.hpipr[0]<0.3) && fabs(mdc.hpipz[0]) < 3 && fabs(mdc.hpipr[1])<0.2 && fabs(mdc.hpipz[1])<3;
     mdc.hpip =ishpip;
 
-    double tmp = ph[0].mag()*ph[1].mag()<=0 ? -10 : (ph[0].dot(ph[1]))/(ph[0].mag()*ph[1].mag());
-    mdc.hpcos=tmp;
+    double tmp_hpcos = hPp[0].mag()*hPp[1].mag()<=0 ? 100 : (hPp[0].dot(hPp[1]))/(hPp[0].mag()*hPp[1].mag());
+    mdc.hpcos=tmp_hpcos;
 
+    double tmp_hEcos = hEp[0].mag()*hEp[1].mag()<=0 ? 100 : (hEp[0].dot(hEp[1]))/(hEp[0].mag()*hEp[1].mag());
+    mdc.hEcos=tmp_hEcos;
 
     //normalize sphericity tensor
     for(int i=0;i<3;i++)
@@ -713,17 +752,29 @@ void JPsi::InitData(long nchtrack, long nneutrack)
   mdc.Eemc=0;
   mdc.Emdc=0;
   mdc.S=0;
-  mdc.hpcos=-1000;
-  mdc.nhp=-1000;
   mdc.pt50=-1000;
   mdc.pt100=-1000;
-  mdc.hpip=-1000;
   mdc.ntrack=0;
-  for(int i=0;i<MAX_TRACK_NUMBER; i++)
+
+  mdc.nhp=-1000;
+  mdc.hpcos=-1000;
+  mdc.hpip=-1000;
+
+  mdc.nhE = -1000;
+  mdc.hEcos = -1000;
+  for(int i =0;i<2;i++)
   {
     mdc.hpidx[i]=-1000;
     mdc.hpipr[i]=-1000;
     mdc.hpipz[i]=-1000;
+
+    mdc.hEidx[i]=-1000;
+    mdc.hEipr[i]=-1000;
+    mdc.hEipz[i]=-1000;
+  }
+
+  for(int i=0;i<MAX_TRACK_NUMBER; i++)
+  {
     mdc.p[i]=-1000;
     mdc.px[i]=-1000;
     mdc.py[i]=-1000;
