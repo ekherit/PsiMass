@@ -666,6 +666,11 @@ int main(int argc, char **argv)
   latexM1->DrawLatex(xx,100,Info1);
   sprintf(Info1,"#delta M_{#psi(2S)}=%3.3f#pm%3.3f [MeV]",_MPsiPrime+parRes[2]*2.-3686.111,parErrRes[2]*2.);
   latexM1->DrawLatex(xx,80,Info1);
+  TLatex * latexSw = new TLatex();
+  latexSw->SetTextSize(0.038);
+  latexSw->SetTextColor(2);
+  sprintf(Info1,"#sigma_{W}=%1.3f #pm = %1.3f",parRes[3],parErrRes[3]); 
+  latexSw->DrawLatex(xx,60,Info1);
   TestCanv->Update();
   delete [] En_;   
   delete [] Eerr_;
