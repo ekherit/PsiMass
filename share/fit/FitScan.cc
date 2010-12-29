@@ -648,9 +648,16 @@ int main(int argc, char **argv)
   TF1* FitPsiP2=new TF1("FitPsiP",FCrSPPrimeAzimov,1836.*ScaleEGr,1855*ScaleEGr,idRNP);  
   FitPsiP->SetParameters( parPsiPF);
   FitPsiP2->SetParameters( parPsiPF2);
-  TCanvas* TestCanv=new TCanvas("TestCanv","TestCanv",900,700); 
+  TCanvas* TestCanv=new TCanvas("BES_PSIP_SCAN","BES PsiP Scan",900,700); 
+  TestCanv->SetGridx();
+  TestCanv->SetGridy();
+  TestCanv->SetFillColor(0);
+  TestCanv->SetBorderMode(0);
   TestCanv->cd();
-  GrRes->Draw("AP");     
+  GrRes->Draw("AP");
+  GrRes->GetXaxis()->SetTitle("W [MeV]");
+  GrRes->GetYaxis()->SetTitle("#sigma [nb]");
+  GrRes->SetTitle("#psi' scan");
   FitPsiP->Draw("SAME");
   if(arguments.both==1)
   {
@@ -669,7 +676,7 @@ int main(int argc, char **argv)
   TLatex * latexSw = new TLatex();
   latexSw->SetTextSize(0.038);
   latexSw->SetTextColor(2);
-  sprintf(Info1,"#sigma_{W}=%1.3f #pm = %1.3f",parRes[3],parErrRes[3]); 
+  sprintf(Info1,"#sigma_{W}=%1.3f #pm %1.3f [MeV]",parRes[3],parErrRes[3]); 
   latexSw->DrawLatex(xx,60,Info1);
   TestCanv->Update();
   delete [] En_;   
@@ -807,7 +814,8 @@ void fcnResMult2(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t i
   parmh[idRFreeGee]=0;       
   parmh[idRTauEff]=0;       
   parbb[0]=CrossBhabha;        
-  for (Int_t i=0;i<6;i++)
+  int Nscan1=6; //number of point in first scan
+  for (Int_t i=0;i<Nscan1;i++)
   {
     Energy=EInScan[i];
     if(FreeEnergyFit==1){ 
@@ -870,7 +878,7 @@ void fcnResMult2(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t i
   parmh[idRbg]=par[4+NumEpoints];
   parmh[idReff]=par[5+NumEpoints];
 
-  for (Int_t i=6;i<NumEpoints;i++)
+  for (Int_t i=Nscan1;i<NumEpoints;i++)
   {
     Energy=EInScan[i];
     if(FreeEnergyFit==1){ 
