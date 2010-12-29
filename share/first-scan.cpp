@@ -16,6 +16,7 @@
  * =====================================================================================
  */
 #include <TTree.h>
+#include <TChain.h>
 #include <TCanvas.h>
 #include <TGraph.h>
 #include <TFile.h>
@@ -26,6 +27,7 @@
 #include <TDirectory.h>
 #include <TStyle.h>
 #include <TLegend.h>
+#include <TCut.h>
 
 #include <iomanip>
 #include <map>
@@ -112,12 +114,58 @@ struct RunInfo_t
   }
 };
 
+
+void track_number(void)
+{
+  TChain * chain = new TChain("head","head");
+  for(unsigned run=20334; run!=20368;++run)
+  {
+    char buf[1024];
+    sprintf(buf,"psip-%d.root",run);
+    cout << run << " test" << endl;
+    chain->AddFile(buf);
+    //TFile file(buf);
+    //if(file.IsOpen())
+    //{
+    //  TTree * head = (TTree*)file.Get("head");
+    //}
+  }
+  chain->Draw("nchtr:nchtr_rms/sqrt(nsel):run:0","","goff");
+  TGraphErrors * g = new TGraphErrors(chain->GetSelectedRows(), chain->GetV3(), chain->GetV1(), chain->GetV4(), chain->GetV2());
+  g->Draw("a*");
+  chain->Draw("nntr:nntr_rms/sqrt(nsel):run:0","","goff");
+  TCanvas * c = new TCanvas;
+  TGraphErrors * gn = new TGraphErrors(chain->GetSelectedRows(), chain->GetV3(), chain->GetV1(), chain->GetV4(), chain->GetV2());
+  gn->Draw("a*");
+}
 void make_result(void)
 {
-  /*  standart scan */
-  //const char * signal_cut = "nemc>2  && S>0.05  && pt50 && Eemc<2.5 && Emdc<4";
-  //const char * bhabha_cut = "nemc==2 && S<0.05  && pt50 && sin(theta[0])<0.45 && sin(theta[1])<0.45 && Emdc<5 && Eemc>2.5";
+  TCut mh_base_cut = "nemc>2  && S>0.05 && Eemc<2.5 && Emdc<4";
+  TCut mh_strict_cut = "nemc>3  && S>0.05 && Eemc<2.5 && Emdc<4";
+  TCut ee_base_cut = "nemc==2 && S<0.05 && Emdc<5 && Eemc>2.5";
+  TCut ee_theta_cut  = "Sum$(sin(theta)<0.45)==mdc.ntrack";
+  TCut mh_theta_cut  = "Sum$(sin(theta)>0.45)==mdc.ntrack";
+  TCut gg_base_cut = "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<4 && abs(Sum$(z))<9";
+  TCut gg_theta_cut  = "Sum$(sin(theta)>0.45)==2";
+  TCut hp_cut = "Sum$(abs(hpz)<3)==2 && Sum$(hpr<0.25)==2";
+  TCut rv_cut = "Sum$(rvxy[hpidx]<0.5)==2 && Sum$(abs(rvz[hpidx])<5)==2";
+  /* this is standart cut */
+  TCut  mh_cut = mh_base_cut  && rv_cut && "pt50";
+  TCut  ee_cut = ee_base_cut  && rv_cut && ee_theta_cut;
+  TCut  gg_cut = gg_base_cut  && gg_theta_cut;
+  /* this is strict cut */
+  //mh_cut = mh_strict_cut  && rv_cut && mh_theta_cut && "pt100";
+  //const char * signal_cut = "nemc>3  && S>0.05 && Eemc<2.5 && Emdc<4";
+  //const char * bhabha_cut = "(nemc==2 || nemc==3) && S<0.05 && sin(theta[0])<0.45 && sin(theta[1])<0.45 && Emdc<5 && Eemc>2.5";
   //const char * gg_cut =     "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<6 && abs(Sum$(z))<9 && Sum$(theta>0.45)==2";
+  /*  base cut */
+  //const char * signal_cut = "nemc>3  && S>0.05  && Eemc<2.5 && Emdc<4";
+  //const char * bhabha_cut = "nemc==2 && S<0.05  && sin(theta[0])<0.45 && sin(theta[1])<0.45 && Emdc<5 && Eemc>2.5";
+  //const char * gg_cut =     "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<6 && abs(Sum$(z))<9 && Sum$(theta>0.45)==2";
+  //const char * signal_cut = "nemc>2  && S>0.05  && pt50 && Eemc<2.5 && Emdc<4 && Sum$(abs(hpz)<3)==2 && Sum$(hpr<0.25)==2";
+  //const char * bhabha_cut = "nemc==2 && S<0.05  && pt50 && sin(theta[0])<0.45 && sin(theta[1])<0.45 && Emdc<5 && Eemc>2.5 && Sum$(abs(hpz)<3)==2 && Sum$(hpr<0.25)==2";
+  //const char * gg_cut =     "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<6 && abs(Sum$(z))<9 && Sum$(theta>0.45)==2";
+
   /*  modif */
   //const char * signal_cut = "nemc>2  && S>0.05  && pt100 && Eemc<2.5 && Emdc<4";
   //const char * bhabha_cut = "nemc==2 && S<0.05  && pt100 && sin(theta[0])<0.45 && sin(theta[1])<0.45 && Emdc<5 && Eemc>2.5";
@@ -131,10 +179,9 @@ void make_result(void)
   //const char * bhabha_cut = "nemc==2 && S<0.05  && pt100 && sin(theta[0])<0.45 && sin(theta[1])<0.45 && Emdc<5 && Eemc>2.5 && p[hpidx[0]]>p[hpidx[1]] && q[hpidx[0]]!=q[hpidx[1]] ";
   //const char * gg_cut =     "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<6 && abs(Sum$(z))<9 && Sum$(theta>0.45)==2";
   /* modif  q[0]!=q[1]*/
-  const char * signal_cut = "nemc>2  && S>0.05  && pt100 && Eemc<2.5 && Emdc<4 && q[hpidx[0]]!=q[hpidx[1]]";
-  const char * bhabha_cut = "nemc==2 && S<0.05  && pt100 && sin(theta[0])<0.45 && sin(theta[1])<0.45 && Emdc<5 && Eemc>2.5 &&  q[hpidx[0]]!=q[hpidx[1]] ";
-  const char * gg_cut =     "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<6 && abs(Sum$(z))<9 && Sum$(theta>0.45)==2";
-  const char * mult_cut = "nemc>2";
+  //const char * signal_cut = "nemc>2  && S>0.05  && pt100 && Eemc<2.5 && Emdc<4 && q[hpidx[0]]!=q[hpidx[1]]";
+  //const char * bhabha_cut = "nemc==2 && S<0.05  && pt100 && sin(theta[0])<0.45 && sin(theta[1])<0.45 && Emdc<5 && Eemc>2.5 &&  q[hpidx[0]]!=q[hpidx[1]] ";
+  //const char * gg_cut =     "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<6 && abs(Sum$(z))<9 && Sum$(theta>0.45)==2";
   list<RunInfo_t> runinfo;
   runinfo.push_back(RunInfo_t());
   runinfo.push_back(RunInfo_t(20334,	8352	,15402	,314	,852	,2219	  ,0.00795939	  ,68.8556	,26.137));
@@ -200,6 +247,7 @@ void make_result(void)
       }
     }
   }
+//temporary
   for(unsigned run=20334; run!=20368;++run)
   {
     char buf[1024];
@@ -213,9 +261,9 @@ void make_result(void)
       mhadr->AddFriend(mdc);
       mhadr->AddFriend(emc);
       TTree * gg = (TTree*)file.Get("gg");
-      mhadr->Draw("Etotal",signal_cut,"goff");
+      mhadr->Draw("Etotal",mh_cut,"goff");
       unsigned Nsignal = mhadr->GetSelectedRows();
-      mhadr->Draw("Etotal",bhabha_cut,"goff");
+      mhadr->Draw("Etotal",ee_cut,"goff");
       unsigned Nbhabha = mhadr->GetSelectedRows();
       //draw  number of charged tracks
       mhadr->Draw("mdc.ntrack>>hnchtr","","goff");
@@ -376,6 +424,8 @@ void make_result(void)
   }
 
   TCanvas * result_c = new TCanvas;
+  result_c->SetGridx();
+  result_c->SetGridy();
   mg->Draw("a");
   l->Draw();
 
