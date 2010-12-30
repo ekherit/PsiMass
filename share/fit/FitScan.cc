@@ -536,7 +536,7 @@ int main(int argc, char **argv)
   }
   MinuitRes->mnexcm("SET ERR", arglistRes,1,ierflgRes);
 
-  Double_t vstartRes[5]= {50,0.8,0,1.3,arguments.CrBhabha};   
+  Double_t vstartRes[5]= {50,0.8,0,1.5,arguments.CrBhabha};   
 
   Double_t stepRes[5] =  {0.10,0.01,0.01,0.01,0.0};
 
@@ -544,7 +544,7 @@ int main(int argc, char **argv)
 
   MinuitRes->SetMaxIterations(20000);                         
   MinuitRes->DefineParameter(0,"bg",vstartRes[0],stepRes[0],-150,150.0);
-  MinuitRes->DefineParameter(1,"eff",vstartRes[1],stepRes[1],0.1,1.0);      
+  MinuitRes->DefineParameter(1,"eff",vstartRes[1],stepRes[1],0.001,1.0);      
   MinuitRes->DefineParameter(2,"dM/2.",vstartRes[2],stepRes[2],-1.,1);      
   MinuitRes->DefineParameter(3,"SigmaW",vstartRes[3],stepRes[3],0.5,1.78);        
   if(FreeEnergyFit==1)
@@ -669,15 +669,16 @@ int main(int argc, char **argv)
   latexM1->SetTextSize(0.038);
   latexM1->SetTextColor(2);       
   sprintf(Info1,"#chi^{2}_{#psi(2S)}=%3.3f/ (%d -%d) =%3.3f",MinChi2,NpPP,nf,MinChi2/(NpPP-nf)); 
-  double xx=1837*ScaleEGr;
-  latexM1->DrawLatex(xx,100,Info1);
+  double xx=1838*ScaleEGr;
+  double yy = parRes[0]*5;
+  latexM1->DrawLatex(xx,yy,Info1);
   sprintf(Info1,"#delta M_{#psi(2S)}=%3.3f#pm%3.3f [MeV]",_MPsiPrime+parRes[2]*2.-3686.111,parErrRes[2]*2.);
-  latexM1->DrawLatex(xx,80,Info1);
+  latexM1->DrawLatex(xx,yy*0.8,Info1);
   TLatex * latexSw = new TLatex();
   latexSw->SetTextSize(0.038);
   latexSw->SetTextColor(2);
   sprintf(Info1,"#sigma_{W}=%1.3f #pm %1.3f [MeV]",parRes[3],parErrRes[3]); 
-  latexSw->DrawLatex(xx,60,Info1);
+  latexSw->DrawLatex(xx,yy*0.6,Info1);
   TestCanv->Update();
   delete [] En_;   
   delete [] Eerr_;

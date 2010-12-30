@@ -134,15 +134,16 @@ void track_number(void)
   TGraphErrors * g = new TGraphErrors(chain->GetSelectedRows(), chain->GetV3(), chain->GetV1(), chain->GetV4(), chain->GetV2());
   g->Draw("a*");
   chain->Draw("nntr:nntr_rms/sqrt(nsel):run:0","","goff");
-  TCanvas * c = new TCanvas;
   TGraphErrors * gn = new TGraphErrors(chain->GetSelectedRows(), chain->GetV3(), chain->GetV1(), chain->GetV4(), chain->GetV2());
   gn->Draw("a*");
 }
+
 void make_result(void)
 {
   TCut mh_base_cut = "nemc>2  && S>0.05 && Eemc<2.5 && Emdc<4";
   TCut mh_strict_cut = "nemc>3  && S>0.05 && Eemc<2.5 && Emdc<4";
   TCut ee_base_cut = "nemc==2 && S<0.05 && Emdc<5 && Eemc>2.5";
+  TCut ee_ext_cut = "(nemc==2 || nemc==3) && S<0.05 && Emdc<5 && Eemc>2.5";
   TCut ee_theta_cut  = "Sum$(sin(theta)<0.45)==mdc.ntrack";
   TCut mh_theta_cut  = "Sum$(sin(theta)>0.45)==mdc.ntrack";
   TCut gg_base_cut = "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<4 && abs(Sum$(z))<9";
@@ -150,38 +151,16 @@ void make_result(void)
   TCut hp_cut = "Sum$(abs(hpz)<3)==2 && Sum$(hpr<0.25)==2";
   TCut rv_cut = "Sum$(rvxy[hpidx]<0.5)==2 && Sum$(abs(rvz[hpidx])<5)==2";
   /* this is standart cut */
-  TCut  mh_cut = mh_base_cut  && rv_cut && "pt50";
+  TCut  mh_cut = mh_base_cut  && rv_cut && "pt50" && mh_theta_cut;
   TCut  ee_cut = ee_base_cut  && rv_cut && ee_theta_cut;
   TCut  gg_cut = gg_base_cut  && gg_theta_cut;
   /* this is strict cut */
   //mh_cut = mh_strict_cut  && rv_cut && mh_theta_cut && "pt100";
-  //const char * signal_cut = "nemc>3  && S>0.05 && Eemc<2.5 && Emdc<4";
-  //const char * bhabha_cut = "(nemc==2 || nemc==3) && S<0.05 && sin(theta[0])<0.45 && sin(theta[1])<0.45 && Emdc<5 && Eemc>2.5";
-  //const char * gg_cut =     "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<6 && abs(Sum$(z))<9 && Sum$(theta>0.45)==2";
-  /*  base cut */
-  //const char * signal_cut = "nemc>3  && S>0.05  && Eemc<2.5 && Emdc<4";
-  //const char * bhabha_cut = "nemc==2 && S<0.05  && sin(theta[0])<0.45 && sin(theta[1])<0.45 && Emdc<5 && Eemc>2.5";
-  //const char * gg_cut =     "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<6 && abs(Sum$(z))<9 && Sum$(theta>0.45)==2";
-  //const char * signal_cut = "nemc>2  && S>0.05  && pt50 && Eemc<2.5 && Emdc<4 && Sum$(abs(hpz)<3)==2 && Sum$(hpr<0.25)==2";
-  //const char * bhabha_cut = "nemc==2 && S<0.05  && pt50 && sin(theta[0])<0.45 && sin(theta[1])<0.45 && Emdc<5 && Eemc>2.5 && Sum$(abs(hpz)<3)==2 && Sum$(hpr<0.25)==2";
-  //const char * gg_cut =     "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<6 && abs(Sum$(z))<9 && Sum$(theta>0.45)==2";
-
-  /*  modif */
-  //const char * signal_cut = "nemc>2  && S>0.05  && pt100 && Eemc<2.5 && Emdc<4";
-  //const char * bhabha_cut = "nemc==2 && S<0.05  && pt100 && sin(theta[0])<0.45 && sin(theta[1])<0.45 && Emdc<5 && Eemc>2.5";
-  //const char * gg_cut =     "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<6 && abs(Sum$(z))<9 && Sum$(theta>0.45)==2";
-  /*  modif hpipr<0.3 */
-  //const char * signal_cut = "nemc>2  && S>0.05  && pt100 && Eemc<2.5 && Emdc<4 &&  Sum$(hpipr<0.3)==2";
-  //const char * bhabha_cut = "nemc==2 && S<0.05  && pt100 && sin(theta[0])<0.45 && sin(theta[1])<0.45 && Emdc<5 && Eemc>2.5";
-  //const char * gg_cut =     "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<6 && abs(Sum$(z))<9 && Sum$(theta>0.45)==2";
-  /* modif p[0]>p[1] for highest  and q[0]!=q[1]*/
-  //const char * signal_cut = "nemc>2  && S>0.05  && pt100 && Eemc<2.5 && Emdc<4 && p[hpidx[0]]>p[hpidx[1]] && q[hpidx[0]]!=q[hpidx[1]]";
-  //const char * bhabha_cut = "nemc==2 && S<0.05  && pt100 && sin(theta[0])<0.45 && sin(theta[1])<0.45 && Emdc<5 && Eemc>2.5 && p[hpidx[0]]>p[hpidx[1]] && q[hpidx[0]]!=q[hpidx[1]] ";
-  //const char * gg_cut =     "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<6 && abs(Sum$(z))<9 && Sum$(theta>0.45)==2";
-  /* modif  q[0]!=q[1]*/
-  //const char * signal_cut = "nemc>2  && S>0.05  && pt100 && Eemc<2.5 && Emdc<4 && q[hpidx[0]]!=q[hpidx[1]]";
-  //const char * bhabha_cut = "nemc==2 && S<0.05  && pt100 && sin(theta[0])<0.45 && sin(theta[1])<0.45 && Emdc<5 && Eemc>2.5 &&  q[hpidx[0]]!=q[hpidx[1]] ";
-  //const char * gg_cut =     "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<6 && abs(Sum$(z))<9 && Sum$(theta>0.45)==2";
+  /* bha bha ext cut */
+  //ee_cut = ee_ext_cut  && rv_cut && ee_theta_cut;
+  /* very strict cut */
+  //mh_cut = mh_strict_cut && rv_cut && mh_theta_cut && "emc.ntrack==0";
+  
   list<RunInfo_t> runinfo;
   runinfo.push_back(RunInfo_t());
   runinfo.push_back(RunInfo_t(20334,	8352	,15402	,314	,852	,2219	  ,0.00795939	  ,68.8556	,26.137));
@@ -217,19 +196,20 @@ void make_result(void)
   runinfo.push_back(RunInfo_t(20367,	19150	,35054	,689	,2037	,9176	  ,0.0092355	  ,158.675	,74.4855));
 
   vector <ScanPoint_t> pv(13);
-  pv[0].pn=1;   pv[0].E=3677.872; pv[0].lum=104.561 ;  pv[0].Eerror=0.241;  pv[0].runs.push_back(20334);   pv[0].runs.push_back(20335);
-  pv[1].pn=1;   pv[1].E=3678.055; pv[1].lum=464.741 ;  pv[1].Eerror=0.146;  pv[1].runs.push_back(20339);   pv[1].runs.push_back(20336);
-  pv[2].pn=3;   pv[2].E=3682.836; pv[2].lum=330.082 ;  pv[2].Eerror=0.141;  pv[2].runs.push_back(20340);   pv[2].runs.push_back(20341);
-  pv[3].pn=5;   pv[3].E=3686.298; pv[3].lum=360.3861;  pv[3].Eerror=0.124;  pv[3].runs.push_back(20344);   pv[3].runs.push_back(20342); pv[3].runs.push_back(20343);
-  pv[4].pn=7;   pv[4].E=3688.277; pv[4].lum=339.514 ;  pv[4].Eerror=0.192;  pv[4].runs.push_back(20346);   pv[4].runs.push_back(20347);
-  pv[5].pn=9;   pv[5].E=3696.883; pv[5].lum=339.000 ;  pv[5].Eerror=0.176;  pv[5].runs.push_back(20350);   pv[5].runs.push_back(20348); pv[5].runs.push_back(20349);
-  pv[6].pn=1;   pv[6].E=3676.428; pv[6].lum=230.509 ;  pv[6].Eerror=0.128;  pv[6].runs.push_back(20353);   pv[6].runs.push_back(20354);
-  pv[7].pn=2;   pv[7].E=3681.665; pv[7].lum=239.3696;  pv[7].Eerror=0.131;  pv[7].runs.push_back(20357);   pv[7].runs.push_back(20355);
-  pv[8].pn=4;   pv[8].E=3683.509; pv[8].lum=302.043 ;  pv[8].Eerror=0.122;  pv[8].runs.push_back(20358);   pv[8].runs.push_back(20359);
-  pv[9].pn=5;   pv[9].E=3686.004; pv[9].lum=272.106 ;  pv[9].Eerror=0.126;  pv[9].runs.push_back(20361);   pv[9].runs.push_back(20360);
-  pv[10].pn=6; pv[10].E=3687.093; pv[10].lum=283.544 ;  pv[10].Eerror=0.155; pv[10].runs.push_back(20362);  pv[10].runs.push_back(20363);
-  pv[11].pn=8; pv[11].E=3690.152; pv[11].lum=325.140 ;  pv[11].Eerror=0.117; pv[11].runs.push_back(20365);  pv[11].runs.push_back(20364);
-  pv[12].pn=9; pv[12].E=3693.086; pv[12].lum=354.908 ;  pv[12].Eerror=0.143; pv[12].runs.push_back(20366);  pv[12].runs.push_back(20367);
+  ScanPoint_t * sp=&pv[0];
+  sp=&pv[0]; sp->pn=1; sp->E=3677.872; sp->lum=104.561; sp->Eerror=0.241; sp->runs.push_back(20334); sp->runs.push_back(20335);
+  sp=&pv[1]; sp->pn=1; sp->E=3678.055; sp->lum=464.741;sp->Eerror=0.146;sp->runs.push_back(20339);sp->runs.push_back(20336);
+  sp=&pv[2]; sp->pn=3; sp->E=3682.836; sp->lum=330.082;sp->Eerror=0.141;sp->runs.push_back(20340);sp->runs.push_back(20341);
+  sp=&pv[3]; sp->pn=5; sp->E=3686.298; sp->lum=360.3861;sp->Eerror=0.124;sp->runs.push_back(20344);sp->runs.push_back(20342); sp->runs.push_back(20343);
+  sp=&pv[4]; sp->pn=7; sp->E=3688.277; sp->lum=339.514;sp->Eerror=0.192;sp->runs.push_back(20346);sp->runs.push_back(20347);
+  sp=&pv[5]; sp->pn=9; sp->E=3696.883; sp->lum=339.000;sp->Eerror=0.176;sp->runs.push_back(20350);sp->runs.push_back(20348); sp->runs.push_back(20349);
+  sp=&pv[6]; sp->pn=1; sp->E=3676.428; sp->lum=230.509;sp->Eerror=0.128;sp->runs.push_back(20353);sp->runs.push_back(20354);
+  sp=&pv[7]; sp->pn=2; sp->E=3681.665; sp->lum=239.3696;sp->Eerror=0.131;sp->runs.push_back(20357);sp->runs.push_back(20355);
+  sp=&pv[8]; sp->pn=4; sp->E=3683.509; sp->lum=302.043;sp->Eerror=0.122;sp->runs.push_back(20358);sp->runs.push_back(20359);
+  sp=&pv[9]; sp->pn=5; sp->E=3686.004; sp->lum=272.106;sp->Eerror=0.126;sp->runs.push_back(20361);sp->runs.push_back(20360);
+  sp=&pv[10]; sp->pn=6; sp->E=3687.093; sp->lum=283.544; sp->Eerror=0.155; sp->runs.push_back(20362);sp->runs.push_back(20363);
+  sp=&pv[11]; sp->pn=8; sp->E=3690.152; sp->lum=325.140;sp->Eerror=0.117; sp->runs.push_back(20365);sp->runs.push_back(20364);
+  sp=&pv[12]; sp->pn=9; sp->E=3693.086; sp->lum=354.908;sp->Eerror=0.143; sp->runs.push_back(20366);sp->runs.push_back(20367);
   cout << setw(10) << "Run #" << setw(20) << "Multihadron" << setw(20) << "Bhabha" << setw(20) << "GammaGamma" << endl;
 
   //reset luminosity in order to fill it from runinfo table.
@@ -248,6 +228,9 @@ void make_result(void)
     }
   }
 //temporary
+  unsigned runidx=0;
+  TGraphErrors * nchtr2_g = new TGraphErrors;
+  TGraphErrors * nntr2_g = new TGraphErrors;
   for(unsigned run=20334; run!=20368;++run)
   {
     char buf[1024];
@@ -266,15 +249,27 @@ void make_result(void)
       mhadr->Draw("Etotal",ee_cut,"goff");
       unsigned Nbhabha = mhadr->GetSelectedRows();
       //draw  number of charged tracks
-      mhadr->Draw("mdc.ntrack>>hnchtr","","goff");
+      mhadr->Draw("mdc.ntrack>>hnchtr",mh_cut && mh_theta_cut && "emc.ntrack==0","goff");
       TH1F * hnchtr = (TH1F*)gDirectory->Get("hnchtr");
+      hnchtr->Fit("gaus","IQ0");
+      TF1 * nchtr_f = hnchtr->GetFunction("gaus");
       double nchtr=0, nntr=0, nchtr_rms=1, nntr_rms=1;
+      nchtr=nchtr_f->GetParameter(1);
+      double nchtr_sigma = nchtr_f->GetParError(1)*sqrt(nchtr_f->GetChisquare()/nchtr_f->GetNDF());
+      //nchtr2_g->SetPoint(runidx,run,nchtr);
+      //nchtr2_g->SetPointError(runidx,0,nchtr_sigma);
+      
+      //nchtr2_g->SetPoint(runidx,run,hnchtr->GetMean());
+      //nchtr2_g->SetPointError(runidx,0,hnchtr->GetRMS()/sqrt(mhadr->GetSelectedRows()));
       nchtr = hnchtr->GetMean(); //number of charged tracks
-      nchtr_rms = hnchtr->GetRMS(); //RMS of charged tracks.
-      mhadr->Draw("emc.ntrack>>hnntr","","goff");
+      nchtr_rms = hnchtr->GetRMS()/sqrt(hnchtr->GetEntries()); //RMS of charged tracks.
+      mhadr->Draw("emc.ntrack>>hnntr",mh_cut && mh_theta_cut,"goff");
       TH1F * hnntr = (TH1F*)gDirectory->Get("hnntr");
+      hnntr->Fit("gaus","IQ0");
+      TF1 * nntr_f = hnntr->GetFunction("gaus");
       nntr = hnntr->GetMean(); //number of neutral tracks
-      nntr_rms = hnntr->GetRMS(); //RMS of number of neutral tracks.
+      nntr_rms = hnntr->GetRMS()/sqrt(hnntr->GetEntries()); //RMS of number of neutral tracks.
+      
       gg->Draw("Etotal",gg_cut,"goff");
       unsigned Ngg = gg->GetSelectedRows();
       cout << setw(10) << run << setw(20) << Nsignal << setw(20)<< Nbhabha << setw(20)<< Ngg <<  setw(20)<< double(Nbhabha)/double(Ngg) << endl;
@@ -293,6 +288,11 @@ void make_result(void)
           pv[pn].Ngg+=Ngg;
           pv[pn].Nchtr.add(nchtr,1./sq(nchtr_rms));
           pv[pn].Nntr.add(nntr,1./sq(nntr_rms));
+          nchtr2_g->SetPoint(runidx,pv[pn].E,nchtr);
+          nchtr2_g->SetPointError(runidx,pv[pn].Eerror,nchtr_rms);
+          nntr2_g->SetPoint(runidx,pv[pn].E,nntr);
+          nntr2_g->SetPointError(runidx,pv[pn].Eerror,nntr_rms);
+          runidx++;
         }
       }
     }
@@ -336,16 +336,25 @@ void make_result(void)
     bb_gg_g->SetTitle("N_{ee} / N_{#gamma#gamma}");
     bb_gg_g->GetXaxis()->SetTitle("point");
   }
-  TCanvas * ch_c= new TCanvas;
-  ch_c->Divide(1,2);
-  ch_c->cd(1);
-  nchtr_g->Draw("a*");
-  nchtr_g->GetXaxis()->SetTitle("point");
-  nchtr_g->GetYaxis()->SetTitle("charged tracks");
-  ch_c->cd(2);
-  nntr_g->Draw("a*");
-  nntr_g->GetXaxis()->SetTitle("point");
-  nntr_g->GetYaxis()->SetTitle("neutral tracks");
+  //TCanvas * ch_c= new TCanvas("tracks_number","Number of tracks");
+  //ch_c->Divide(1,2);
+  //ch_c->cd(1);
+  //nchtr_g->Draw("a*");
+  //nchtr_g->GetXaxis()->SetTitle("point");
+  //nchtr_g->GetYaxis()->SetTitle("charged tracks");
+  //ch_c->cd(2);
+  //nntr_g->Draw("a*");
+  //nntr_g->GetXaxis()->SetTitle("point");
+  //nntr_g->GetYaxis()->SetTitle("neutral tracks");
+
+  TCanvas * tr_c = new TCanvas("tracks_number","Number of tracks");
+  tr_c->Divide(1,2);
+  tr_c->cd(1);
+  nchtr2_g->SetMarkerStyle(21);
+  nchtr2_g->Draw("ap");
+  tr_c->cd(2);
+  nntr2_g->SetMarkerStyle(22);
+  nntr2_g->Draw("ap");
 
   TCanvas * rat_c = new TCanvas;
   rat_c->Divide(1,2);
