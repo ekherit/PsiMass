@@ -138,30 +138,16 @@ void track_number(void)
   gn->Draw("a*");
 }
 
-void make_result(void)
+void set_alias(TTree * t)
 {
-  TCut mh_base_cut = "nemc>2  && S>0.05 && Eemc<2.5 && Emdc<4";
-  TCut mh_strict_cut = "nemc>3  && S>0.05 && Eemc<2.5 && Emdc<4";
-  TCut ee_base_cut = "nemc==2 && S<0.05 && Emdc<5 && Eemc>2.5";
-  TCut ee_ext_cut = "(nemc==2 || nemc==3) && S<0.05 && Emdc<5 && Eemc>2.5";
-  TCut ee_theta_cut  = "Sum$(sin(theta)<0.45)==mdc.ntrack";
-  TCut mh_theta_cut  = "Sum$(sin(theta)>0.45)==mdc.ntrack";
-  TCut gg_base_cut = "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<4 && abs(Sum$(z))<9";
-  TCut gg_theta_cut  = "Sum$(sin(theta)>0.45)==2";
-  TCut hp_cut = "Sum$(abs(hpz)<3)==2 && Sum$(hpr<0.25)==2";
-  TCut rv_cut = "Sum$(rvxy[hpidx]<0.5)==2 && Sum$(abs(rvz[hpidx])<5)==2";
-  /* this is standart cut */
-  TCut  mh_cut = mh_base_cut  && rv_cut && "pt50" && mh_theta_cut;
-  TCut  ee_cut = ee_base_cut  && rv_cut && ee_theta_cut;
-  TCut  gg_cut = gg_base_cut  && gg_theta_cut;
-  /* this is strict cut */
-  //mh_cut = mh_strict_cut  && rv_cut && mh_theta_cut && "pt100";
-  /* bha bha ext cut */
-  //ee_cut = ee_ext_cut  && rv_cut && ee_theta_cut;
-  /* very strict cut */
-  //mh_cut = mh_strict_cut && rv_cut && mh_theta_cut && "emc.ntrack==0";
-  
-  list<RunInfo_t> runinfo;
+  t->SetAlias("ecut", "mdc.E>=0.02");
+  t->SetAlias("ngt","Sum$(mdc.E>=0.02)");
+  t->SetAlias("ngt_Eemc","Sum$((mdc.E>=0.02)*E)");
+}
+
+
+void make_runinfo(list<RunInfo_t> & runinfo)
+{
   runinfo.push_back(RunInfo_t());
   runinfo.push_back(RunInfo_t(20334,	8352	,15402	,314	,852	,2219	  ,0.00795939	  ,68.8556	,26.137));
   runinfo.push_back(RunInfo_t(20335,	4348	,8052	  ,147	,457	,1121	  ,0.000277673	,35.7011	,0));
@@ -194,24 +180,64 @@ void make_result(void)
   runinfo.push_back(RunInfo_t(20365,	18771	,34205	,757	,2013	,15877	,0.0165697	  ,154.353	,136.972));
   runinfo.push_back(RunInfo_t(20366,	24053	,43467	,907	,2463	,11139	,0.0105485	  ,196.233	,49.6093));
   runinfo.push_back(RunInfo_t(20367,	19150	,35054	,689	,2037	,9176	  ,0.0092355	  ,158.675	,74.4855));
+}
 
-  vector <ScanPoint_t> pv(13);
+
+void make_scan_points(vector <ScanPoint_t> &pv)
+{
+  pv.resize(13);
   ScanPoint_t * sp=&pv[0];
-  sp=&pv[0]; sp->pn=1; sp->E=3677.872; sp->lum=104.561; sp->Eerror=0.241; sp->runs.push_back(20334); sp->runs.push_back(20335);
+  sp=&pv[0]; sp->pn=1; sp->E=3677.872; sp->lum=104.561; sp->Eerror=0.241; sp->runs.push_back(20334); sp->runs.push_back(20335); 
   sp=&pv[1]; sp->pn=1; sp->E=3678.055; sp->lum=464.741;sp->Eerror=0.146;sp->runs.push_back(20339);sp->runs.push_back(20336);
   sp=&pv[2]; sp->pn=3; sp->E=3682.836; sp->lum=330.082;sp->Eerror=0.141;sp->runs.push_back(20340);sp->runs.push_back(20341);
-  sp=&pv[3]; sp->pn=5; sp->E=3686.298; sp->lum=360.3861;sp->Eerror=0.124;sp->runs.push_back(20344);sp->runs.push_back(20342); sp->runs.push_back(20343);
-  sp=&pv[4]; sp->pn=7; sp->E=3688.277; sp->lum=339.514;sp->Eerror=0.192;sp->runs.push_back(20346);sp->runs.push_back(20347);
-  sp=&pv[5]; sp->pn=9; sp->E=3696.883; sp->lum=339.000;sp->Eerror=0.176;sp->runs.push_back(20350);sp->runs.push_back(20348); sp->runs.push_back(20349);
-  sp=&pv[6]; sp->pn=1; sp->E=3676.428; sp->lum=230.509;sp->Eerror=0.128;sp->runs.push_back(20353);sp->runs.push_back(20354);
+  sp=&pv[3]; sp->pn=5; sp->E=3686.298; sp->lum=360.3861;sp->Eerror=0.124;sp->runs.push_back(20344);sp->runs.push_back(20342); sp->runs.push_back(20343); 
+  sp=&pv[4]; sp->pn=7; sp->E=3688.277; sp->lum=339.514;sp->Eerror=0.192;sp->runs.push_back(20346);sp->runs.push_back(20347); 
+  sp=&pv[5]; sp->pn=9; sp->E=3696.883; sp->lum=339.000;sp->Eerror=0.176;sp->runs.push_back(20350);sp->runs.push_back(20348); sp->runs.push_back(20349); 
+  sp=&pv[6]; sp->pn=1; sp->E=3676.428; sp->lum=230.509;sp->Eerror=0.128;sp->runs.push_back(20353);sp->runs.push_back(20354); 
   sp=&pv[7]; sp->pn=2; sp->E=3681.665; sp->lum=239.3696;sp->Eerror=0.131;sp->runs.push_back(20357);sp->runs.push_back(20355);
-  sp=&pv[8]; sp->pn=4; sp->E=3683.509; sp->lum=302.043;sp->Eerror=0.122;sp->runs.push_back(20358);sp->runs.push_back(20359);
-  sp=&pv[9]; sp->pn=5; sp->E=3686.004; sp->lum=272.106;sp->Eerror=0.126;sp->runs.push_back(20361);sp->runs.push_back(20360);
+  sp=&pv[8]; sp->pn=4; sp->E=3683.509; sp->lum=302.043;sp->Eerror=0.122;sp->runs.push_back(20358);sp->runs.push_back(20359); 
+  sp=&pv[9]; sp->pn=5; sp->E=3686.004; sp->lum=272.106;sp->Eerror=0.126;sp->runs.push_back(20361);sp->runs.push_back(20360); 
   sp=&pv[10]; sp->pn=6; sp->E=3687.093; sp->lum=283.544; sp->Eerror=0.155; sp->runs.push_back(20362);sp->runs.push_back(20363);
   sp=&pv[11]; sp->pn=8; sp->E=3690.152; sp->lum=325.140;sp->Eerror=0.117; sp->runs.push_back(20365);sp->runs.push_back(20364);
   sp=&pv[12]; sp->pn=9; sp->E=3693.086; sp->lum=354.908;sp->Eerror=0.143; sp->runs.push_back(20366);sp->runs.push_back(20367);
-  cout << setw(10) << "Run #" << setw(20) << "Multihadron" << setw(20) << "Bhabha" << setw(20) << "GammaGamma" << endl;
+}
 
+void make_result(void)
+{
+  TCut mh_base_cut = "nemc>2  && S>0.05 && Eemc<2.5 && Emdc<4";
+  TCut mh_strict_cut = "nemc>3  && S>0.05 && Eemc<2.5 && Emdc<4";
+  TCut ee_base_cut = "nemc==2 && S<0.05 && Emdc<5 && Eemc>2.5";
+  TCut ee_ext_cut = "(nemc==2 || nemc==3) && S<0.05 && Emdc<5 && Eemc>2.5";
+  TCut ee_theta_cut  = "Sum$(sin(theta)<0.45)==mdc.ntrack";
+  TCut mh_theta_cut  = "Sum$(sin(theta)>0.45)==mdc.ntrack";
+  TCut gg_base_cut = "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<4 && abs(Sum$(z))<9";
+  TCut gg_theta_cut  = "Sum$(sin(theta)>0.45)==2";
+  TCut hp_cut = "Sum$(abs(hpz)<3)==2 && Sum$(hpr<0.25)==2";
+  TCut rv_cut = "Sum$(rvxy[hpidx]<0.5)==2 && Sum$(abs(rvz[hpidx])<5)==2";
+  TCut mh_ecut = "Sum$(E>=0.02)==nemc"; //energy deposition in calorimeter more then 20MeV
+  /* this is standart cut */
+  TCut  mh_cut = mh_base_cut  && rv_cut;
+  TCut  ee_cut = ee_base_cut  && rv_cut && ee_theta_cut;
+  TCut  gg_cut = gg_base_cut  && gg_theta_cut;
+  /* this is strict cut */
+  //mh_cut = mh_strict_cut  && rv_cut && mh_theta_cut && "pt100";
+  /* bha bha ext cut */
+  //ee_cut = ee_ext_cut  && rv_cut && ee_theta_cut;
+  /* very strict cut */
+  //mh_cut = mh_strict_cut && rv_cut && mh_theta_cut && "emc.ntrack==0";
+  /* new test cut for E cut */
+  //mh_cut = "Sum$(E>0.02)>2 && S>0.05 && Eemc<2.5 && Emdc<4"  && rv_cut && "pt50" && mh_theta_cut;
+  //ee_cut = "Sum$(E>0.02)==2 && S<0.05 && Emdc<5 && Eemc>2.5"  && rv_cut && ee_theta_cut;
+  //gg_cut = gg_base_cut  && gg_theta_cut && "Sum$(E>0.02)==2";
+
+  //mh_cut = "ngt > 3 &&  S>=0.06 && ngt_Eemc<2.5 && Emdc<5" && rv_cut && mh_theta_cut && "pt100";
+  //ee_cut = "ngt == 2 &&  S<=0.05 && ngt_Eemc>2.5 && Emdc<5" && ee_theta_cut && rv_cut;
+  
+  list<RunInfo_t> runinfo;
+  make_runinfo(runinfo);
+  vector <ScanPoint_t> pv;
+  make_scan_points(pv);
+  cout << setw(10) << "run #" << setw(20) << "multihadron" << setw(20) << "bhabha" << setw(20) << "gammagamma" << endl;
   //reset luminosity in order to fill it from runinfo table.
   for(unsigned point=0;point<pv.size();++point)
   {
@@ -243,6 +269,7 @@ void make_result(void)
       TTree * emc = (TTree*)file.Get("emc");
       mhadr->AddFriend(mdc);
       mhadr->AddFriend(emc);
+      set_alias(mhadr);
       TTree * gg = (TTree*)file.Get("gg");
       mhadr->Draw("Etotal",mh_cut,"goff");
       unsigned Nsignal = mhadr->GetSelectedRows();
