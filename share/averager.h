@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <limits>
+#include <cmath>
 
 namespace ibn 	{
   template <class T,class W=T>
