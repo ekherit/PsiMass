@@ -406,48 +406,50 @@ void SumPointsByQuant(Int_t npini,Int_t npfin,Int_t* UsePoints,Double_t* v,Doubl
 	else     sn[i]=sqrt(w/sq(norma));
     }
 };
+
 int GetNumRows(const char *FileName,int npar)
 {
-    int counter=-1;
-    Double_t Spool;
-    ifstream test(FileName,ios::in);//|ios::floatfield);
-    if(!test){
-      cout<<"there is no file:"<<FileName<<endl;
-      counter=0;
-      test.close();
-    }
-    else
-   {
-     // counter=0;     
+  int counter=-1;
+  Double_t Spool;
+  ifstream test(FileName,ios::in);//|ios::floatfield);
+  if(!test){
+    cout<<"there is no file:"<<FileName<<endl;
+    counter=0;
+    test.close();
+  }
+  else
+  {
+    // counter=0;     
     while(test.get()!=EOF) // find the end off file  runs.par
     {
-    	counter++;             // number of lines
-	for(int j=0;j<npar;j++)
-	{
-		test>>Spool;
-	}
+      counter++;             // number of lines
+      for(int j=0;j<npar;j++)
+      {
+        test>>Spool;
+      }
     }
     test.close();
-   } 
-    return counter;
+  } 
+  return counter;
 }
+
 void FillArrayFromFile(const char* FileName,Double_t** Array,int npar,int nps)
 {
-     ifstream readingfile(FileName,ios::in);
-     if(!readingfile) cout<<"there is no file:"<<FileName<<endl;
-     else
-     {
-     for(int i=0;i<nps;i++)
-     {
-     	Array[i]=new Double_t [npar];
-     	for(int j=0;j<npar;j++)
-	{
-	    readingfile>>Array[i][j];
-	}
-     }
-     cout<<endl;
-     }
-     readingfile.close();
+  ifstream readingfile(FileName,ios::in);
+  if(!readingfile) cout<<"there is no file:"<<FileName<<endl;
+  else
+  {
+    for(int i=0;i<nps;i++)
+    {
+      Array[i]=new Double_t [npar];
+      for(int j=0;j<npar;j++)
+      {
+        readingfile>>Array[i][j];
+      }
+    }
+    cout<<endl;
+  }
+  readingfile.close();
 }
 
 void FillArrayFromFile(const char* FileName,Double_t** Array,int npar,int nparNew,int nps)
