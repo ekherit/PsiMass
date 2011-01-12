@@ -1,6 +1,5 @@
 #define _HESSE_ 1 // calculate errors with HESSE
 #define _MINOs_ 1 // use minos errors
-//#include"KdDCSim/curve.hh"
 
 #include<iostream>
 #include<stdlib.h>
@@ -85,6 +84,7 @@ Int_t   FreeEnergyFit=0;
 //id fcnResChi2(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 void fcnResMult    (Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 void fcnResMult2    (Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
+void fcnResMult_both2    (Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 void fcnResMult3    (Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 /* Program documentation. */
 
@@ -432,6 +432,7 @@ int main(int argc, char **argv)
   int numpar=4;
   if(FreeEnergyFit==1) numpar+=NEp;
   if(arguments.both==1) numpar+=2;
+  if(arguments.both==2) numpar+=3;
   Double_t ECorrBB=0;
   Double_t LG=0,Lee=0;
   for(int is=0;is<NEp;is++)
@@ -504,12 +505,15 @@ int main(int argc, char **argv)
   }    
 
   MinuitRes = new TMinuit(numpar);
-  if(arguments.Chi2==0){
+  if(arguments.Chi2==0)
+  {
     MinuitRes->SetFCN(fcnResMult);  
     if(arguments.both==1 && FreeEnergyFit==1)
     MinuitRes->SetFCN(fcnResMult2);  
     if(arguments.both==1 && FreeEnergyFit==0)
     MinuitRes->SetFCN(fcnResMult3);  
+    if(arguments.both==2 && FreeEnergyFit==1)
+    MinuitRes->SetFCN(fcnResMult_both2);  
   }
   else {
     // !!     MinuitRes->SetFCN(fcnResChi2);  
@@ -556,19 +560,25 @@ int main(int argc, char **argv)
     }
   }
 
-  if(arguments.both==1 && FreeEnergyFit==1 && arguments.scan==3)
+  int nep = FreeEnergyFit==0 ? 0 : NEp;
+  if(arguments.scan==3)
   {
-    MinuitRes->DefineParameter(0+4+NEp,"bg2",vstartRes[0],stepRes[0],-150,150.0);
-    MinuitRes->DefineParameter(1+4+NEp,"eff2",vstartRes[1],stepRes[1],0.1,1.0);      
-    cout << "Fit both scan"<< endl;
-  }
-  if(arguments.both==1 && FreeEnergyFit==0 && arguments.scan==3)
-  {
-    MinuitRes->DefineParameter(0+4,"bg2",vstartRes[0],stepRes[0],-150,150.0);
-    MinuitRes->DefineParameter(1+4,"eff2",vstartRes[1],stepRes[1],0.1,1.0);      
-    cout << "Fit both scan"<< endl;
-  }
+    cout << "Fit scan1 and scan2"<< endl;
+    if(arguments.both==1)
+    {
+      MinuitRes->DefineParameter(0+4+nep,"bg2",vstartRes[0],stepRes[0],-150,150.0);
+      MinuitRes->DefineParameter(1+4+nep,"eff2",vstartRes[1],stepRes[1],0.1,1.0);      
+      cout << "Variant with own bg and eff" << endl;
+    }
+    if(arguments.both==2)
+    {
+      MinuitRes->DefineParameter(0+4+nep,"bg2",vstartRes[0],stepRes[0],-150,150.0);
+      MinuitRes->DefineParameter(1+4+nep,"eff2",vstartRes[1],stepRes[1],0.1,1.0);      
+      MinuitRes->DefineParameter(2+4+nep,"SigmaW2",vstartRes[3],stepRes[3],1.0,1.8);      
+      cout << "Variant with own bg, eff and sigmaW" << endl;
+    }
 
+  }
 
   MinuitRes->mnexcm("MIGRAD", arglistRes,numpar,ierflgRes);
 #if _HESSE_ 
@@ -603,29 +613,35 @@ int main(int argc, char **argv)
   parPsiPF[idRFreeGee]=0;
   parPsiPF[idRTauEff]=0;
 
-  if(arguments.both==1)
+
+  if(arguments.scan==3)
   {
-    if(arguments.FreeEnergy==0)
+    int nep = arguments.FreeEnergy == 0 ? 0 : NEp;
+    if(arguments.both==1)
     {
-      parPsiPF2[idRbg]=parRes[0+4];
-      parPsiPF2[idReff]=parRes[1+4];
+      parPsiPF2[idRbg]=parRes[0+4+nep];
+      parPsiPF2[idReff]=parRes[1+4+nep];
       parPsiPF2[idRM]=parRes[2];
       parPsiPF2[idRSw]=parRes[3];   
       parPsiPF2[idRFreeGee]=0;
       parPsiPF2[idRTauEff]=0;
+      for(unsigned i=0; i<idRNP;i++)
+      {
+        cout << i << " " << parPsiPF2[i] << endl;
+      }
     }
-    else 
+    if(arguments.both==2)
     {
-      parPsiPF2[idRbg]=parRes[0+4+NEp];
-      parPsiPF2[idReff]=parRes[1+4+NEp];
+      parPsiPF2[idRbg]=parRes[0+4+nep];
+      parPsiPF2[idReff]=parRes[1+4+nep];
       parPsiPF2[idRM]=parRes[2];
-      parPsiPF2[idRSw]=parRes[3];   
+      parPsiPF2[idRSw]=parRes[3+4+nep];   
       parPsiPF2[idRFreeGee]=0;
       parPsiPF2[idRTauEff]=0;
-    }
-    for(unsigned i=0; i<idRNP;i++)
-    {
-      cout << i << " " << parPsiPF2[i] << endl;
+      for(unsigned i=0; i<idRNP;i++)
+      {
+        cout << i << " " << parPsiPF2[i] << endl;
+      }
     }
   }
 
@@ -659,7 +675,7 @@ int main(int argc, char **argv)
   GrRes->GetYaxis()->SetTitle("#sigma [nb]");
   GrRes->SetTitle("#psi' scan");
   FitPsiP->Draw("SAME");
-  if(arguments.both==1)
+  if(arguments.both==1 || arguments.both==2)
   {
     FitPsiP2->SetLineColor(kBlue);
     FitPsiP2->Draw("SAME");
@@ -1031,6 +1047,159 @@ void fcnResMult3(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t i
   parmh[idReff]=par[5];
 
   for (Int_t i=6;i<NumEpoints;i++)
+  {
+    Energy=EInScan[i];
+    if(FreeEnergyFit==1){ 
+      Energy+=par[4+i];
+      EnergyChi2+=(par[4+i]*par[4+i]/(EErrInScan[i]*EErrInScan[i]));
+    }
+    sigmaMH=CrSOniumR(_MethodAzimov,_IdPsiPrime,Energy,parmh);  
+    sigmaBB=CrossSBhabhaPP(Energy,parbb);                        
+    sigmaFull=sigmaMH+sigmaBB;
+    nFull=NbbInScan[i]+NmhInScan[i];                                
+    lumFull=nFull/sigmaFull;
+    if(UseLumBB==0)  {
+      lumFull=LumLgammaInScan[i];
+      nFull=NmhInScan[i];
+      sigmaFull=sigmaMH;
+    }
+
+    if( FCNcall ==0 ){
+      cout<<"Point "<< i << " E " << Energy
+        << " Nmh " << NmhInScan[i]<<"Nbb:"<<NbbInScan[i]<<
+        " sigmaBB:"<<sigmaBB<<
+        " sigmaMH:"<<sigmaMH<<" rmh:"<<NmhInScan[i]/ sigmaMH<<
+        " rbb: "<<NbbInScan[i] / sigmaBB<<" LumFull:"<<lumFull<<
+        " LG:"<<LumLgammaInScan[i]<<
+        " parmh0:"<<parmh[0]<<"parmh[1]:"<<parmh[1]<<
+        "parmh[2]:"<<parmh[2]<<"parmh[3]:"<<parmh[3]
+        <<endl;
+      NpPP++;
+    }
+    chisqmh=0;
+    if(NmhInScan[i]>0)
+    {
+      chisqmh= (NmhInScan[i]*log(NmhInScan[i]/(sigmaMH*lumFull))
+          +sigmaMH*lumFull-NmhInScan[i]);            
+    }
+    else if(NmhInScan[i]==0)  
+    {
+      chisqmh =  sigmaMH*lumFull;
+    }
+    chisq+=  (2*chisqmh);
+
+
+    if(UseLumBB!=0){
+      if(NbbInScan[i]>0)
+      {
+        chisqbb= (NbbInScan[i]*log(NbbInScan[i]/(sigmaBB*lumFull))+
+            sigmaBB*lumFull-NbbInScan[i]);
+
+      }
+      else if(NbbInScan[i]==0)
+      {
+        chisqbb =  sigmaBB*lumFull;
+
+      }
+      chisq+=  (2*chisqbb);
+
+
+    }
+  }
+  f = chisq;
+  if(FreeEnergyFit==1) f+=EnergyChi2;//;    
+  if(MinChi2>f) MinChi2=f;
+  FCNcall=1;
+}
+
+void fcnResMult_both2(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
+{
+  //calculate chisquare
+  Double_t chisq =0;
+  Double_t chisqbb = 0;
+  Double_t chisqmh =0 ;
+  Double_t sigmaFull;
+  Double_t sigmaMH;
+  Double_t sigmaBB;
+  Double_t nFull;
+  Double_t lumFull;
+  Double_t Energy;
+  Double_t parmh[idRNP];
+  Double_t EnergyChi2=0;
+  Double_t parbb[1];        
+  parmh[idRbg]=par[0];
+  parmh[idReff]=par[1];
+  parmh[idRM]=par[2];
+  parmh[idRSw]=par[3];   
+  parmh[idRFreeGee]=0;       
+  parmh[idRTauEff]=0;       
+  parbb[0]=CrossBhabha;        
+  int Nscan1=6; //number of point in first scan
+  for (Int_t i=0;i<Nscan1;i++)
+  {
+    Energy=EInScan[i];
+    if(FreeEnergyFit==1){ 
+      Energy+=par[4+i];
+      EnergyChi2+=(par[4+i]*par[4+i]/(EErrInScan[i]*EErrInScan[i]));
+    }
+    sigmaMH=CrSOniumR(_MethodAzimov,_IdPsiPrime,Energy,parmh);  
+    sigmaBB=CrossSBhabhaPP(Energy,parbb);                        
+    sigmaFull=sigmaMH+sigmaBB;
+    nFull=NbbInScan[i]+NmhInScan[i];                                
+    lumFull=nFull/sigmaFull;
+    if(UseLumBB==0)  {
+      lumFull=LumLgammaInScan[i];
+      nFull=NmhInScan[i];
+      sigmaFull=sigmaMH;
+    }
+
+    if( FCNcall ==0 ){
+      cout<<"Point "<< i << " E " << Energy
+        << " Nmh " << NmhInScan[i]<<"Nbb:"<<NbbInScan[i]<<
+        " sigmaBB:"<<sigmaBB<<
+        " sigmaMH:"<<sigmaMH<<" rmh:"<<NmhInScan[i]/ sigmaMH<<
+        " rbb: "<<NbbInScan[i] / sigmaBB<<" LumFull:"<<lumFull<<
+        " LG:"<<LumLgammaInScan[i]<<
+        " parmh0:"<<parmh[0]<<"parmh[1]:"<<parmh[1]<<
+        "parmh[2]:"<<parmh[2]<<"parmh[3]:"<<parmh[3]
+        <<endl;
+      NpPP++;
+    }
+    chisqmh=0;
+    if(NmhInScan[i]>0)
+    {
+      chisqmh= (NmhInScan[i]*log(NmhInScan[i]/(sigmaMH*lumFull))
+          +sigmaMH*lumFull-NmhInScan[i]);            
+    }
+    else if(NmhInScan[i]==0)  
+    {
+      chisqmh =  sigmaMH*lumFull;
+    }
+    chisq+=  (2*chisqmh);
+
+
+    if(UseLumBB!=0){
+      if(NbbInScan[i]>0)
+      {
+        chisqbb= (NbbInScan[i]*log(NbbInScan[i]/(sigmaBB*lumFull))+
+            sigmaBB*lumFull-NbbInScan[i]);
+
+      }
+      else if(NbbInScan[i]==0)
+      {
+        chisqbb =  sigmaBB*lumFull;
+
+      }
+      chisq+=  (2*chisqbb);
+
+
+    }
+  }
+  parmh[idRbg]=par[0+4+NumEpoints];
+  parmh[idReff]=par[1+4+NumEpoints];
+  parmh[idRSw]=par[3+4+NumEpoints];
+
+  for (Int_t i=Nscan1;i<NumEpoints;i++)
   {
     Energy=EInScan[i];
     if(FreeEnergyFit==1){ 
