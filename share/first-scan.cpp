@@ -230,6 +230,9 @@ void make_result(void)
   //ee_cut = "Sum$(E>0.02)==2 && S<0.05 && Emdc<5 && Eemc>2.5"  && rv_cut && ee_theta_cut;
   //gg_cut = gg_base_cut  && gg_theta_cut && "Sum$(E>0.02)==2";
 
+  mh_cut = "ngt >= 3 &&  S>=0.06 && ngt_Eemc<2.5 && Emdc<5" && rv_cut;
+  ee_cut = "ngt == 2 &&  S<=0.05 && ngt_Eemc>2.5 && Emdc<5" && ee_theta_cut && rv_cut;
+
   //mh_cut = "ngt > 3 &&  S>=0.06 && ngt_Eemc<2.5 && Emdc<5" && rv_cut && mh_theta_cut && "pt100";
   //ee_cut = "ngt == 2 &&  S<=0.05 && ngt_Eemc>2.5 && Emdc<5" && ee_theta_cut && rv_cut;
   
