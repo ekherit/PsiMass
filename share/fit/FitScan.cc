@@ -289,7 +289,6 @@ int main(int argc, char **argv)
   else if(arguments.scan==2)
   {
     FillArrayFromFile("scan2.txt",AllMH,dimMHFile,npMHFile);  
-
   }
   else if(arguments.scan==3){
     FillArrayFromFile("scan12.txt",AllMH,dimMHFile,npMHFile);  
@@ -546,7 +545,7 @@ int main(int argc, char **argv)
 
 
 
-  MinuitRes->SetMaxIterations(20000);                         
+  MinuitRes->SetMaxIterations(100000);                         
   MinuitRes->DefineParameter(0,"bg",vstartRes[0],stepRes[0],-150,150.0);
   MinuitRes->DefineParameter(1,"eff",vstartRes[1],stepRes[1],0.001,1.0);      
   MinuitRes->DefineParameter(2,"dM/2.",vstartRes[2],stepRes[2],-1.,1);      
@@ -581,11 +580,12 @@ int main(int argc, char **argv)
   }
 
   MinuitRes->mnexcm("MIGRAD", arglistRes,numpar,ierflgRes);
+  MinuitRes->mnexcm("MIGRAD", arglistRes,numpar,ierflgRes);
 #if _HESSE_ 
   MinuitRes->mnexcm("HESSE", arglistRes,0,ierflgRes);
 #endif
 #if _MINOs_
-  MinuitRes->mnexcm("MINOs 1000 3 3", arglistRes,0,ierflgRes);
+  MinuitRes->mnexcm("MINOs 10000 3 3", arglistRes,0,ierflgRes);
 #endif
   // Print results
   Double_t aminRes,edmRes,errdefRes;
@@ -1197,7 +1197,7 @@ void fcnResMult_both2(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, In
   }
   parmh[idRbg]=par[0+4+NumEpoints];
   parmh[idReff]=par[1+4+NumEpoints];
-  parmh[idRSw]=par[3+4+NumEpoints];
+  parmh[idRSw]=par[2+4+NumEpoints];
 
   for (Int_t i=Nscan1;i<NumEpoints;i++)
   {
