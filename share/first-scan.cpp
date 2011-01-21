@@ -103,6 +103,9 @@ struct ScanPoint_t
   double lum;
   double E;
   double Eerror;
+  double Sw, dSw; //SigmaW, and error
+  double Se, dSe; //Sigma for electron
+  double Sp, dSp; //Sigma for positron
   unsigned long Nh; //number of multihadron
   unsigned long Nee; //number of e+e- (bhabha)
   unsigned long Ngg;  //number of gamma gamma
@@ -228,6 +231,11 @@ void read_energy(const char * filename,vector <ScanPoint_t> &pv)
       <<setw(10)<<dSe<<setw(10)<<Ep<<setw(10)<<dEp<<setw(10)<<Sp<<setw(10)<<dSp;
     double Wcm = cm_energy(Ee, Ep);
     double dWcm = sqrt(sq(dW_dE1(Ee,Ep)*dEe) + sq(dW_dE1(Ep,Ee)*dEp));
+    //Spread should be in MeV
+    Se*=1e-3;
+    Sp*=1e-3;
+    dSe*=1e-3;
+    dSp*=1e-3;
 
     cout << setw(10) << Wcm << setw(10) << dWcm;
     cout << setw(10) << pv[i].lum;
@@ -236,8 +244,17 @@ void read_energy(const char * filename,vector <ScanPoint_t> &pv)
       cout << setw(8) << *I;
     }
 
+    //fill c.m.energy
     pv[i].E=Wcm;
-    pv[i].Eerror = dWcm;
+    pv[i].Eerror = sqrt(dWcm*dWcm);
+    //fill c.m. spread
+    pv[i].Sw = sqrt(Sp*Sp+Se*Se);
+    pv[i].dSw = sqrt(sq(Sp*dSp)+sq(Se*dSe))/pv[i].Sw;
+    //fill electron and positron spread.
+    pv[i].Se = Se;
+    pv[i].dSe = dSe;
+    pv[i].Sp = Sp;
+    pv[i].dSp = dSp;
     cout << endl;
   }
 }
@@ -298,6 +315,12 @@ void make_scan_points(vector <ScanPoint_t> &pv)
   sp=&pv[12]; sp->pn=9; sp->E=3693.086; sp->lum=354.908;sp->Eerror=0.143; sp->runs.push_back(20366);sp->runs.push_back(20367);
   read_scan_info("share/scan_info.txt",pv);
   //read_energy("share/cbs-energy2.txt",pv);
+  //read_energy("share/cbs-energy3.txt",pv);
+  read_energy("share/cbs-energy4.txt",pv);
+  //for(unsigned i=0;i<pv.size();++i)
+  //{
+  //  pv[i].Eerror = sqrt(sq(pv[i].Eerror)+sq(0.200));
+  //}
 }
 
 
@@ -326,16 +349,16 @@ void make_result(void)
   /* very strict cut */
   //mh_cut = mh_strict_cut && rv_cut && mh_theta_cut && "emc.ntrack==0";
   /* new test cut for E cut */
-  //mh_cut = "Sum$(E>0.02)>2 && S>0.05 && Eemc<2.5 && Emdc<4"  && rv_cut && "pt50" && mh_theta_cut;
-  //ee_cut = "Sum$(E>0.02)==2 && S<0.05 && Emdc<5 && Eemc>2.5"  && rv_cut && ee_theta_cut;
+  //mh_cut = "Sum$(E>0.02)>=3 && S>=0.06 && Eemc<2.5 && Emdc<5"  && rv_cut && "pt100" && mh_theta_cut && "emc.ntrack==0";
+  //ee_cut = "Sum$(E>0.02)==2 && S<=0.05 && Emdc<5 && Eemc>2.5"  && rv_cut && ee_theta_cut && "emc.ntrack==0";
   //gg_cut = gg_base_cut  && gg_theta_cut && "Sum$(E>0.02)==2";
 
-  mh_cut = "ngt >= 3 &&  S>=0.06 && ngt_Eemc<2.5 && Emdc<5" && rv_cut;
-  ee_cut = "ngt == 2 &&  S<=0.05 && ngt_Eemc>2.5 && Emdc<5" && ee_theta_cut && rv_cut;
+  //mh_cut = "ngt >= 3 &&  S>=0.06 && ngt_Eemc<2.5 && Emdc<5" && rv_cut;
+  //ee_cut = "ngt == 2 &&  S<=0.05 && ngt_Eemc>2.5 && Emdc<5" && ee_theta_cut && rv_cut;
 
   //strict cut
-  //mh_cut = "ngt >= 4  &&  S>=0.06 && ngt_Eemc<2.5 && Emdc<5" && rv_cut && mh_theta_cut && "pt100";
-  //ee_cut = "ngt == 2  &&  S<=0.05 && ngt_Eemc>2.5 && Emdc<5" && ee_theta_cut && rv_cut;
+  mh_cut = "ngt >= 4  &&  S>=0.06 && ngt_Eemc<2.5 && Emdc<5" && rv_cut && mh_theta_cut && "pt100" && "Sum$(emc.E>=0.02)==emc.ntrack";
+  ee_cut = "ngt == 2  &&  S<=0.05 && ngt_Eemc>2.5 && Emdc<5" && ee_theta_cut && rv_cut && "Sum$(emc.E>=0.02)==emc.ntrack";
   
   list<RunInfo_t> runinfo;
   make_runinfo(runinfo);
@@ -433,10 +456,13 @@ void make_result(void)
 
 
 
+  int fw = 16; //format width
   cout.precision(8);
-  cout << setw(3) << "#point" << setw(20) << "lum, nb^-1" << setw(20) << "energy, MeV" << 
-    setw(20)  << "error, MeV" << setw(20) << "signal (mhadr)" << setw(20) << "bhabha" << setw(20) << "gamma-gamma" << 
-    setw(15)  << "Nee/lum" << setw(15) << "Nee/Ngg"<< endl;
+  cout << setw(3) << "#point" << setw(fw) << "lum, nb^-1" 
+    << setw(fw) << "energy, MeV" << setw(fw)  << "error, MeV"
+    << setw(fw) << "spread, MeV" << setw(fw)  << "error, MeV"
+    << setw(fw) << "signal (mhadr)" << setw(fw) << "bhabha" << setw(fw) << "gamma-gamma" << 
+    setw(fw)  << "Nee/lum" << setw(fw) << "Nee/Ngg"<< endl;
   TGraphErrors * nchtr_g = new TGraphErrors;
   TGraphErrors * nntr_g = new TGraphErrors;
   TGraphErrors * bb_lum_g = new TGraphErrors;
@@ -447,12 +473,13 @@ void make_result(void)
   for(unsigned i=0; i<pv.size(); i++)
   {
     ostringstream os;
-    os << setw(2) << pv[i].pn << setw(20) << pv[i].lum  << 
-      setw(20)<< pv[i].E   << setw(20) << pv[i].Eerror << 
-      setw(20)<< pv[i].Nh  << 
-      setw(20)<< pv[i].Nee <<
-      setw(20)<< pv[i].Ngg;
-    cout << os.str() << setw(15) << double(pv[i].Nee)/pv[i].lum << setw(15) << double(pv[i].Nee)/double(pv[i].Ngg) << endl;
+    os << setw(2) << pv[i].pn << setw(fw) << pv[i].lum  << 
+      setw(fw)<< pv[i].E   << setw(fw) << pv[i].Eerror << 
+      setw(fw)<< pv[i].Sw  << setw(fw) << pv[i].dSw << 
+      setw(fw)<< pv[i].Nh  << 
+      setw(fw)<< pv[i].Nee <<
+      setw(fw)<< pv[i].Ngg;
+    cout << os.str() << setw(fw) << double(pv[i].Nee)/pv[i].lum << setw(fw) << double(pv[i].Nee)/double(pv[i].Ngg) << endl;
     scan12 << os.str() << endl;
     if(i<6) scan1 << os.str()<<endl;
     else scan2 << os.str()<<endl;

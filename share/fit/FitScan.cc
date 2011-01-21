@@ -75,20 +75,20 @@ Double_t NmhInScan[NumMaxP];
 Double_t LumLgammaInScan[NumMaxP];
 Double_t NbbInScan[NumMaxP];
 Double_t EInScan[NumMaxP];
+Double_t SigmaWInScan[NumMaxP];
+Double_t dSigmaWInScan[NumMaxP];
 Double_t WInScan[NumMaxP];
 Double_t EErrInScan[NumMaxP];
 Double_t WErrInScan[NumMaxP];
 Int_t    NumEpoints=0;
 Double_t MinChi2=1e+7;
-Int_t   FreeEnergyFit=0;
-//id fcnResChi2(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 void fcnResMult    (Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 void fcnResMult2    (Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 void fcnResMult_both2    (Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 void fcnResMult3    (Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
-/* Program documentation. */
 
-static char doc[] ="Поиск узких резонансов";
+/* Program documentation. */
+static char doc[] ="Searching narrow resonance";
 
 /* A description of the arguments we accept. */
 static char args_doc[] = "";
@@ -106,9 +106,13 @@ static char args_doc[] = "";
 #define OPT_sel             11
 #define OPT_lumbb           12
 #define OPT_both           13
+#define OPT_SW             14
+
+bool USE_CBS_SIGMAW = false;
+Int_t   FreeEnergyFit=0;
 
 
-
+inline double sq(double x) { return x*x; }
 
 static struct argp_option options[] = {
   {"verbose",'v',0,0,"produce verbose information",100},
@@ -128,9 +132,8 @@ static struct argp_option options[] = {
   {"scan",OPT_scan,"scan",0,"scan",10}, 
   {"sel",OPT_sel,"sel",0,"sel",11}, 
   {"lumbb",OPT_lumbb,"lumbb",0,"lumbb",12},     
-  {"both",OPT_both,"both",0,"both",12},     
-
-
+  {"both",OPT_both,"both",0,"both",13},     
+  {"SW",OPT_SW,"SW",0,"SW",14},     
   {0}
 };
 
@@ -150,12 +153,11 @@ struct arguments
   double Emin;
   double Emax;
   int Chi2;
-
   int sel;
   int lumbb;
   int both;
   int scan;
-
+  int SW; //use cbs measure sigmaW
 };
 static error_t parse_opt (int key, char *arg, struct argp_state *state)
 {
@@ -186,8 +188,7 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
     case OPT_sel:arg_union.arguments->sel=atoi(arg);break;            
     case OPT_lumbb:arg_union.arguments->lumbb=atoi(arg);break;            
     case OPT_both:arg_union.arguments->both=atoi(arg);break;            
-
-
+    case OPT_SW:arg_union.arguments->SW=atoi(arg);break;            
   }
   return 0;
 };
@@ -213,6 +214,7 @@ int main(int argc, char **argv)
   arguments.Emax= 1600.;  
   arguments.Chi2= 0;
   arguments.lumbb= 0;
+  arguments.SW=0;
   //arguments.CrBhabha=62;  
   // arguments.CrBhabha=535;  
 
@@ -230,6 +232,8 @@ int main(int argc, char **argv)
   UseLumBB=arguments.lumbb;
   double Kee;
   double Kgg;
+
+  if(arguments.SW==1) USE_CBS_SIGMAW=true;
   ifstream kfile("CrBhabha.txt");
   if(kfile) {
     kfile >> Kee;
@@ -262,16 +266,20 @@ int main(int argc, char **argv)
   TF1* FitResBG=0;
   TGraphErrors* GrRes=0;
   TLine* LineRes=0;
-  int dimMHFile=7;
+  int dimMHFile=9;
   int MHRun=0;
   int MHLum=1;
   int MHEnergy=2;
   int MHEnergyErr=3;
-  int MHNee=5;
-  int MHNgg=6; 
-  int MHNh=4; 
+  int MHSigmaW=4;
+  int MHdSigmaW=5;
+  int MHNh=6; 
+  int MHNee=7;
+  int MHNgg=8; 
   double** AllMH=0;
   int      npMHFile=0; 
+
+  /* ***** Reading data from file ****************** */
   if(arguments.scan==1){
     npMHFile=GetNumRows("scan1.txt",dimMHFile);       
   }
@@ -297,7 +305,7 @@ int main(int argc, char **argv)
 
   cout<<"npMHFile:"<<npMHFile<<endl;
 
-  int dimAP= 15;
+  int dimAP= 17;
   int ARun=0;
   int AEnergy =1;
   int AEnergyErr=2;
@@ -312,7 +320,9 @@ int main(int argc, char **argv)
   int ALRatP  =11;
   int ALRatEErr  =12;
   int ALRatPErr  =13;
-  int ASE  =14;  
+  int ASE  =14;
+  int ASigmaW = 15;
+  int AdSigmaW = 16;
   int npAP=0;    
   npAP=npMHFile;
   double** AP=new double* [npAP];
@@ -327,8 +337,11 @@ int main(int argc, char **argv)
     AP[Aind][ALe]=AllMH[i][MHLum];
     AP[Aind][ALp]=AllMH[i][MHLum];
     AP[Aind][AMHEv]=AllMH[i][MHNh];
-    AP[Aind][AEE]=AllMH[i][MHNee];            
-    if(arguments.NeeFlag==1){
+    AP[Aind][AEE]=AllMH[i][MHNee];
+    AP[Aind][ASigmaW] = AllMH[i][MHSigmaW];
+    AP[Aind][AdSigmaW] = AllMH[i][MHdSigmaW];
+    if(arguments.NeeFlag==1)
+    {
       AP[Aind][AEE]=AllMH[i][MHNgg];
     }     
     Aind++;
@@ -375,25 +388,13 @@ int main(int argc, char **argv)
   Double_t EMin=AP[0][AEnergy]-1 ;      
 
   Double_t EMax=AP[npAP-1][AEnergy]+1;
-  //  EMin=Emin-6.0;
-  //  EMax=1843+5.0;
-  //  double   Energy=EMin; 
-  //uble   Energy=EMin; 
-
-
-
-
-
-
-
-
-
-
   int np=npAP ;   
   cout<<"EMin:"<<EMin<<"EMax:"<<EMax<<"np:"<<np<<endl;
 
   Double_t *En_=new Double_t[np];
   Double_t *Eerr_=new Double_t[np];
+  Double_t *SigmaW_=new Double_t[np];
+  Double_t *dSigmaW_=new Double_t[np];
   Double_t *Nmh_=new Double_t[np];
   Double_t *Nbb_=new Double_t[np];
   Double_t *Le_=new Double_t[np];
@@ -410,6 +411,8 @@ int main(int argc, char **argv)
     Nbb_[np]=AP[i][AEE];  
     Le_[np]=AP[i][ALe];  
     Lp_[np]=AP[i][ALp];  
+    SigmaW_[np]=AP[i][ASigmaW];
+    dSigmaW_[np]=AP[i][AdSigmaW];
     np++;      
   }
   int  NEp=0;
@@ -417,6 +420,8 @@ int main(int argc, char **argv)
   cout<<"!!!dEmin:"<<arguments.dEmin<<endl;
   Double_t *En  =new Double_t[NEp];
   Double_t *Eerr=new Double_t[NEp];
+  Double_t *SW  =new Double_t[NEp];
+  Double_t *dSW =new Double_t[NEp];
   Double_t *Nmh=new  Double_t[NEp];
   Double_t *Nbb=new  Double_t[NEp];
   Double_t *Le=new  Double_t[NEp];
@@ -427,6 +432,8 @@ int main(int argc, char **argv)
   SumPointsSimple(np,NEp,Euse,Nbb_,Nbb); 
   SumPointsSimple(np,NEp,Euse,Le_,Le); 
   SumPointsSimple(np,NEp,Euse,Lp_,Lp);     
+  SumPointsSimple(np,NEp,Euse,SigmaW_,SW);     
+  SumPointsSimple(np,NEp,Euse,dSigmaW_,dSW);     
   NumEpoints=NEp;
   int numpar=4;
   if(FreeEnergyFit==1) numpar+=NEp;
@@ -440,6 +447,8 @@ int main(int argc, char **argv)
     WInScan[is]=2.*En[is];
     EErrInScan[is]=Eerr[is];
     WErrInScan[is]=Eerr[is]*2.;
+    SigmaWInScan[is]=SW[is];
+    dSigmaWInScan[is]=dSW[is];
     NmhInScan[is]=Nmh[is];   
     NbbInScan[is]=Nbb[is];       
     ECorrBB=1./CrossSBhabhaPP(En[is],&arguments.CrBhabha);
@@ -507,12 +516,9 @@ int main(int argc, char **argv)
   if(arguments.Chi2==0)
   {
     MinuitRes->SetFCN(fcnResMult);  
-    if(arguments.both==1 && FreeEnergyFit==1)
-    MinuitRes->SetFCN(fcnResMult2);  
-    if(arguments.both==1 && FreeEnergyFit==0)
-    MinuitRes->SetFCN(fcnResMult3);  
-    if(arguments.both==2 && FreeEnergyFit==1)
-    MinuitRes->SetFCN(fcnResMult_both2);  
+    if(arguments.both==1 && FreeEnergyFit==1) MinuitRes->SetFCN(fcnResMult2);  
+    if(arguments.both==1 && FreeEnergyFit==0) MinuitRes->SetFCN(fcnResMult3);  
+    if(arguments.both==2 && FreeEnergyFit==1) MinuitRes->SetFCN(fcnResMult_both2);  
   }
   else {
     // !!     MinuitRes->SetFCN(fcnResChi2);  
@@ -545,11 +551,12 @@ int main(int argc, char **argv)
 
 
 
-  MinuitRes->SetMaxIterations(100000);                         
+  MinuitRes->SetMaxIterations(1000000);                         
   MinuitRes->DefineParameter(0,"bg",vstartRes[0],stepRes[0],-150,150.0);
   MinuitRes->DefineParameter(1,"eff",vstartRes[1],stepRes[1],0.001,1.0);      
   MinuitRes->DefineParameter(2,"dM/2.",vstartRes[2],stepRes[2],-1.,1);      
-  MinuitRes->DefineParameter(3,"SigmaW",vstartRes[3],stepRes[3],0.5,1.78);        
+  MinuitRes->DefineParameter(3,"SigmaW",vstartRes[3],stepRes[3],0.5,1.78);
+  //if(USE_CBS_SIGMAW) MinuitRes->FixParameter(3);
   if(FreeEnergyFit==1)
   {
     for(int j=0;j<NEp;j++){
@@ -579,6 +586,9 @@ int main(int argc, char **argv)
 
   }
 
+  MinuitRes->mnexcm("MIGRAD", arglistRes,numpar,ierflgRes);
+  MinuitRes->mnexcm("MIGRAD", arglistRes,numpar,ierflgRes);
+  MinuitRes->mnexcm("MIGRAD", arglistRes,numpar,ierflgRes);
   MinuitRes->mnexcm("MIGRAD", arglistRes,numpar,ierflgRes);
   MinuitRes->mnexcm("MIGRAD", arglistRes,numpar,ierflgRes);
 #if _HESSE_ 
@@ -646,19 +656,17 @@ int main(int argc, char **argv)
   }
 
 
+  double EnergyChi2=0;
   for(int is=0;is<NEp;is++)
   {       
-    if(arguments.FreeEnergy==1){ 
-      WInScan[is]=2.*(En[is]);//+parRes[is+4]);
-      WErrInScan[is]=WErrInScan[is];
-    }
-    else {
-      WInScan[is]=2.*En[is];
-      WErrInScan[is]=WErrInScan[is];
-    }
-
-
+    WInScan[is]=2.*En[is];
+    WErrInScan[is]=WErrInScan[is];
+    //if(arguments.FreeEnergy==1) WInScan[is]+=2.*+parRes[is+4];
+    EnergyChi2+= sq(parRes[is+4]/dSigmaWInScan[is]);
   }
+
+  cout << "Energy Chi2 contribution:" << EnergyChi2 << endl;
+
   GrRes=new TGraphErrors(NEp,WInScan,CrossSInScan,WErrInScan,CrossSErrInScan);
   TF1* FitPsiP=new TF1("FitPsiP",FCrSPPrimeAzimov,1836.*ScaleEGr,1855*ScaleEGr,idRNP);  
   TF1* FitPsiP2=new TF1("FitPsiP",FCrSPPrimeAzimov,1836.*ScaleEGr,1855*ScaleEGr,idRNP);  
@@ -735,6 +743,7 @@ void fcnResMult(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
   Double_t Energy;
   Double_t parmh[idRNP];
   Double_t EnergyChi2=0;
+  Double_t SigmaWChi2=0;
   Double_t parbb[1];        
   parmh[idRbg]=par[0];
   parmh[idReff]=par[1];
@@ -750,12 +759,18 @@ void fcnResMult(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
       Energy+=par[4+i];
       EnergyChi2+=(par[4+i]*par[4+i]/(EErrInScan[i]*EErrInScan[i]));
     }
+    if(USE_CBS_SIGMAW)
+    {
+      //parmh[idRSw]=SigmaWInScan[i];
+      SigmaWChi2+= sq((parmh[idRSw] - SigmaWInScan[i])/dSigmaWInScan[i]);
+    }
     sigmaMH=CrSOniumR(_MethodAzimov,_IdPsiPrime,Energy,parmh);  
     sigmaBB=CrossSBhabhaPP(Energy,parbb);                        
     sigmaFull=sigmaMH+sigmaBB;
     nFull=NbbInScan[i]+NmhInScan[i];                                
     lumFull=nFull/sigmaFull;
-    if(UseLumBB==0)  {
+    if(UseLumBB==0)
+    {
       lumFull=LumLgammaInScan[i];
       nFull=NmhInScan[i];
       sigmaFull=sigmaMH;
@@ -805,6 +820,7 @@ void fcnResMult(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
   }
   f = chisq;
   if(FreeEnergyFit==1) f+=EnergyChi2;//;    
+  if(USE_CBS_SIGMAW) f+=SigmaWChi2;    
   if(MinChi2>f) MinChi2=f;
   FCNcall=1;
 }
@@ -1264,3 +1280,4 @@ void fcnResMult_both2(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, In
   if(MinChi2>f) MinChi2=f;
   FCNcall=1;
 }
+
