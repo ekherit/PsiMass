@@ -69,7 +69,7 @@ const double MAX_MOMENTUM = 2.5; //GeV
 inline double sq(double x) { return x*x; }
 
 
-double Spericity(TMatrixD & S)
+double Sphericity(TMatrixD & S)
 {
     TMatrixDEigen Stmp(S);
     const TVectorD & eval = Stmp.GetEigenValuesRe();
@@ -97,7 +97,6 @@ JPsi::JPsi(const std::string& name, ISvcLocator* pSvcLocator) :
   declareProperty("IPTRACKS", IPTRACKS=2); //number of tracks from interection point
   declareProperty("MIN_CHARGED_TRACKS", MIN_CHARGED_TRACKS=2); //minimum number of charged tracks in selection
   declareProperty("MAX_TRACK_NUMBER", MAX_TRACK_NUMBER=30); //maximum number of charged tracks
-  S.ResizeTo(3, 3);
 }
 
 
@@ -144,7 +143,6 @@ StatusCode JPsi::initialize(void)
       status = mdc_tuple->addItem ("ntrack", mdc.ntrack, 0, MAX_TRACK_NUMBER);
       status = mdc_tuple->addItem ("Emdc", mdc.Emdc);
       status = mdc_tuple->addItem ("Eemc", mdc.Eemc);
-      status = mdc_tuple->addItem ("nemc", mdc.nemc);
       status = mdc_tuple->addItem ("nip", mdc.nip);
       status = mdc_tuple->addItem ("pt50", mdc.pt50);
       status = mdc_tuple->addItem ("pt100", mdc.pt100);
@@ -369,7 +367,6 @@ void JPsi::InitData(long nchtrack, long nneutrack)
   m_Etotal=0;
   m_Eemc=0;
   //mdc track informaion init
-  mdc.nemc=0;
   mdc.nip=0;
   mdc.Eemc=0;
   mdc.Emdc=0;
@@ -578,7 +575,7 @@ StatusCode JPsi::execute()
     //now fill the arrayes using indexes sorted by energy
     mdc.ntrack=Emap.size(); //save number of charged tracks
     unsigned  idx=0;
-    TMatrixD S; //sphericity tensor
+    TMatrixD S(3,3); //sphericity tensor
     for(int i=0;i<3;i++)
       for(int j=0;j<3;j++)
         S[i][j]=0;
@@ -720,7 +717,7 @@ StatusCode JPsi::execute()
     for(int i=0;i<3;i++)
       for(int j=0;j<3;j++)
         S[i][j]/=p2sum;
-    mdc.S = Spericity(S);
+    mdc.S = Shpericity(S);
 
     /*  fill data for neutral tracks */
     int track=0; //index for neutral tracks
@@ -774,6 +771,7 @@ StatusCode JPsi::execute()
       {
         EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + track;
         if(!(*itTrk)->isEmcShowerValid()) continue;
+        RecEmcShower *emcTrk = (*itTrk)->emcShower();
         double  E = emcTrk->energy();
         if(E<EMS_THRESHOLD) continue; //use EMS threshold
         if(E<1.65 || E > 2.0) continue; //register two high energy tracks and supress cosmic backgound
@@ -783,7 +781,7 @@ StatusCode JPsi::execute()
       if(Emap.size() !==2 || Emap.size() != 3) return StatusCode::SUCCESS; 
       gg_nntrk = Emap.size();
       int idx=0;
-      TMatrixD S; //sphericity tensor
+      TMatrixD S(3,3); //sphericity tensor
       for(int i=0;i<3;i++)
         for(int j=0;j<3;j++)
           S[i][j]=0;
