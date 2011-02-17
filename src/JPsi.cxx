@@ -778,7 +778,7 @@ StatusCode JPsi::execute()
         Emap.insert(pair_t(E,track));
       }
       //Select only 2 or 3 neutral tracks
-      if(Emap.size() !==2 || Emap.size() != 3) return StatusCode::SUCCESS; 
+      if(Emap.size() !=2 || Emap.size() != 3) return StatusCode::SUCCESS; 
       gg_nntrk = Emap.size();
       int idx=0;
       TMatrixD S(3,3); //sphericity tensor
