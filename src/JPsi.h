@@ -83,27 +83,12 @@ class JPsi : public Algorithm
     NTuple::Array<long> istof; //has tof track information
     /*  Additional section */
     NTuple::Array<double> X, Y, Z; //pivot 
-    NTuple::Item<long>   nemc; //Number of clusters in calorimeter
     NTuple::Item<long>   nip; //Track number from interaction point (same condition as for highest track)
     NTuple::Item<double> Eemc; //total energy using emc
     NTuple::Item<double> Emdc; //total energy using only mdc
     NTuple::Item<double> S; //Sphericity
-
-    NTuple::Item<long>    nhp; //number of high energy tracks. 
-    NTuple::Item<double>  hpcos; //cos angle beween highest energy tracks
-    NTuple::Array<long>   hpidx; //index for two high energy track.
-    NTuple::Array<double> hpr; //interaction point distance for two high energy track
-    NTuple::Array<double> hpz; //interaction point z for two high energy track
-
-    NTuple::Item<double>  hEcos; //cos angle beween highest energy tracks
-    NTuple::Array<long>   hEidx; //index for two high energy track.
-    NTuple::Array<double> hEr; //interaction point distance for two high energy track
-    NTuple::Array<double> hEz; //interaction point z for two high energy track
-
     NTuple::Item<long>   pt50; //flag for higher 50 MeV pt
     NTuple::Item<long>   pt100;//flag for higher 100 MeV pt.
-    NTuple::Item<long>   hpip; //flag for strict ip cut
-    NTuple::Item<long>   hEip; //flag for  energy cut	
   };
 
   /* ElecroMagnetic Calorimeter Information */
@@ -183,15 +168,15 @@ class JPsi : public Algorithm
 	  NTuple::Array<double>  sigmaap; //Time resolution(sigma) of antiproton
 	  NTuple::Array<long>    quality; 
 	  /* Data quality of reconstruction.
-0: ZT-ZTDC didnot match
-1: good charged track
-2: neutral track with good hit
-3: no hit in counter
-4: two hits in counter
-5: more than two hits in counter
-6: only single end output of one layer
-7: two hits in counter with bad match with ZTDC
-10: initialize
+        0: ZT-ZTDC didnot match
+        1: good charged track
+        2: neutral track with good hit
+        3: no hit in counter
+        4: two hits in counter
+        5: more than two hits in counter
+        6: only single end output of one layer
+        7: two hits in counter with bad match with ZTDC
+        10: initialize
 	   */
 	  NTuple::Array<double> t0;   //Event start time
 	  NTuple::Array<double> errt0;//Error of event start time
@@ -206,7 +191,6 @@ class JPsi : public Algorithm
   TOF_t tof;
 
   void InitData(long number_charged_track, long number_neutral_track);
-  TMatrixD S; //sphericity tensor
 
 	//gamma-gamma annihilation selection
 	long gg_event_writed;
@@ -219,6 +203,7 @@ class JPsi : public Algorithm
 	NTuple::Array<double> gg_E, gg_dE; //energy and error
 	NTuple::Array<long> gg_n; //number of clasters
 	NTuple::Array<long> gg_module; //module=0: east endcap;  module=1: barrel;  module=2: west endcap.
+	NTuple::Array<long> gg_S; //sphericity
 
 
   /*  Averagin number of tracks */

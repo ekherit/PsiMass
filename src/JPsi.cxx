@@ -62,7 +62,27 @@ typedef HepGeom::Point3D<double> HepPoint3D;
 
 const double PI_MESON_MASS=0.13957018; //GeV
 
+
+const double EMS_THRESHOLD = 0.05; //GeV
+const double MAX_MOMENTUM = 2.5; //GeV
+
 inline double sq(double x) { return x*x; }
+
+
+double Spericity(TMatrixD & S)
+{
+    TMatrixDEigen Stmp(S);
+    const TVectorD & eval = Stmp.GetEigenValuesRe();
+    std::vector<double> v(3);
+    for(int i=0;i<3;i++) v[i]=eval[i];
+    std::sort(v.begin(), v.end());
+    if(!(v[0]<=v[1] && v[1]<=v[2])) //test the order of eigenvalues
+    {
+      cerr << "Bad sphericity" << endl;
+      exit(1);
+    }
+    return 1.5*(v[0]+v[1]);
+}
 
 JPsi::JPsi(const std::string& name, ISvcLocator* pSvcLocator) :
   Algorithm(name, pSvcLocator)
@@ -126,19 +146,6 @@ StatusCode JPsi::initialize(void)
       status = mdc_tuple->addItem ("Eemc", mdc.Eemc);
       status = mdc_tuple->addItem ("nemc", mdc.nemc);
       status = mdc_tuple->addItem ("nip", mdc.nip);
-      status = mdc_tuple->addItem ("nhp", mdc.nhp, 0, MAX_TRACK_NUMBER);
-      status = mdc_tuple->addIndexedItem ("hpidx", mdc.nhp, mdc.hpidx);
-      status = mdc_tuple->addIndexedItem ("hpr", mdc.nhp, mdc.hpr);
-      status = mdc_tuple->addIndexedItem ("hpz", mdc.nhp, mdc.hpz);
-      status = mdc_tuple->addItem ("hpcos", mdc.hpcos);
-      status = mdc_tuple->addItem ("hpip", mdc.hpip);
-
-      status = mdc_tuple->addIndexedItem ("hEidx", mdc.nhp, mdc.hEidx);
-      status = mdc_tuple->addIndexedItem ("hEr", mdc.nhp, mdc.hEr);
-      status = mdc_tuple->addIndexedItem ("hEz", mdc.nhp, mdc.hEz);
-      status = mdc_tuple->addItem ("hEcos", mdc.hEcos);
-      status = mdc_tuple->addItem ("hEip", mdc.hEip);
-
       status = mdc_tuple->addItem ("pt50", mdc.pt50);
       status = mdc_tuple->addItem ("pt100", mdc.pt100);
       status = mdc_tuple->addIndexedItem ("p", mdc.ntrack, mdc.p);
@@ -301,8 +308,9 @@ StatusCode JPsi::initialize(void)
     gg_tuple = ntupleSvc()->book("FILE1/gg", CLID_ColumnWiseTuple, "gamma-gamma annihilation");
     if(gg_tuple)
     {
-      status = gg_tuple->addItem ("nneu", gg_nntrk, 0, 2);
+      status = gg_tuple->addItem ("nneu", gg_nntrk, 0, 3);
       status = gg_tuple->addItem ("cos", gg_cos);
+      status = gg_tuple->addItem ("S", gg_S);
       status = gg_tuple->addItem ("Etotal", gg_Etotal);
       status = gg_tuple->addIndexedItem ("x", gg_nntrk, gg_x );
       status = gg_tuple->addIndexedItem ("y", gg_nntrk, gg_y );
@@ -353,6 +361,139 @@ StatusCode JPsi::initialize(void)
 
 }
 
+void JPsi::InitData(long nchtrack, long nneutrack)
+{
+  m_ntrack=nchtrack+nneutrack;
+  m_nchtr=nchtrack;
+  m_nneutr=nneutrack;
+  m_Etotal=0;
+  m_Eemc=0;
+  //mdc track informaion init
+  mdc.nemc=0;
+  mdc.nip=0;
+  mdc.Eemc=0;
+  mdc.Emdc=0;
+  mdc.S=0;
+  mdc.pt50=-1000;
+  mdc.pt100=-1000;
+  mdc.ntrack=0;
+  
+  for(int i=0;i<MAX_TRACK_NUMBER; i++)
+  {
+    mdc.p[i]=-1000;
+    mdc.px[i]=-1000;
+    mdc.py[i]=-1000;
+    mdc.pz[i]=-1000;
+    mdc.pt[i]=-1000;
+    mdc.x[i]=-1000;
+    mdc.y[i]=-1000;
+    mdc.z[i]=-1000;
+    mdc.r[i]=-1000;
+    mdc.rvxy[i]=-1000;
+    mdc.rvz[i]=-1000;
+    mdc.rvphi[i]=-1000;
+    mdc.theta[i]=-1000;
+    mdc.phi[i]=-1000;
+    mdc.q[i]=-1000;
+    mdc.isemc[i]=-1000;
+    mdc.ncrstl[i]=-1000;
+    mdc.cellId[i]=-1000;
+    mdc.status[i]=-1000;
+    mdc.module[i]=-1000;
+    mdc.E[i]=-1000;
+    mdc.dE[i]=-1000;
+    mdc.M[i]=-1000;
+    mdc.ismu[i]=-1000;
+    mdc.istof[i]=-1000;
+    mdc.X[i]=-1000;
+    mdc.Y[i]=-1000;
+    mdc.Z[i]=-1000;
+
+    //dedx information
+    dedx.pid[i]=-1000;
+    dedx.chie[i] = -1000;
+    dedx.chimu[i] = -1000;
+    dedx.chipi[i] = -1000;
+    dedx.chik[i] = -1000;
+    dedx.chip[i] = -1000;
+    dedx.ghit[i] = -1000;
+    dedx.thit[i] = -1000;
+    dedx.probPH[i] = -1000;
+    dedx.normPH[i] = -1000;
+    dedx.e[i]=-1000;
+    dedx.mu[i]=-1000;
+    dedx.pi[i]=-1000;
+    dedx.K[i]=-1000;
+    dedx.p[i]=-1000;
+  }
+  // emc information init.
+  emc.ntrack=0;
+  emc.Etotal=0;
+  for(int i=0;i<MAX_TRACK_NUMBER;i++)
+  {
+    emc.status[i]=-1000;
+    emc.ncrstl[i]=-1000;
+    emc.cellId[i]=-1000;
+    emc.module[i]=-1000;
+    emc.E[i]=-1000;
+    emc.dE[i]=-1000;
+    emc.x[i]=-1000;
+    emc.y[i]=-1000;
+    emc.z[i]=-1000;
+    emc.theta[i]=-1000;
+    emc.phi[i]=-1000;
+    if(CHECK_TOF)
+    {
+      tof.trackID[i]=-1000;
+      tof.tofID[i]=-1000;
+      tof.tofTrackID[i]=-1000;
+      tof.status[i] =-1000;
+      tof.path[i]  =-1000;
+      tof.zrhit[i]  =-1000;
+      tof.ph[i]  =-1000;
+      tof.tof[i]  =-1000;
+      tof.errtof[i]  =-1000;
+      tof.beta[i]  =-1000;
+      tof.texpe[i]  =-1000;
+      tof.texpmu[i]  =-1000;
+      tof.texppi[i]  =-1000;
+      tof.texpK[i]  =-1000;
+      tof.texpp[i]  =-1000;
+      tof.toffsete[i]  =-1000;
+      tof.toffsetmu[i]  =-1000;
+      tof.toffsetpi[i]  =-1000;
+      tof.toffsetK[i]  =-1000;
+      tof.toffsetp[i]  =-1000;
+      tof.toffsetap[i]  =-1000;
+      tof.sigmae[i]  =-1000;
+      tof.sigmamu[i]  =-1000;
+      tof.sigmapi[i]  =-1000;
+      tof.sigmaK[i]  =-1000;
+      tof.sigmap[i]  =-1000;
+      tof.sigmaap[i]  =-1000;
+      tof.quality[i] = -1000;
+      tof.t0[i]  =-1000;
+      tof.errt0[i]  =-1000;
+      tof.errz[i]  =-1000;
+      tof.phi[i]  =-1000;
+      tof.E[i]  =-1000;
+      tof.errE[i]  =-1000;
+    }
+  }
+  gg_S = -1000;
+  for(int i=0; i<3;i++)
+  {
+    gg_x [i]=-1000;
+    gg_y [i]=-1000;
+    gg_z [i]=-1000;
+    gg_theta [i]=-1000;
+    gg_phi [i]=-1000;
+    gg_E [i]=-1000;
+    gg_dE [i]=-1000;
+    gg_module [i]=-1000;
+    gg_n[i]=-1000;
+  }
+}
 
 StatusCode JPsi::execute()
 {
@@ -397,6 +538,10 @@ StatusCode JPsi::execute()
     xorigin.setZ(dbv[2]);
   }
 
+  typedef std::multimap <double, unsigned> mmap_t;
+  typedef std::pair <double, unsigned> pair_t;
+  mmap_t pmap;
+  mmap_t Emap;
   /************    Multihadron event and BhaBha selection ****************/
   /*  the selection is based on charged tracks */
   if(MIN_CHARGED_TRACKS<=evtRecEvent->totalCharged() && evtRecEvent->totalCharged() <=MAX_TRACK_NUMBER)
@@ -411,12 +556,41 @@ StatusCode JPsi::execute()
     mdc.ntrack=0;
     bool ispt50=true;
     bool ispt100=true;
-    for(int i = 0; i < evtRecEvent->totalCharged(); i++)
+    
+    //look thru the charged tracks and sort them on energy
+    for(unsigned idx = 0; idx < evtRecEvent->totalCharged(); idx++)
     {
-      EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + i;
-      mdc.ntrack=i+1;
-      if(!(*itTrk)->isMdcTrackValid()) continue; 
+      EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + idx;
+      if(!(*itTrk)->isMdcTrackValid()) continue;  //use only valid charged tracks
+      if(!(*itTrk)->isEmcShowerValid()) continue; //charged track must have energy deposition in EMC
       RecMdcTrack *mdcTrk = (*itTrk)->mdcTrack();  //main drift chambe
+      RecEmcShower *emcTrk = (*itTrk)->emcShower(); //Electro Magnet Calorimeer
+      double E = emcTrk->energy();
+      double p = mdcTrk->p();
+      if(E<EMS_THRESHOLD) continue;  //EMC threshold is 50 MeV.
+      if(p>MAX_MOMENTUM) continue; //supress wrong momentum measurement  and cosmic background
+      pmap.insert(pair_t(p,idx));
+      Emap.insert(pair_t(E,idx));
+    }
+    /* Two or more charged tracks witch signal in EMC */
+    if(Emap.size()<2) return StatusCode::SUCCESS;
+
+    //now fill the arrayes using indexes sorted by energy
+    mdc.ntrack=Emap.size(); //save number of charged tracks
+    unsigned  idx=0;
+    TMatrixD S; //sphericity tensor
+    for(int i=0;i<3;i++)
+      for(int j=0;j<3;j++)
+        S[i][j]=0;
+    for(mmap_t::reverse_iterator ri=Emap.rbegin(); ri!=Emap.rend(); ++ri,++idx)
+    {
+      EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + ri->second;
+      //just check that our selection is ok
+      if(!(*itTrk)->isMdcTrackValid()) continue;  //use only valid charged tracks
+      if(!(*itTrk)->isEmcShowerValid()) continue; //charged track must have energy deposition in EMC
+      RecMdcTrack *mdcTrk = (*itTrk)->mdcTrack();  //main drift chambe
+      RecEmcShower *emcTrk = (*itTrk)->emcShower(); //Electro Magnet Calorimeer
+      unsigned i = idx;
       mdc.p[i]=mdcTrk->p();
       mdc.pt[i]=mdcTrk->p()*sin(mdcTrk->theta());
       ispt50 = ispt50 && mdc.pt[i]>0.05;
@@ -431,6 +605,7 @@ StatusCode JPsi::execute()
       mdc.x[i]=mdcTrk->x();
       mdc.y[i]=mdcTrk->y();
       mdc.z[i]=mdcTrk->z();
+
       /* Vertex game. copy from rhophi analysis */
       double phi0=mdcTrk->helix(1);
       double xv=xorigin.x();
@@ -451,6 +626,7 @@ StatusCode JPsi::execute()
       mdc.rvz[i]=Rvz0;
       mdc.rvphi[i]=Rvphi0;
       mdc.Emdc+=sqrt(mdc.p[i]*mdc.p[i]+PI_MESON_MASS*PI_MESON_MASS);
+
       /* Calculate sphericity tensor */
       for(int i=0;i<3;i++)
         for(int j=0;j<3;j++)
@@ -459,73 +635,16 @@ StatusCode JPsi::execute()
         }
       p2sum+=mdcTrk->p()*mdcTrk->p();
 
-      /*  If we have EMC information for this charged track */
-      mdc.isemc[i]=(*itTrk)->isEmcShowerValid();
-      mdc.nhp = 2;
-      /*  find two high momentum tracks */
-      if(mdcTrk->p() > hP[0])
-      {
-        //if we'v found energy more then highest finded energy
-        //then we should save old value to lower one.
-        long tmp=mdc.hpidx[0];
-        mdc.hpidx[1]=tmp;
-        hP[1]=hP[0];
-        hPp[1]=hPp[0];
-        mdc.hpidx[0]=i;
-        hP[0]=mdcTrk->p();
-        hPp[0]=mdcTrk->p3();
-      }
-      else
-      {
-        if(mdcTrk->p() > hP[1])
-        {
-          mdc.hpidx[1]=i;
-          hP[1]=mdcTrk->p();
-          hPp[1]=mdcTrk->p3();
-        }
-      }
+      mdc.E[i]=emcTrk->energy();
+      mdc.dE[i]=emcTrk->dE();
+      mdc.Eemc+=mdc.E[i];
+      mdc.ncrstl[i]=emcTrk->numHits();
+      mdc.status[i]=emcTrk->status();
+      mdc.cellId[i]=emcTrk->cellId();
+      mdc.module[i]=emcTrk->module();
 
-      if(mdc.isemc[i]) 
-      {
-	      mdc.nemc++;//increase number of emc clasters
-	      RecEmcShower *emcTrk = (*itTrk)->emcShower(); //Electro Magnet Calorimeer
-
-	      mdc.E[i]=emcTrk->energy();
-	      mdc.dE[i]=emcTrk->dE();
-	      mdc.ncrstl[i]=emcTrk->numHits();
-	      mdc.status[i]=emcTrk->status();
-	      mdc.cellId[i]=emcTrk->cellId();
-	      mdc.module[i]=emcTrk->module();
-	      mdc.Eemc+=mdc.E[i];
-
-	      HepLorentzVector P(mdc.px[i], mdc.py[i], mdc.pz[i], mdc.E[i]);
-	      mdc.M[i]=P.m();
-
-
-	      /* find two high energy track */
-	      if(emcTrk->energy() > hE[0])
-	      {
-		      //if we'v found energy more then highest finded energy
-		      //then we should save old value to lower one.
-		      long tmp=mdc.hEidx[0];
-		      mdc.hEidx[1]=tmp;
-		      hE[1]=hE[0];
-		      hEp[1]=hEp[0];
-		      mdc.hEidx[0]=i;
-		      hE[0]=emcTrk->energy();
-          hEp[0]=mdcTrk->p3();
-	      }
-	      else
-	      {
-		      if(emcTrk->energy() > hE[1])
-		      {
-			      mdc.hEidx[1]=i;
-			      hE[1]=emcTrk->energy();
-            hEp[1]=mdcTrk->p3();
-		      }
-	      }
-      }
-
+      HepLorentzVector P(mdc.px[i], mdc.py[i], mdc.pz[i], mdc.E[i]);
+      mdc.M[i]=P.m();
 
       /* Check muon system information for this track */
       mdc.ismu[i]=(*itTrk)->isMucTrackValid();
@@ -597,59 +716,21 @@ StatusCode JPsi::execute()
     mdc.pt50 = ispt50;
     mdc.pt100 = ispt100;
 
-    /* Use data at least two charged track with signal in EMC */
-    if(mdc.nemc<2) return StatusCode::SUCCESS;
-
-    //Two tracks from interaction points. The same condion for BhaBha and for multihadron
-    for(int i=0;i<mdc.nhp;i++)
-    {
-      mdc.hpr[i] = sqrt(sq(mdc.x[mdc.hpidx[i]]-0.1)+sq(mdc.y[mdc.hpidx[i]]+0.1));
-      mdc.hpz[i] = mdc.z[mdc.hpidx[i]];
-      if(USE_IPCUT && ( mdc.hpr[i]> IPR || fabs(mdc.hpz[i]) > DELTA_Z) ) return StatusCode::SUCCESS;
-
-      mdc.hEr[i] = sqrt(sq(mdc.x[mdc.hEidx[i]]-0.1)+sq(mdc.y[mdc.hEidx[i]]+0.1));
-      mdc.hEz[i] = mdc.z[mdc.hEidx[i]];
-    }
-
-    bool ishEip=fabs(mdc.hEr[0])<IPR && fabs(mdc.hEz[0]) < DELTA_Z && fabs(mdc.hEr[1])<IPR && mdc.hEz[1]<DELTA_Z;
-    mdc.hEip =ishEip;
-
-    bool ishpip =  fabs(mdc.hpr[0]<0.3) && fabs(mdc.hpz[0]) < 3 && fabs(mdc.hpr[1])<0.2 && fabs(mdc.hpz[1])<3;
-    mdc.hpip =ishpip;
-
-    double tmp_hpcos = hPp[0].mag()*hPp[1].mag()<=0 ? 100 : (hPp[0].dot(hPp[1]))/(hPp[0].mag()*hPp[1].mag());
-    mdc.hpcos=tmp_hpcos;
-
-    double tmp_hEcos = hEp[0].mag()*hEp[1].mag()<=0 ? 100 : (hEp[0].dot(hEp[1]))/(hEp[0].mag()*hEp[1].mag());
-    mdc.hEcos=tmp_hEcos;
-
     //normalize sphericity tensor
     for(int i=0;i<3;i++)
       for(int j=0;j<3;j++)
         S[i][j]/=p2sum;
-
-    TMatrixDEigen Stmp(S);
-    const TVectorD & eval = Stmp.GetEigenValuesRe();
-    std::vector<double> v(3);
-    for(int i=0;i<3;i++) v[i]=eval[i];
-    std::sort(v.begin(), v.end());
-    mdc.S = 1.5*(v[0]+v[1]);
-    if(!(v[0]<=v[1] && v[1]<=v[2])) //test the order of eigenvalues
-    {
-      cerr << "Bad sphericity" << endl;
-      exit(1);
-    }
+    mdc.S = Spericity(S);
 
     /*  fill data for neutral tracks */
-    emc.ntrack=evtRecEvent->totalNeutral();
     int track=0; //index for neutral tracks
     emc.Etotal=0;
-    //cout << event_proceed << " ncharged=" << evtRecEvent->totalCharged() << " nneutral=" << evtRecEvent->totalNeutral() << endl;
-    for(int idx = evtRecEvent->totalCharged(); idx<evtRecEvent->totalTracks() && track<MAX_TRACK_NUMBER; idx++, track++)
+    for(int idx = evtRecEvent->totalCharged(); idx<evtRecEvent->totalTracks() && track<MAX_TRACK_NUMBER; idx++)
     {
       EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + idx;
       if(!(*itTrk)->isEmcShowerValid()) continue;
       RecEmcShower *emcTrk = (*itTrk)->emcShower();
+      if(emcTrk->energy()<EMS_THRESHOLD) continue;
       emc.status[track] = emcTrk->status();
       emc.ncrstl[track] = emcTrk->numHits();
       emc.cellId[track] = emcTrk->numHits();
@@ -662,7 +743,9 @@ StatusCode JPsi::execute()
       emc.E[track]  =  emcTrk->energy();
       emc.dE[track] =  emcTrk->dE();
       emc.Etotal+=emcTrk->energy();
+      track++;
     }
+    emc.ntrack=track;
 
 
     m_nchtr=evtRecEvent->totalCharged();
@@ -682,39 +765,62 @@ StatusCode JPsi::execute()
   }
   else 
   {
-    //gamma gamma selection only two neutral tracks
-    // part for ee->gg annihilation
-    // big angles, two neutral track,  no charged.
-    if(evtRecEvent->totalNeutral()==2 && evtRecEvent->totalCharged()==0)
+    //selection of gamma-gamma events
+    if(evtRecEvent->totalCharged()==0)
     {
-      double r[2];
+      //sort 
+      Emap.clear();
       for(int track = 0; track<evtRecEvent->totalNeutral(); track++)
       {
-        gg_nntrk=track+1;
         EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + track;
-        if((*itTrk)->isEmcShowerValid())
-        {
-          RecEmcShower *emcTrk = (*itTrk)->emcShower();
-          gg_x[track] = emcTrk->x();
-          gg_y[track] = emcTrk->y();
-          gg_z[track] = emcTrk->z();
-          r[track] = sqrt(gg_x[track]*gg_x[track] + gg_y[track]*gg_y[track] + gg_z[track]*gg_z[track]);
-          gg_theta[track] = emcTrk->theta();
-          gg_phi[track] = emcTrk->phi();
-          gg_E[track]  =  emcTrk->energy();
-          gg_dE[track] =  emcTrk->dE();
-          gg_module[track] = emcTrk->module();
-          gg_n[track] = emcTrk->numHits();
-        }
+        if(!(*itTrk)->isEmcShowerValid()) continue;
+        double  E = emcTrk->energy();
+        if(E<EMS_THRESHOLD) continue; //use EMS threshold
+        if(E<1.65 || E > 2.0) continue; //register two high energy tracks and supress cosmic backgound
+        Emap.insert(pair_t(E,track));
       }
-      //calculate colliniarity
-      gg_cos = (gg_x[0]*gg_x[1] + gg_y[0]*gg_y[1] + gg_z[0]*gg_z[1])/(r[0]*r[1]);
-      gg_Etotal = gg_E[0]+gg_E[1];
-      if(gg_Etotal>1) 
+      //Select only 2 or 3 neutral tracks
+      if(Emap.size() !==2 || Emap.size() != 3) return StatusCode::SUCCESS; 
+      gg_nntrk = Emap.size();
+      int idx=0;
+      TMatrixD S; //sphericity tensor
+      for(int i=0;i<3;i++)
+        for(int j=0;j<3;j++)
+          S[i][j]=0;
+      double R2sum=0;
+      vector < Hep3Vector> R(Emap.size);
+      for(mmap_t::reverse_iterator ri=Emap.rbegin(); ri!=Emap.rend(); ++ri,++idx)
       {
-        gg_tuple->write();
-        gg_event_writed++;
+        EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + ri->second;
+        assert((*itTrk)->isEmcShowerValid()); //check that EMS data is present
+        RecEmcShower *emcTrk = (*itTrk)->emcShower();
+        gg_x[idx] = emcTrk->x();
+        gg_y[idx] = emcTrk->y();
+        gg_z[idx] = emcTrk->z();
+        gg_theta[idx] = emcTrk->theta();
+        gg_phi[idx] = emcTrk->phi();
+        gg_E[idx]  =  emcTrk->energy();
+        gg_dE[idx] =  emcTrk->dE();
+        gg_module[idx] = emcTrk->module();
+        gg_n[idx] = emcTrk->numHits();
+        /* Calculate sphericity tensor */
+        R[idx] = Hep3Vector(emcTrk->x(),emcTrk->y(),emcTrk->z());
+        for(int i=0;i<3;i++)
+          for(int j=0;j<3;j++)
+            S[i][j]+=R[idx][i]*R[idx][j];
+        R2sum+=R[idx].mag2();
+        gg_Etotal+=gg_E[idx];
       }
+      //normalize sphericity tenzor
+      for(int i=0;i<3;i++)
+        for(int j=0;j<3;j++)
+          S[i][j]/=R2sum;
+        gg_S = Sphericity(S);
+      
+      //calculate colliniarity of two high energy tracks
+      gg_cos = R[0].dot(R[1])/(R[0].mag()*R[1].mag());
+      gg_tuple->write();
+      gg_event_writed++;
     }
   }
   return StatusCode::SUCCESS;
@@ -740,154 +846,4 @@ StatusCode JPsi::finalize()
 }
 
 
-void JPsi::InitData(long nchtrack, long nneutrack)
-{
-  m_ntrack=nchtrack+nneutrack;
-  m_nchtr=nchtrack;
-  m_nneutr=nneutrack;
-  m_Etotal=0;
-  m_Eemc=0;
-  //mdc track informaion init
-  mdc.nemc=0;
-  mdc.nip=0;
-  mdc.Eemc=0;
-  mdc.Emdc=0;
-  mdc.S=0;
-  mdc.pt50=-1000;
-  mdc.pt100=-1000;
-  mdc.ntrack=0;
-  
-  mdc.nhp=-1000;
-  mdc.hpcos=-1000;
-  mdc.hpip=-1000;
-  mdc.hEcos = -1000;
-  mdc.hEip=-1000;
-
-  for(int i=0;i<MAX_TRACK_NUMBER; i++)
-  {
-    mdc.hpidx[i]=-1000;
-    mdc.hpr[i]=-1000;
-    mdc.hpz[i]=-1000;
-    mdc.hEidx[i]=-1000;
-    mdc.hEr[i]=-1000;
-    mdc.hEz[i]=-1000;
-
-    mdc.p[i]=-1000;
-    mdc.px[i]=-1000;
-    mdc.py[i]=-1000;
-    mdc.pz[i]=-1000;
-    mdc.pt[i]=-1000;
-    mdc.x[i]=-1000;
-    mdc.y[i]=-1000;
-    mdc.z[i]=-1000;
-    mdc.r[i]=-1000;
-    mdc.rvxy[i]=-1000;
-    mdc.rvz[i]=-1000;
-    mdc.rvphi[i]=-1000;
-    mdc.theta[i]=-1000;
-    mdc.phi[i]=-1000;
-    mdc.q[i]=-1000;
-    mdc.isemc[i]=-1000;
-    mdc.ncrstl[i]=-1000;
-    mdc.cellId[i]=-1000;
-    mdc.status[i]=-1000;
-    mdc.module[i]=-1000;
-    mdc.E[i]=-1000;
-    mdc.dE[i]=-1000;
-    mdc.M[i]=-1000;
-    mdc.ismu[i]=-1000;
-    mdc.istof[i]=-1000;
-    mdc.X[i]=-1000;
-    mdc.Y[i]=-1000;
-    mdc.Z[i]=-1000;
-
-    //dedx information
-    dedx.pid[i]=-1000;
-    dedx.chie[i] = -1000;
-    dedx.chimu[i] = -1000;
-    dedx.chipi[i] = -1000;
-    dedx.chik[i] = -1000;
-    dedx.chip[i] = -1000;
-    dedx.ghit[i] = -1000;
-    dedx.thit[i] = -1000;
-    dedx.probPH[i] = -1000;
-    dedx.normPH[i] = -1000;
-    dedx.e[i]=-1000;
-    dedx.mu[i]=-1000;
-    dedx.pi[i]=-1000;
-    dedx.K[i]=-1000;
-    dedx.p[i]=-1000;
-  }
-  //sphericity initialization
-  for(int i=0;i<3;i++)
-    for(int j=0;j<3;j++)
-      S[i][j]=0;
-
-  // emc information init.
-  emc.ntrack=0;
-  emc.Etotal=0;
-  for(int i=0;i<MAX_TRACK_NUMBER;i++)
-  {
-    emc.status[i]=-1000;
-    emc.ncrstl[i]=-1000;
-    emc.cellId[i]=-1000;
-    emc.module[i]=-1000;
-    emc.E[i]=-1000;
-    emc.dE[i]=-1000;
-    emc.x[i]=-1000;
-    emc.y[i]=-1000;
-    emc.z[i]=-1000;
-    emc.theta[i]=-1000;
-    emc.phi[i]=-1000;
-    if(CHECK_TOF)
-    {
-      tof.trackID[i]=-1000;
-      tof.tofID[i]=-1000;
-      tof.tofTrackID[i]=-1000;
-      tof.status[i] =-1000;
-      tof.path[i]  =-1000;
-      tof.zrhit[i]  =-1000;
-      tof.ph[i]  =-1000;
-      tof.tof[i]  =-1000;
-      tof.errtof[i]  =-1000;
-      tof.beta[i]  =-1000;
-      tof.texpe[i]  =-1000;
-      tof.texpmu[i]  =-1000;
-      tof.texppi[i]  =-1000;
-      tof.texpK[i]  =-1000;
-      tof.texpp[i]  =-1000;
-      tof.toffsete[i]  =-1000;
-      tof.toffsetmu[i]  =-1000;
-      tof.toffsetpi[i]  =-1000;
-      tof.toffsetK[i]  =-1000;
-      tof.toffsetp[i]  =-1000;
-      tof.toffsetap[i]  =-1000;
-      tof.sigmae[i]  =-1000;
-      tof.sigmamu[i]  =-1000;
-      tof.sigmapi[i]  =-1000;
-      tof.sigmaK[i]  =-1000;
-      tof.sigmap[i]  =-1000;
-      tof.sigmaap[i]  =-1000;
-      tof.quality[i] = -1000;
-      tof.t0[i]  =-1000;
-      tof.errt0[i]  =-1000;
-      tof.errz[i]  =-1000;
-      tof.phi[i]  =-1000;
-      tof.E[i]  =-1000;
-      tof.errE[i]  =-1000;
-    }
-  }
-  for(int i=0; i<2;i++)
-  {
-    gg_x [i]=-1000;
-    gg_y [i]=-1000;
-    gg_z [i]=-1000;
-    gg_theta [i]=-1000;
-    gg_phi [i]=-1000;
-    gg_E [i]=-1000;
-    gg_dE [i]=-1000;
-    gg_module [i]=-1000;
-    gg_n[i]=-1000;
-  }
-}
 // for particle id look /ihepbatch/bes/alex/workarea/Analysis/Physics/PsiPrime/G2MuMuAlg-00-00-01/PipiJpsiAlg/src
