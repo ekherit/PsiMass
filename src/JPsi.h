@@ -196,6 +196,7 @@ class JPsi : public Algorithm
 	long gg_event_writed;
 	NTuple::Tuple * gg_tuple;
   NTuple::Item<long> gg_nntrk;
+  NTuple::Item<long> gg_S; //sphericity
 	NTuple::Item<double> gg_cos; //aclolinearity
 	NTuple::Item<double> gg_Etotal; //aclolinearity
 	NTuple::Array<double> gg_x, gg_y, gg_z; //coordinat of claster
@@ -203,7 +204,6 @@ class JPsi : public Algorithm
 	NTuple::Array<double> gg_E, gg_dE; //energy and error
 	NTuple::Array<long> gg_n; //number of clasters
 	NTuple::Array<long> gg_module; //module=0: east endcap;  module=1: barrel;  module=2: west endcap.
-	NTuple::Array<long> gg_S; //sphericity
 
 
   /*  Averagin number of tracks */

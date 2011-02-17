@@ -717,7 +717,7 @@ StatusCode JPsi::execute()
     for(int i=0;i<3;i++)
       for(int j=0;j<3;j++)
         S[i][j]/=p2sum;
-    mdc.S = Shpericity(S);
+    mdc.S = Sphericity(S);
 
     /*  fill data for neutral tracks */
     int track=0; //index for neutral tracks
