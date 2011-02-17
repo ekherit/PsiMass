@@ -786,7 +786,7 @@ StatusCode JPsi::execute()
         for(int j=0;j<3;j++)
           S[i][j]=0;
       double R2sum=0;
-      vector < Hep3Vector> R(Emap.size);
+      vector < Hep3Vector> R(Emap.size());
       for(mmap_t::reverse_iterator ri=Emap.rbegin(); ri!=Emap.rend(); ++ri,++idx)
       {
         EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + ri->second;
