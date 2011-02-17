@@ -22,7 +22,7 @@
 #include<stdio.h>
 #include<fstream>
 #define HALF_KNOT_COUNT 21
-#define _me         0.5109982
+#define _me         0.510998910
 #define _mmu      105.658367
 #define _ConvConstant      389379323.0e+3 // nb*MeV^2
 #define _alpha 1./137.036
@@ -30,10 +30,11 @@
 #define _4part 0.25
 #define _6part 0.66666666667
 #define _24part 0.0416666667
-#define _MPsiPrime          3686.111
+#define _MPsiPrime          3686.090 //PDG-2010
 #define _MJPsi              3096.917
 #define _GeeJPsi            5.55e-3
-#define _GeePsiPrime        2.38e-3 //average PDG
+//#define _GeePsiPrime        2.38e-3 //average PDG
+#define _GeePsiPrime        2.35e-3 //PDG-2010
 #define _GtotJPsi           93.2e-3  //
 #define _GtotPsiPrime       304e-3  //
 #define _BllJPsi            0.0594

@@ -56,6 +56,7 @@ static const Double_t wgauss32[16] = {
     3.42738629130214331033e-02,    2.53920653092620594561e-02,
     1.62743947309056706058e-02,    7.01861000947009660028e-03
 };
+
 Double_t CrossSBhabhaPP(Double_t Eb,Double_t* par)
 {
     Double_t y=Eb;

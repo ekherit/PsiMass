@@ -316,7 +316,8 @@ void make_scan_points(vector <ScanPoint_t> &pv)
   read_scan_info("share/scan_info.txt",pv);
   //read_energy("share/cbs-energy2.txt",pv);
   //read_energy("share/cbs-energy3.txt",pv);
-  read_energy("share/cbs-energy4.txt",pv);
+  //read_energy("share/cbs-energy4.txt",pv);
+  read_energy("share/cbs-energy5.txt",pv);
   //for(unsigned i=0;i<pv.size();++i)
   //{
   //  pv[i].Eerror = sqrt(sq(pv[i].Eerror)+sq(0.200));
@@ -331,7 +332,8 @@ void make_result(void)
   TCut mh_strict_cut = "nemc>3  && S>0.05 && Eemc<2.5 && Emdc<4";
   TCut ee_base_cut = "nemc==2 && S<0.05 && Emdc<5 && Eemc>2.5";
   TCut ee_ext_cut = "(nemc==2 || nemc==3) && S<0.05 && Emdc<5 && Eemc>2.5";
-  TCut ee_theta_cut  = "Sum$(sin(theta)<0.45)==mdc.ntrack";
+  //TCut ee_theta_cut  = "Sum$(sin(theta)<0.45)==mdc.ntrack";
+  TCut ee_theta_cut  = "Sum$(sin(theta)<0.55)==mdc.ntrack";
   TCut mh_theta_cut  = "Sum$(sin(theta)>0.45)==mdc.ntrack";
   TCut gg_base_cut = "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<4 && abs(Sum$(z))<9";
   TCut gg_theta_cut  = "Sum$(sin(theta)>0.45)==2";
@@ -341,7 +343,7 @@ void make_result(void)
   /* this is standart cut */
   TCut  mh_cut = mh_base_cut  && rv_cut;
   TCut  ee_cut = ee_base_cut  && rv_cut && ee_theta_cut;
-  TCut  gg_cut = gg_base_cut  && gg_theta_cut;
+  TCut  gg_cut = gg_base_cut  && gg_theta_cut && "E[0]>0.02&&E[1]>0.02";
   /* this is strict cut */
   //mh_cut = mh_strict_cut  && rv_cut && mh_theta_cut && "pt100";
   /* bha bha ext cut */
@@ -353,12 +355,13 @@ void make_result(void)
   //ee_cut = "Sum$(E>0.02)==2 && S<=0.05 && Emdc<5 && Eemc>2.5"  && rv_cut && ee_theta_cut && "emc.ntrack==0";
   //gg_cut = gg_base_cut  && gg_theta_cut && "Sum$(E>0.02)==2";
 
-  //mh_cut = "ngt >= 3 &&  S>=0.06 && ngt_Eemc<2.5 && Emdc<5" && rv_cut;
-  //ee_cut = "ngt == 2 &&  S<=0.05 && ngt_Eemc>2.5 && Emdc<5" && ee_theta_cut && rv_cut;
+  mh_cut = "ngt > 2 &&  S>=0.06 && ngt_Eemc<2.5 && Emdc<5" && rv_cut;
+  //mh_cut = ("ngt > 2 &&  S>=0.06" || ( "ngt==2 && S>=0.06" && rv_cut && mh_theta_cut)) && "ngt_Eemc<2.5 && Emdc<5";
+  ee_cut = "ngt == 2 &&  S<=0.05 && ngt_Eemc>2.5 && Emdc<5" && ee_theta_cut && rv_cut;
 
   //strict cut
-  mh_cut = "ngt >= 4  &&  S>=0.06 && ngt_Eemc<2.5 && Emdc<5" && rv_cut && mh_theta_cut && "pt100" && "Sum$(emc.E>=0.02)==emc.ntrack";
-  ee_cut = "ngt == 2  &&  S<=0.05 && ngt_Eemc>2.5 && Emdc<5" && ee_theta_cut && rv_cut && "Sum$(emc.E>=0.02)==emc.ntrack";
+  //mh_cut = "ngt >= 4  &&  S>=0.06 && ngt_Eemc<2.5 && Emdc<5" && rv_cut && mh_theta_cut && "pt100";
+  //ee_cut = "ngt == 2  &&  S<=0.05 && ngt_Eemc>2.5 && Emdc<5" && ee_theta_cut && rv_cut && "emc.ntrack==0";
   
   list<RunInfo_t> runinfo;
   make_runinfo(runinfo);
@@ -493,7 +496,7 @@ void make_result(void)
     bb_lum_g->SetTitle("N_{ee} / L");
     bb_lum_g->GetXaxis()->SetTitle("point");
     bb_lum_g->SetPointError(i,0, sqrt(double(pv[i].Nee))/pv[i].lum);
-    bb_gg_g->SetPoint(i,i+1, double(pv[i].Nee)/pv[i].Ngg);
+    bb_gg_g->SetPoint(i,pv[i].E, double(pv[i].Nee)/pv[i].Ngg);
     bb_gg_g->SetPointError(i,0, double(pv[i].Nee)/pv[i].Ngg*sqrt(1./pv[i].Nee+1./pv[i].Ngg));
     bb_gg_g->SetTitle("N_{ee} / N_{#gamma#gamma}");
     bb_gg_g->GetXaxis()->SetTitle("point");

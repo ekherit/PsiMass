@@ -1,5 +1,7 @@
 i386_linux26
 *~
 *.swp
+*.swo
 *.o
-share/fit/fitscan
+*.so
+bin
