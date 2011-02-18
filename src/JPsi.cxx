@@ -805,7 +805,7 @@ StatusCode JPsi::execute()
         R[idx] = Hep3Vector(emcTrk->x(),emcTrk->y(),emcTrk->z());
         for(int i=0;i<3;i++)
           for(int j=0;j<3;j++)
-            S[i][j]+=R[idx][i]*R[idx][j];
+            S[i][j]+=(R[idx][i]*R[idx][j]);
         R2sum+=R[idx].mag2();
         gg_Etotal+=gg_E[idx];
       }
@@ -813,7 +813,7 @@ StatusCode JPsi::execute()
       for(int i=0;i<3;i++)
         for(int j=0;j<3;j++)
           S[i][j]/=R2sum;
-        gg_S = Sphericity(S);
+      gg_S = Sphericity(S);
       
       //calculate colliniarity of two high energy tracks
       gg_cos = R[0].dot(R[1])/(R[0].mag()*R[1].mag());
