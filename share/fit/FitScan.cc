@@ -562,9 +562,9 @@ int main(int argc, char **argv)
   }
   MinuitRes->mnexcm("SET ERR", arglistRes,1,ierflgRes);
 
-  Double_t vstartRes[5]= {50,0.8,0.07,1.5,arguments.CrBhabha};   
+  Double_t vstartRes[5]= {9.2,0.55,0.145/2.,1.6,arguments.CrBhabha};   
 
-  Double_t stepRes[5] =  {0.10,0.01,0.1,0.01,0.0};
+  Double_t stepRes[5] =  {0.10,0.01,0.01,0.01,0.0};
 
 
 
@@ -576,7 +576,8 @@ int main(int argc, char **argv)
   //if(USE_CBS_SIGMAW) MinuitRes->FixParameter(3);
   if(FreeEnergyFit==1)
   {
-    for(int j=0;j<NEp;j++){
+    for(int j=0;j<NEp;j++)
+    {
       char  NameP[10];
       sprintf(NameP,"dE%d",j);         
       MinuitRes->DefineParameter(j+4,NameP,0,0.01,-1.0,1.0);        
@@ -636,9 +637,11 @@ int main(int argc, char **argv)
   cout<<"Minuit Mass= "<<_MPsiPrime+parRes[2]*2.<<endl;
   cout<<"PDG Mass= "<<_MPsiPrime<<endl;
   cout<<"parRes[2]*2.:"<<parRes[2]*2.<< " +- " << parErrRes[2]*2. <<  " MeV. chi2/ndf = " <<MinChi2 << "/(" << NpPP<<"-"<<nf<<") = "  << MinChi2/(NpPP-nf) <<endl;
-  cout << "chi2 signal: " << CHI2_SIGNAL << endl;
-  cout << "chi2 energy: " << CHI2_ENERGY << endl;
-  cout << "chi2 lum: " << CHI2_LUM << endl;
+  cout << "Contribution to chi square:" << endl;
+  cout.precision(4);
+  cout << "chi2 signal: " << CHI2_SIGNAL <<  " or " << CHI2_SIGNAL/CHI2_TOTAL*100 << "%" << endl;
+  cout << "chi2 energy: " << CHI2_ENERGY <<  " or " << CHI2_ENERGY/CHI2_TOTAL*100 << "%" <<  endl;
+  cout << "chi2 lum: "    << CHI2_LUM    <<  " or " << CHI2_LUM/CHI2_TOTAL*100 << "%" << endl;
   cout << "Total chi2: " << CHI2_TOTAL << endl;
   Double_t* parPsiPF    = new Double_t [idRNP];
   Double_t* parPsiPF2    = new Double_t [idRNP];
@@ -846,8 +849,7 @@ void fcnResMult(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
     if(NmhInScan[i]>0)
     {
       double N=sigmaMH*lumFull; //expected number of events
-      //if(USE_CHI2) chisqmh = sq(N - NmhInScan[i])/(NmhInScan[i]+sq(sigmaMH/sigmaBB)*NbbInScan[i]); //just chi square
-      if(USE_CHI2) chisqmh = sq(N - NmhInScan[i])/NmhInScan[i]; //just chi square
+      if(USE_CHI2) chisqmh = sq(N - NmhInScan[i])/(NmhInScan[i]*(1. + NmhInScan[i]/NbbInScan[i])); //just chi square
       else chisqmh = 2*(NmhInScan[i]*log(NmhInScan[i]/N) +N - NmhInScan[i]); //likelihood for low statistics
     }
     else if(NmhInScan[i]==0) chisqmh =  sigmaMH*lumFull;
@@ -860,8 +862,8 @@ void fcnResMult(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
       if(NbbInScan[i]>0)
       {
         double N =sigmaBB*lumFull;
-        if(USE_CHI2) chisqmh = sq(N - NbbInScan[i]+1)/NbbInScan[i]; //just chi square
-        //chisqbb = 2*(NbbInScan[i]*log(NbbInScan[i]/N)+ N - NbbInScan[i]); //likelihood for low statistics
+        if(USE_CHI2) chisqbb = sq(N - NbbInScan[i])/NbbInScan[i]; //just chi square
+        else chisqbb = 2*(NbbInScan[i]*log(NbbInScan[i]/N)+ N - NbbInScan[i]); //likelihood for low statistics
       }
       else if(NbbInScan[i]==0)
       {
