@@ -97,12 +97,12 @@ JPsi::JPsi(const std::string& name, ISvcLocator* pSvcLocator) :
   declareProperty("IPTRACKS", IPTRACKS=2); //number of tracks from interection point
   declareProperty("MIN_CHARGED_TRACKS", MIN_CHARGED_TRACKS=2); //minimum number of charged tracks in selection
   declareProperty("MAX_TRACK_NUMBER", MAX_TRACK_NUMBER=30); //maximum number of charged tracks
-  CHECK_TOF=1;
 }
 
 
 StatusCode JPsi::initialize(void)
 {
+  CHECK_TOF=1;
   MsgStream log(msgSvc(), name());
 
   log << MSG::INFO << "in initialize()" << endmsg;

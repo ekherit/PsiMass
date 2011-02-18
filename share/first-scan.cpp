@@ -197,9 +197,9 @@ void track_number(void)
 
 void set_alias(TTree * t)
 {
-  t->SetAlias("ecut", "mdc.E>=0.02");
-  t->SetAlias("ngt","Sum$(mdc.E>=0.02)");
-  t->SetAlias("ngt_Eemc","Sum$((mdc.E>=0.02)*E)");
+  t->SetAlias("ecut", "mdc.E>=0.05");
+  t->SetAlias("ngt","Sum$(mdc.E>=0.05)");
+  t->SetAlias("ngt_Eemc","Sum$((mdc.E>=0.05)*E)");
 }
 
 
@@ -381,70 +381,122 @@ void make_scan_points(vector <ScanPoint_t> &pv)
   //read_energy("share/cbs-energy3.txt",pvtmp);
   //read_energy("share/cbs-energy4.txt",pvtmp);
   read_energy("share/cbs-energy5.txt",pvtmp);
-
-  cout << "Combining first two run" << endl;
-  /*  Combine first points number 1 */
-  pv.resize(pvtmp.size()-1);
-  pv[0]=pvtmp[0];
-  //merge list of runs
-  pv[0].runs.merge(pvtmp[1].runs);
-  pv[0].lum+=pvtmp[1].lum; //integrated luminosity
-  ibn::averager <double> Ea,Ee,Ep;
-  Ea.add(pvtmp[0].W, 1./sq(pvtmp[0].dW)*pvtmp[0].lum);
-  Ea.add(pvtmp[1].W, 1./sq(pvtmp[1].dW)*pvtmp[1].lum);
-  Ee.add(pvtmp[0].Ee, 1./sq(pvtmp[0].dEe)*pvtmp[0].lum);
-  Ee.add(pvtmp[1].Ee, 1./sq(pvtmp[1].dEe)*pvtmp[1].lum);
-  Ep.add(pvtmp[0].Ep, 1./sq(pvtmp[0].dEp)*pvtmp[0].lum);
-  Ep.add(pvtmp[1].Ep, 1./sq(pvtmp[1].dEp)*pvtmp[1].lum);
-  pv[0].W = Ea.average();
-  pv[0].dW=Ea.sigma_average();
-  pv[0].Ee = Ee.average();
-  pv[0].dEe=Ee.sigma_average();
-  pv[0].Ep = Ep.average();
-  pv[0].dEp=Ep.sigma_average();
-  unsigned i2=1;
-  for(unsigned i=2;i<pvtmp.size();++i,++i2) pv[i2] = pvtmp[i];
-  print_data(pv);
+  if(false)
+  {
+    cout << "Combining first two run" << endl;
+    /*  Combine first points number 1 */
+    pv.resize(pvtmp.size()-1);
+    pv[0]=pvtmp[0];
+    //merge list of runs
+    pv[0].runs.merge(pvtmp[1].runs);
+    pv[0].lum+=pvtmp[1].lum; //integrated luminosity
+    ibn::averager <double> Ea,Ee,Ep;
+    Ea.add(pvtmp[0].W, 1./sq(pvtmp[0].dW)*pvtmp[0].lum);
+    Ea.add(pvtmp[1].W, 1./sq(pvtmp[1].dW)*pvtmp[1].lum);
+    Ee.add(pvtmp[0].Ee, 1./sq(pvtmp[0].dEe)*pvtmp[0].lum);
+    Ee.add(pvtmp[1].Ee, 1./sq(pvtmp[1].dEe)*pvtmp[1].lum);
+    Ep.add(pvtmp[0].Ep, 1./sq(pvtmp[0].dEp)*pvtmp[0].lum);
+    Ep.add(pvtmp[1].Ep, 1./sq(pvtmp[1].dEp)*pvtmp[1].lum);
+    pv[0].W = Ea.average();
+    pv[0].dW=Ea.sigma_average();
+    pv[0].Ee = Ee.average();
+    pv[0].dEe=Ee.sigma_average();
+    pv[0].Ep = Ep.average();
+    pv[0].dEp=Ep.sigma_average();
+    unsigned i2=1;
+    for(unsigned i=2;i<pvtmp.size();++i,++i2) pv[i2] = pvtmp[i];
+    print_data(pv);
+  }
+  else 
+  {
+    pv.resize(pvtmp.size());
+    int idx=0;
+    for(unsigned i=0;i<pvtmp.size();++i,++idx) pv[idx] = pvtmp[i];
+  }
 }
 
 
 
 void make_result(void)
 {
-  TCut mh_base_cut = "nemc>2  && S>0.05 && Eemc<2.5 && Emdc<4";
-  TCut mh_strict_cut = "nemc>3  && S>0.05 && Eemc<2.5 && Emdc<4";
-  TCut ee_base_cut = "nemc==2 && S<0.05 && Emdc<5 && Eemc>2.5";
-  TCut ee_ext_cut = "(nemc==2 || nemc==3) && S<0.05 && Emdc<5 && Eemc>2.5";
-  //TCut ee_theta_cut  = "Sum$(sin(theta)<0.45)==mdc.ntrack";
-  TCut ee_theta_cut  = "Sum$(sin(theta)<0.55)==mdc.ntrack";
-  TCut mh_theta_cut  = "Sum$(sin(theta)>0.45)==mdc.ntrack";
-  TCut gg_base_cut = "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<4 && abs(Sum$(z))<9";
-  TCut gg_theta_cut  = "Sum$(sin(theta)>0.45)==2";
-  TCut hp_cut = "Sum$(abs(hpz)<3)==2 && Sum$(hpr<0.25)==2";
-  TCut rv_cut = "Sum$(rvxy[hpidx]<0.5)==2 && Sum$(abs(rvz[hpidx])<5)==2";
-  TCut mh_ecut = "Sum$(E>=0.02)==nemc"; //energy deposition in calorimeter more then 20MeV
-  /* this is standart cut */
-  TCut  mh_cut = mh_base_cut  && rv_cut;
-  TCut  ee_cut = ee_base_cut  && rv_cut && ee_theta_cut;
-  TCut  gg_cut = gg_base_cut  && gg_theta_cut && "E[0]>0.02&&E[1]>0.02";
-  /* this is strict cut */
-  //mh_cut = mh_strict_cut  && rv_cut && mh_theta_cut && "pt100";
-  /* bha bha ext cut */
-  //ee_cut = ee_ext_cut  && rv_cut && ee_theta_cut;
-  /* very strict cut */
-  //mh_cut = mh_strict_cut && rv_cut && mh_theta_cut && "emc.ntrack==0";
-  /* new test cut for E cut */
-  //mh_cut = "Sum$(E>0.02)>=3 && S>=0.06 && Eemc<2.5 && Emdc<5"  && rv_cut && "pt100" && mh_theta_cut && "emc.ntrack==0";
-  //ee_cut = "Sum$(E>0.02)==2 && S<=0.05 && Emdc<5 && Eemc>2.5"  && rv_cut && ee_theta_cut && "emc.ntrack==0";
-  //gg_cut = gg_base_cut  && gg_theta_cut && "Sum$(E>0.02)==2";
+  TCut mh_base_cut; //base cut for signal
+  TCut mh_strict_cut; //strict cut for signal
+  TCut ee_base_cut; //base cut for bhabha
+  TCut ee_ext_cut;
+  TCut ee_theta_cut;
+  TCut mh_theta_cut;
+  TCut gg_base_cut;
+  TCut gg_theta_cut;
+  TCut hp_cut;
+  TCut rv_cut;
+  TCut ip_cut[3]; //interaction point cut
 
-  mh_cut = "ngt > 2 &&  S>=0.06 && ngt_Eemc<2.5 && Emdc<5" && rv_cut;
-  //mh_cut = ("ngt > 2 &&  S>=0.06" || ( "ngt==2 && S>=0.06" && rv_cut && mh_theta_cut)) && "ngt_Eemc<2.5 && Emdc<5";
-  ee_cut = "ngt == 2 &&  S<=0.05 && ngt_Eemc>2.5 && Emdc<5" && ee_theta_cut && rv_cut;
+  //Cut used in selection;
+  TCut  mh_cut;
+  TCut  ee_cut;
+  TCut  gg_cut;
 
-  //strict cut
-  //mh_cut = "ngt >= 4  &&  S>=0.06 && ngt_Eemc<2.5 && Emdc<5" && rv_cut && mh_theta_cut && "pt100";
-  //ee_cut = "ngt == 2  &&  S<=0.05 && ngt_Eemc>2.5 && Emdc<5" && ee_theta_cut && rv_cut && "emc.ntrack==0";
+
+  int SELECTION_VERSION=4;
+  switch(SELECTION_VERSION)
+  {
+    case 3:
+      mh_base_cut = "nemc>2  && S>0.05 && Eemc<2.5 && Emdc<4";
+      mh_strict_cut = "nemc>3  && S>0.05 && Eemc<2.5 && Emdc<4";
+      ee_base_cut = "nemc==2 && S<0.05 && Emdc<5 && Eemc>2.5";
+      ee_ext_cut = "(nemc==2 || nemc==3) && S<0.05 && Emdc<5 && Eemc>2.5";
+      ee_theta_cut  = "Sum$(sin(theta)<0.55)==mdc.ntrack";
+      mh_theta_cut  = "Sum$(sin(theta)>0.45)==mdc.ntrack";
+      gg_base_cut = "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<4 && abs(Sum$(z))<9";
+      gg_theta_cut  = "Sum$(sin(theta)>0.45)==2";
+      hp_cut = "Sum$(abs(hpz)<3)==2 && Sum$(hpr<0.25)==2";
+      rv_cut = "Sum$(rvxy[hpidx]<0.5)==2 && Sum$(abs(rvz[hpidx])<5)==2";
+      /* this is strict cut */
+      //mh_cut = mh_strict_cut  && rv_cut && mh_theta_cut && "pt100";
+      /* bha bha ext cut */
+      //ee_cut = ee_ext_cut  && rv_cut && ee_theta_cut;
+      /* very strict cut */
+      //mh_cut = mh_strict_cut && rv_cut && mh_theta_cut && "emc.ntrack==0";
+
+      mh_cut = mh_base_cut && rv_cut;
+      ee_cut = ee_base_cut && rv_cut &&  ee_theta_cut;
+      gg_cut = gg_base_cut  && gg_theta_cut;
+
+      /* new test cut for E cut */
+      //mh_cut = "Sum$(E>0.02)>=3 && S>=0.06 && Eemc<2.5 && Emdc<5"  && rv_cut && "pt100" && mh_theta_cut && "emc.ntrack==0";
+      //ee_cut = "Sum$(E>0.02)==2 && S<=0.05 && Emdc<5 && Eemc>2.5"  && rv_cut && ee_theta_cut && "emc.ntrack==0";
+      //gg_cut = gg_base_cut  && gg_theta_cut && "Sum$(E>0.02)==2";
+
+      //mh_cut = "ngt > 2 &&  S>=0.06 && ngt_Eemc<2.5 && Emdc<5" && rv_cut;
+      //mh_cut = ("ngt > 2 &&  S>=0.06" || ( "ngt==2 && S>=0.06" && rv_cut && mh_theta_cut)) && "ngt_Eemc<2.5 && Emdc<5";
+      //ee_cut = "ngt == 2 &&  S<=0.05 && ngt_Eemc>2.5 && Emdc<5" && ee_theta_cut && rv_cut;
+
+      //strict cut
+      //mh_cut = "ngt >= 4  &&  S>=0.06 && ngt_Eemc<2.5 && Emdc<5" && rv_cut && mh_theta_cut && "pt100";
+      //ee_cut = "ngt == 2  &&  S<=0.05 && ngt_Eemc>2.5 && Emdc<5" && ee_theta_cut && rv_cut && "emc.ntrack==0";
+      gg_cut = gg_base_cut  && gg_theta_cut;
+      break;
+    case 4:
+      mh_base_cut = "mdc.ntrack>2 && S>0.06 && Eemc<2.5 && Emdc<4";
+      mh_theta_cut  = "Sum$(sin(theta)>0.45)==mdc.ntrack";
+      ee_base_cut = "mdc.ntrack==2 && S<0.05 && Eemc>2.5 && Emdc<5";
+      ee_theta_cut = "Sum$(sin(theta)<0.45)==mdc.ntrack";
+      gg_base_cut = "Etotal > 3.3 && Etotal < 4  && sqrt((Sum$(x)-2)**2 + Sum$(y)**2)<4 && abs(Sum$(z))<9";
+      gg_theta_cut = "Sum$(theta)>0.45";
+      TCut gg_cos_cut = "acos(cos)>3.1";
+
+      for(int i=0;i<3;i++)
+      {
+        char buf[1024];
+        double IP_R=0.5;//cm
+        double IP_Z=5;//cm
+        sprintf(buf,"rvxy[%d]<%f&&abs(rvz[%d])<%f", i, IP_R, i, IP_Z);
+      }
+      mh_cut = mh_base_cut  && ip_cut[0] && ip_cut[1] && ip_cut[2] && mh_theta_cut && "Sum$(q)==0";
+      ee_cut = ee_base_cut  && ip_cut[0] && ip_cut[1] && ee_theta_cut && "q[0]*q[1]<0";
+      gg_cut = gg_base_cut  && gg_theta_cut &&gg_cos_cut;
+      break;
+  }
   
   list<RunInfo_t> runinfo;
   make_runinfo(runinfo);
@@ -585,10 +637,10 @@ void make_result(void)
 
     nntr_g->SetPoint(i,i, pv[i].Nntr.average());
     nntr_g->SetPointError(i, 0,pv[i].Nntr.sigma());
-    bb_lum_g->SetPoint(i,i+1, pv[i].Nee/pv[i].lum);
+    bb_lum_g->SetPoint(i,pv[i].W, pv[i].Nee/pv[i].lum);
+    bb_lum_g->SetPointError(i,pv[i].dW, sqrt(double(pv[i].Nee))/pv[i].lum);
     bb_lum_g->SetTitle("N_{ee} / L");
     bb_lum_g->GetXaxis()->SetTitle("point");
-    bb_lum_g->SetPointError(i,0, sqrt(double(pv[i].Nee))/pv[i].lum);
     bb_gg_g->SetPoint(i,pv[i].W, double(pv[i].Nee)/pv[i].Ngg);
     bb_gg_g->SetPointError(i,0, double(pv[i].Nee)/pv[i].Ngg*sqrt(1./pv[i].Nee+1./pv[i].Ngg));
     bb_gg_g->SetTitle("N_{ee} / N_{#gamma#gamma}");
