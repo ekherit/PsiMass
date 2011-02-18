@@ -100,9 +100,12 @@ struct ScanPoint_t
 {
   list <unsigned> runs; //list of runs
   list <RunInfo_t> ri;
+  unsigned scan; //scan number
   double lum;
-  double E;
-  double Eerror;
+  double W; //cm energy
+  double dW; //cm energy error
+  double Ee,dEe; //electron energy and error
+  double Ep,dEp; //positron energy and error
   double Sw, dSw; //SigmaW, and error
   double Se, dSe; //Sigma for electron
   double Sp, dSp; //Sigma for positron
@@ -113,13 +116,57 @@ struct ScanPoint_t
   unsigned pn;
   ScanPoint_t(void)
   {
+    //BES part
+    lum=0;
+    scan=0;
+    //Selection part
     Nh=0;
     Nee=0;
     Ngg=0;
-    lum=0;
-    E=0;
-    Eerror=0;
+    //CBS part
+    W=0;
+    dW=0;
     pn=0;
+    Ee=0;
+    dEe=0;
+    Ep=0;
+    dEp=0;
+    Sw=0;
+    dSw=0;
+    Se=0;
+    dSe=0;
+    Sp=0;
+    dSp=0;
+  }
+
+  ScanPoint_t & operator=(const ScanPoint_t & sp)
+  {
+    runs=sp.runs; //list of runs
+    ri=sp.ri;
+    lum=sp.lum;
+    pn = sp.pn;
+    scan=sp.scan;
+
+    //cm energy
+    W=sp.W;
+    dW=sp.dW;
+    Sw=sp.Sw;
+    dSw=sp.dSw; //SigmaW, and error
+
+    Ee=sp.Ee;
+    dEe=sp.dEe;
+    Se=sp.Se;
+    dSe=sp.dSe; //Sigma for electron
+
+    Ep=sp.Ep;
+    dEp=sp.dEp;
+    Sp=sp.Sp;
+    dSp=sp.dSp; //Sigma for positron
+
+    Nh=sp.Nh; //number of multihadron
+    Nee=sp.Nee; //number of e+e- (bhabha)
+    Ngg=sp.Ngg;  //number of gamma gamma
+    return *this;
   }
 };
 
@@ -210,6 +257,30 @@ double dW_dE1(double E1, double E2)
   return (E2+p2/p1*E1*cos(BEPC_ALPHA))/W;
 }
 
+void print_data(const vector<ScanPoint_t> &pv)
+{
+  cout << setw(4) << "run" << setw(5) <<"point" 
+    << setw(10) << "Ee" << setw(10) << "dEe" << setw(10) << "SigmaWe" << setw(10) << "dSigmaWe" 
+    << setw(10) << "Ep" << setw(10) << "dEp" << setw(10) << "SigmaWp" << setw(10) << "dSigmaWp" 
+    << setw(10) << "Wcm" << setw(10) << "dWcm"
+    << setw(10) << "lum" << setw(16) << "BES run list";
+  cout << endl;
+  for(unsigned i=0;i<pv.size();i++)
+  {
+    cout<<setw(4) << i<< setw(5)<<pv[i].pn
+      << setw(10) << pv[i].Ee << setw(10)<< pv[i].dEe << setw(10) << pv[i].Se << setw(10)<< pv[i].dSe
+      << setw(10) << pv[i].Ep << setw(10)<< pv[i].dEp << setw(10) << pv[i].Sp << setw(10)<< pv[i].dSp
+      << setw(10) << pv[i].W  << setw(10) << pv[i].dW
+      << setw(10) << pv[i].lum;
+    for(list<unsigned>::const_iterator I = pv[i].runs.begin(); I!=pv[i].runs.end(); ++I)
+    {
+      cout << setw(6) << *I;
+    }
+    cout << endl;
+  }
+
+}
+
 void read_energy(const char * filename,vector <ScanPoint_t> &pv)
 {
   ifstream Efile(filename);
@@ -227,26 +298,26 @@ void read_energy(const char * filename,vector <ScanPoint_t> &pv)
     int pn;
     double Ee, dEe, Se, dSe, Ep, dEp, Sp, dSp;
     Efile >> n >> pn >> Ee>> dEe >> Se >> dSe >> Ep >> dEp >> Sp >> dSp;
-    cout<<setw(4) << n<< setw(5)<<pn<<setw(10)<<Ee<<setw(10)<<dEe<<setw(10)<<Se
-      <<setw(10)<<dSe<<setw(10)<<Ep<<setw(10)<<dEp<<setw(10)<<Sp<<setw(10)<<dSp;
-    double Wcm = cm_energy(Ee, Ep);
-    double dWcm = sqrt(sq(dW_dE1(Ee,Ep)*dEe) + sq(dW_dE1(Ep,Ee)*dEp));
     //Spread should be in MeV
     Se*=1e-3;
     Sp*=1e-3;
     dSe*=1e-3;
     dSp*=1e-3;
+    cout<<setw(4) << n<< setw(5)<<pn<<setw(10)<<Ee<<setw(10)<<dEe<<setw(10)<<Se
+      <<setw(10)<<dSe<<setw(10)<<Ep<<setw(10)<<dEp<<setw(10)<<Sp<<setw(10)<<dSp;
+    double Wcm = cm_energy(Ee, Ep);
+    double dWcm = sqrt(sq(dW_dE1(Ee,Ep)*dEe) + sq(dW_dE1(Ep,Ee)*dEp));
 
     cout << setw(10) << Wcm << setw(10) << dWcm;
     cout << setw(10) << pv[i].lum;
     for(list<unsigned>::iterator I = pv[i].runs.begin(); I!=pv[i].runs.end(); ++I)
     {
-      cout << setw(8) << *I;
+      cout << setw(6) << *I;
     }
 
     //fill c.m.energy
-    pv[i].E=Wcm;
-    pv[i].Eerror = sqrt(dWcm*dWcm);
+    pv[i].W=Wcm;
+    pv[i].dW = sqrt(dWcm*dWcm);
     //fill c.m. spread
     pv[i].Sw = sqrt(Sp*Sp+Se*Se);
     pv[i].dSw = sqrt(sq(Sp*dSp)+sq(Se*dSe))/pv[i].Sw;
@@ -255,6 +326,10 @@ void read_energy(const char * filename,vector <ScanPoint_t> &pv)
     pv[i].dSe = dSe;
     pv[i].Sp = Sp;
     pv[i].dSp = dSp;
+    pv[i].Ee = Ee;
+    pv[i].Ep = Ep;
+    pv[i].dEe = dEe;
+    pv[i].dEp = dEp;
     cout << endl;
   }
 }
@@ -280,14 +355,14 @@ void read_scan_info(const char * filename, vector<ScanPoint_t> &pv)
     is.putback(c);
     int i; //number of point
     ScanPoint_t sp;
-    is >> i >>  sp.pn >> sp.E >> sp.Eerror >> sp.lum;
+    is >> i >> sp.scan >>  sp.pn >> sp.W >> sp.dW >> sp.lum;
     unsigned run;
     while(is>>run)
     {
       sp.runs.push_back(run);
     }
     pv.push_back(sp);
-    cout << setw(5) << i << setw(10) << sp.pn << setw(15) << sp.E << setw(15) << sp.Eerror << setw(15) << sp.lum;
+    cout << setw(5) << i << setw(10) << sp.pn << setw(15) << sp.W << setw(15) << sp.dW << setw(15) << sp.lum;
     for(list<unsigned>::iterator I = sp.runs.begin(); I!=sp.runs.end(); ++I)
     {
       cout << setw(8) << *I;
@@ -296,32 +371,32 @@ void read_scan_info(const char * filename, vector<ScanPoint_t> &pv)
   }
 }
 
+
+
 void make_scan_points(vector <ScanPoint_t> &pv)
 {
-  pv.resize(13);
-  ScanPoint_t * sp=&pv[0];
-  sp=&pv[0]; sp->pn=1; sp->E=3677.872; sp->lum=104.561; sp->Eerror=0.241; sp->runs.push_back(20334); sp->runs.push_back(20335); 
-  sp=&pv[1]; sp->pn=1; sp->E=3678.055; sp->lum=464.741;sp->Eerror=0.146;sp->runs.push_back(20339);sp->runs.push_back(20336);
-  sp=&pv[2]; sp->pn=3; sp->E=3682.836; sp->lum=330.082;sp->Eerror=0.141;sp->runs.push_back(20340);sp->runs.push_back(20341);
-  sp=&pv[3]; sp->pn=5; sp->E=3686.298; sp->lum=360.3861;sp->Eerror=0.124;sp->runs.push_back(20344);sp->runs.push_back(20342); sp->runs.push_back(20343); 
-  sp=&pv[4]; sp->pn=7; sp->E=3688.277; sp->lum=339.514;sp->Eerror=0.192;sp->runs.push_back(20346);sp->runs.push_back(20347); 
-  sp=&pv[5]; sp->pn=9; sp->E=3696.883; sp->lum=339.000;sp->Eerror=0.176;sp->runs.push_back(20350);sp->runs.push_back(20348); sp->runs.push_back(20349); 
-  sp=&pv[6]; sp->pn=1; sp->E=3676.428; sp->lum=230.509;sp->Eerror=0.128;sp->runs.push_back(20353);sp->runs.push_back(20354); 
-  sp=&pv[7]; sp->pn=2; sp->E=3681.665; sp->lum=239.3696;sp->Eerror=0.131;sp->runs.push_back(20357);sp->runs.push_back(20355);
-  sp=&pv[8]; sp->pn=4; sp->E=3683.509; sp->lum=302.043;sp->Eerror=0.122;sp->runs.push_back(20358);sp->runs.push_back(20359); 
-  sp=&pv[9]; sp->pn=5; sp->E=3686.004; sp->lum=272.106;sp->Eerror=0.126;sp->runs.push_back(20361);sp->runs.push_back(20360); 
-  sp=&pv[10]; sp->pn=6; sp->E=3687.093; sp->lum=283.544; sp->Eerror=0.155; sp->runs.push_back(20362);sp->runs.push_back(20363);
-  sp=&pv[11]; sp->pn=8; sp->E=3690.152; sp->lum=325.140;sp->Eerror=0.117; sp->runs.push_back(20365);sp->runs.push_back(20364);
-  sp=&pv[12]; sp->pn=9; sp->E=3693.086; sp->lum=354.908;sp->Eerror=0.143; sp->runs.push_back(20366);sp->runs.push_back(20367);
-  read_scan_info("share/scan_info.txt",pv);
-  //read_energy("share/cbs-energy2.txt",pv);
-  //read_energy("share/cbs-energy3.txt",pv);
-  //read_energy("share/cbs-energy4.txt",pv);
-  read_energy("share/cbs-energy5.txt",pv);
-  //for(unsigned i=0;i<pv.size();++i)
-  //{
-  //  pv[i].Eerror = sqrt(sq(pv[i].Eerror)+sq(0.200));
-  //}
+  vector<ScanPoint_t> pvtmp;
+  read_scan_info("share/scan_info.txt",pvtmp);
+  //read_energy("share/cbs-energy2.txt",pvtmp);
+  //read_energy("share/cbs-energy3.txt",pvtmp);
+  //read_energy("share/cbs-energy4.txt",pvtmp);
+  read_energy("share/cbs-energy5.txt",pvtmp);
+
+  cout << "Combining first two run" << endl;
+  /*  Combine first points number 1 */
+  pv.resize(pvtmp.size()-1);
+  pv[0]=pvtmp[0];
+  //merge list of runs
+  pv[0].runs.merge(pvtmp[1].runs);
+  pv[0].lum+=pvtmp[1].lum; //integrated luminosity
+  ibn::averager <double> Ea;
+  Ea.add(pvtmp[0].W, 1./sq(pvtmp[0].dW)*pvtmp[0].lum);
+  Ea.add(pvtmp[1].W, 1./sq(pvtmp[1].dW)*pvtmp[1].lum);
+  pv[0].W = Ea.average();
+  pv[0].dW=Ea.sigma_average();
+  unsigned i2=1;
+  for(unsigned i=2;i<pvtmp.size();++i,++i2) pv[i2] = pvtmp[i];
+  print_data(pv);
 }
 
 
@@ -433,7 +508,7 @@ void make_result(void)
       cout << setw(10) << run << setw(20) << Nsignal << setw(20)<< Nbhabha << setw(20)<< Ngg 
         <<  setw(20)<< double(Nbhabha)/double(Ngg) << endl;
 
-      for(unsigned pn=0; pn<13; pn++)
+      for(unsigned pn=0; pn<pv.size(); pn++)
       {
         bool found=false;
         for(list<unsigned>::iterator i=pv[pn].runs.begin();i!=pv[pn].runs.end(); ++i)
@@ -447,10 +522,10 @@ void make_result(void)
           pv[pn].Ngg+=Ngg;
           pv[pn].Nchtr.add(nchtr,1./sq(nchtr_rms));
           pv[pn].Nntr.add(nntr,1./sq(nntr_rms));
-          nchtr2_g->SetPoint(runidx,pv[pn].E,nchtr);
-          nchtr2_g->SetPointError(runidx,pv[pn].Eerror,nchtr_rms);
-          nntr2_g->SetPoint(runidx,pv[pn].E,nntr);
-          nntr2_g->SetPointError(runidx,pv[pn].Eerror,nntr_rms);
+          nchtr2_g->SetPoint(runidx,pv[pn].W,nchtr);
+          nchtr2_g->SetPointError(runidx,pv[pn].dW,nchtr_rms);
+          nntr2_g->SetPoint(runidx,pv[pn].W,nntr);
+          nntr2_g->SetPointError(runidx,pv[pn].dW,nntr_rms);
           runidx++;
         }
       }
@@ -459,12 +534,12 @@ void make_result(void)
 
 
 
-  int fw = 16; //format width
+  int fw = 14; //format width
   cout.precision(8);
   cout << setw(3) << "#point" << setw(fw) << "lum, nb^-1" 
-    << setw(fw) << "energy, MeV" << setw(fw)  << "error, MeV"
-    << setw(fw) << "spread, MeV" << setw(fw)  << "error, MeV"
-    << setw(fw) << "signal (mhadr)" << setw(fw) << "bhabha" << setw(fw) << "gamma-gamma" << 
+    << setw(fw) << "W, MeV" << setw(fw)  << "dW, MeV"
+    << setw(fw) << "Sw, MeV" << setw(fw)  << "dSw, MeV"
+    << setw(fw) << "mhadr" << setw(fw) << "Nee" << setw(fw) << "Ngg" << 
     setw(fw)  << "Nee/lum" << setw(fw) << "Nee/Ngg"<< endl;
   TGraphErrors * nchtr_g = new TGraphErrors;
   TGraphErrors * nntr_g = new TGraphErrors;
@@ -477,16 +552,26 @@ void make_result(void)
   {
     ostringstream os;
     os << setw(2) << pv[i].pn << setw(fw) << pv[i].lum  << 
-      setw(fw)<< pv[i].E   << setw(fw) << pv[i].Eerror << 
+      setw(fw)<< pv[i].W   << setw(fw) << pv[i].dW << 
       setw(fw)<< pv[i].Sw  << setw(fw) << pv[i].dSw << 
       setw(fw)<< pv[i].Nh  << 
       setw(fw)<< pv[i].Nee <<
       setw(fw)<< pv[i].Ngg;
     cout << os.str() << setw(fw) << double(pv[i].Nee)/pv[i].lum << setw(fw) << double(pv[i].Nee)/double(pv[i].Ngg) << endl;
     scan12 << os.str() << endl;
-    if(i<6) scan1 << os.str()<<endl;
-    else scan2 << os.str()<<endl;
-    
+    switch(pv[i].scan)
+    {
+      case 0:
+        break;
+      case 1:
+        scan1 << os.str()<<endl;
+        break;
+      case 2:
+        scan2 << os.str()<<endl;
+        break;
+      default:
+        break;
+    }
     nchtr_g->SetPoint(i,i, pv[i].Nchtr.average());
     nchtr_g->SetPointError(i, 0,pv[i].Nchtr.sigma());
 
@@ -496,7 +581,7 @@ void make_result(void)
     bb_lum_g->SetTitle("N_{ee} / L");
     bb_lum_g->GetXaxis()->SetTitle("point");
     bb_lum_g->SetPointError(i,0, sqrt(double(pv[i].Nee))/pv[i].lum);
-    bb_gg_g->SetPoint(i,pv[i].E, double(pv[i].Nee)/pv[i].Ngg);
+    bb_gg_g->SetPoint(i,pv[i].W, double(pv[i].Nee)/pv[i].Ngg);
     bb_gg_g->SetPointError(i,0, double(pv[i].Nee)/pv[i].Ngg*sqrt(1./pv[i].Nee+1./pv[i].Ngg));
     bb_gg_g->SetTitle("N_{ee} / N_{#gamma#gamma}");
     bb_gg_g->GetXaxis()->SetTitle("point");
@@ -580,21 +665,21 @@ void make_result(void)
   unsigned Nscan1=6;
   for(unsigned i=0; i<Nscan1; i++)
   {
-    RLg[0]->SetPoint(i,pv[i].E, double(pv[i].Nh)/pv[i].lum);
-    REEg[0]->SetPoint(i,pv[i].E, double(pv[i].Nh)/pv[i].Nee*Kee);
-    RGGg[0]->SetPoint(i,pv[i].E, double(pv[i].Nh)/pv[i].Ngg*Kgg);
-    RLg[0]->SetPointError(i,pv[i].Eerror, sqrt(double(pv[i].Nh))/pv[i].lum);
-    REEg[0]->SetPointError(i,pv[i].Eerror,double(pv[i].Nh)/pv[i].Nee*Kee*sqrt(1./pv[i].Nh+1./pv[i].Nee));
-    RGGg[0]->SetPointError(i,pv[i].Eerror,double(pv[i].Nh)/pv[i].Ngg*Kgg*sqrt(1./pv[i].Nh+1./pv[i].Ngg));
+    RLg[0]->SetPoint(i, pv[i].W, double(pv[i].Nh)/pv[i].lum);
+    REEg[0]->SetPoint(i,pv[i].W, double(pv[i].Nh)/pv[i].Nee*Kee);
+    RGGg[0]->SetPoint(i,pv[i].W, double(pv[i].Nh)/pv[i].Ngg*Kgg);
+    RLg[0]->SetPointError(i, pv[i].dW, sqrt(double(pv[i].Nh))/pv[i].lum);
+    REEg[0]->SetPointError(i,pv[i].dW,double(pv[i].Nh)/pv[i].Nee*Kee*sqrt(1./pv[i].Nh+1./pv[i].Nee));
+    RGGg[0]->SetPointError(i,pv[i].dW,double(pv[i].Nh)/pv[i].Ngg*Kgg*sqrt(1./pv[i].Nh+1./pv[i].Ngg));
   }
   for(unsigned i=Nscan1; i<pv.size(); i++)
   {
-    RLg[1]->SetPoint(i-Nscan1,pv[i].E, double(pv[i].Nh)/pv[i].lum);
-    REEg[1]->SetPoint(i-Nscan1,pv[i].E, double(pv[i].Nh)/pv[i].Nee*Kee);
-    RGGg[1]->SetPoint(i-Nscan1,pv[i].E, double(pv[i].Nh)/pv[i].Ngg*Kgg);
-     RLg[1]->SetPointError(i-Nscan1,pv[i].Eerror, sqrt(double(pv[i].Nh))/pv[i].lum);
-    REEg[1]->SetPointError(i-Nscan1,pv[i].Eerror,double(pv[i].Nh)/pv[i].Nee*Kee*sqrt(1./pv[i].Nh+1./pv[i].Nee));
-    RGGg[1]->SetPointError(i-Nscan1,pv[i].Eerror,double(pv[i].Nh)/pv[i].Ngg*Kgg*sqrt(1./pv[i].Nh+1./pv[i].Ngg));
+    RLg[1]->SetPoint (i-Nscan1,pv[i].W, double(pv[i].Nh)/pv[i].lum);
+    REEg[1]->SetPoint(i-Nscan1,pv[i].W, double(pv[i].Nh)/pv[i].Nee*Kee);
+    RGGg[1]->SetPoint(i-Nscan1,pv[i].W, double(pv[i].Nh)/pv[i].Ngg*Kgg);
+     RLg[1]->SetPointError(i-Nscan1,pv[i].dW, sqrt(double(pv[i].Nh))/pv[i].lum);
+    REEg[1]->SetPointError(i-Nscan1,pv[i].dW,double(pv[i].Nh)/pv[i].Nee*Kee*sqrt(1./pv[i].Nh+1./pv[i].Nee));
+    RGGg[1]->SetPointError(i-Nscan1,pv[i].dW,double(pv[i].Nh)/pv[i].Ngg*Kgg*sqrt(1./pv[i].Nh+1./pv[i].Ngg));
   }
 
   TCanvas * result_c = new TCanvas;
