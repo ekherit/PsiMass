@@ -389,11 +389,19 @@ void make_scan_points(vector <ScanPoint_t> &pv)
   //merge list of runs
   pv[0].runs.merge(pvtmp[1].runs);
   pv[0].lum+=pvtmp[1].lum; //integrated luminosity
-  ibn::averager <double> Ea;
+  ibn::averager <double> Ea,Ee,Ep;
   Ea.add(pvtmp[0].W, 1./sq(pvtmp[0].dW)*pvtmp[0].lum);
   Ea.add(pvtmp[1].W, 1./sq(pvtmp[1].dW)*pvtmp[1].lum);
+  Ee.add(pvtmp[0].Ee, 1./sq(pvtmp[0].dEe)*pvtmp[0].lum);
+  Ee.add(pvtmp[1].Ee, 1./sq(pvtmp[1].dEe)*pvtmp[1].lum);
+  Ep.add(pvtmp[0].Ep, 1./sq(pvtmp[0].dEp)*pvtmp[0].lum);
+  Ep.add(pvtmp[1].Ep, 1./sq(pvtmp[1].dEp)*pvtmp[1].lum);
   pv[0].W = Ea.average();
   pv[0].dW=Ea.sigma_average();
+  pv[0].Ee = Ee.average();
+  pv[0].dEe=Ee.sigma_average();
+  pv[0].Ep = Ep.average();
+  pv[0].dEp=Ep.sigma_average();
   unsigned i2=1;
   for(unsigned i=2;i<pvtmp.size();++i,++i2) pv[i2] = pvtmp[i];
   print_data(pv);
@@ -584,7 +592,7 @@ void make_result(void)
     bb_gg_g->SetPoint(i,pv[i].W, double(pv[i].Nee)/pv[i].Ngg);
     bb_gg_g->SetPointError(i,0, double(pv[i].Nee)/pv[i].Ngg*sqrt(1./pv[i].Nee+1./pv[i].Ngg));
     bb_gg_g->SetTitle("N_{ee} / N_{#gamma#gamma}");
-    bb_gg_g->GetXaxis()->SetTitle("point");
+    bb_gg_g->GetXaxis()->SetTitle("W [MeV]");
   }
   //TCanvas * ch_c= new TCanvas("tracks_number","Number of tracks");
   //ch_c->Divide(1,2);
@@ -621,6 +629,7 @@ void make_result(void)
   cout << "bb_lum: " << flum->GetParameter(0) << "+-"<< flum->GetParError(0) 
     << " ch2/ndf=" << flum->GetChisquare()/(flum->GetNumberFitPoints()-flum->GetNumberFreeParameters()) << endl;
   rat_c->cd(2);
+  TCanvas * ee_gg_c = new TCanvas;
   bb_gg_g->Draw("ap");
   bb_gg_g->SetMarkerStyle(21);
   bb_gg_g->SetMarkerSize(1.5);
