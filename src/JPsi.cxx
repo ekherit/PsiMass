@@ -97,6 +97,7 @@ JPsi::JPsi(const std::string& name, ISvcLocator* pSvcLocator) :
   declareProperty("IPTRACKS", IPTRACKS=2); //number of tracks from interection point
   declareProperty("MIN_CHARGED_TRACKS", MIN_CHARGED_TRACKS=2); //minimum number of charged tracks in selection
   declareProperty("MAX_TRACK_NUMBER", MAX_TRACK_NUMBER=30); //maximum number of charged tracks
+  CHECK_TOF=1;
 }
 
 
@@ -178,6 +179,7 @@ StatusCode JPsi::initialize(void)
 
       /*  sphericity part */
       status = mdc_tuple->addItem("S", mdc.S);
+      status = mdc_tuple->addItem("cos", mdc.cos);
     }
     else
     {
@@ -371,6 +373,7 @@ void JPsi::InitData(long nchtrack, long nneutrack)
   mdc.Eemc=0;
   mdc.Emdc=0;
   mdc.S=0;
+  mdc.cos=-1000;
   mdc.pt50=-1000;
   mdc.pt100=-1000;
   mdc.ntrack=0;
@@ -565,7 +568,7 @@ StatusCode JPsi::execute()
       double E = emcTrk->energy();
       double p = mdcTrk->p();
       if(E<EMS_THRESHOLD) continue;  //EMC threshold is 50 MeV.
-      if(p>MAX_MOMENTUM) continue; //supress wrong momentum measurement  and cosmic background
+      //if(p>MAX_MOMENTUM) continue; //supress wrong momentum measurement  and cosmic background
       pmap.insert(pair_t(p,idx));
       Emap.insert(pair_t(E,idx));
     }
@@ -713,6 +716,10 @@ StatusCode JPsi::execute()
     mdc.pt50 = ispt50;
     mdc.pt100 = ispt100;
 
+    Hep3Vector p0(mdc.px[0], mdc.py[0],mdc.pz[0]);
+    Hep3Vector p1(mdc.px[1], mdc.py[1],mdc.pz[1]);
+
+    mdc.cos = p0.dot(p1)/(p0.mag()*p1.mag());
     //normalize sphericity tensor
     for(int i=0;i<3;i++)
       for(int j=0;j<3;j++)
@@ -812,7 +819,7 @@ StatusCode JPsi::execute()
       //normalize sphericity tenzor
       for(int i=0;i<3;i++)
         for(int j=0;j<3;j++)
-          S[i][j]/=R2sum;
+          S[i][j]=S[i][j]/R2sum;
       gg_S = Sphericity(S);
       
       //calculate colliniarity of two high energy tracks
