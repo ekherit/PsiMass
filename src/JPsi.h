@@ -90,6 +90,9 @@ class JPsi : public Algorithm
     NTuple::Item<double> cos; //cos between two high energy tracks.
     NTuple::Item<long>   pt50; //flag for higher 50 MeV pt
     NTuple::Item<long>   pt100;//flag for higher 100 MeV pt.
+    NTuple::Item<long>   nemc20;// flag for threashold E20
+    NTuple::Item<long>   nemc50;// flag for threashold E20
+    NTuple::Item<long>   nemc100;// flag for threashold E20
   };
 
   /* ElecroMagnetic Calorimeter Information */

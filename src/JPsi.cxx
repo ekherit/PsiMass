@@ -102,7 +102,6 @@ JPsi::JPsi(const std::string& name, ISvcLocator* pSvcLocator) :
 
 StatusCode JPsi::initialize(void)
 {
-  CHECK_TOF=1;
   MsgStream log(msgSvc(), name());
 
   log << MSG::INFO << "in initialize()" << endmsg;
@@ -147,6 +146,9 @@ StatusCode JPsi::initialize(void)
       status = mdc_tuple->addItem ("nip", mdc.nip);
       status = mdc_tuple->addItem ("pt50", mdc.pt50);
       status = mdc_tuple->addItem ("pt100", mdc.pt100);
+      status = mdc_tuple->addItem ("nemc20", mdc.nemc20);
+      status = mdc_tuple->addItem ("nemc50", mdc.nemc50);
+      status = mdc_tuple->addItem ("nemc100", mdc.nemc100);
       status = mdc_tuple->addIndexedItem ("p", mdc.ntrack, mdc.p);
       status = mdc_tuple->addIndexedItem ("pt", mdc.ntrack, mdc.pt);
       status = mdc_tuple->addIndexedItem ("px", mdc.ntrack, mdc.px);
@@ -256,7 +258,7 @@ StatusCode JPsi::initialize(void)
       tof_tuple = ntupleSvc()->book("FILE1/tof", CLID_ColumnWiseTuple, "tof information");
       if(tof_tuple)
       {
-        status = tof_tuple->addItem ("tof.ntrack", tof.ntrack, 0, MAX_TRACK_NUMBER);
+        status = tof_tuple->addItem ("ntrack", tof.ntrack, 0, MAX_TRACK_NUMBER);
         status = tof_tuple->addIndexedItem ("trackID", tof.ntrack, tof.trackID );
         status = tof_tuple->addIndexedItem ("tofID", tof.ntrack, tof.tofID);
         status = tof_tuple->addIndexedItem ("tofTrackID", tof.ntrack, tof.tofTrackID);
@@ -376,6 +378,9 @@ void JPsi::InitData(long nchtrack, long nneutrack)
   mdc.cos=-1000;
   mdc.pt50=-1000;
   mdc.pt100=-1000;
+  mdc.nemc20=0;
+  mdc.nemc50=0;
+  mdc.nemc100=0;
   mdc.ntrack=0;
   
   for(int i=0;i<MAX_TRACK_NUMBER; i++)
@@ -567,8 +572,11 @@ StatusCode JPsi::execute()
       RecEmcShower *emcTrk = (*itTrk)->emcShower(); //Electro Magnet Calorimeer
       double E = emcTrk->energy();
       double p = mdcTrk->p();
-      if(E<EMS_THRESHOLD) continue;  //EMC threshold is 50 MeV.
+      //if(E<EMS_THRESHOLD) continue;  //EMC threshold is 50 MeV.
       //if(p>MAX_MOMENTUM) continue; //supress wrong momentum measurement  and cosmic background
+      if(E>0.02) mdc.nemc20++;
+      if(E>0.05) mdc.nemc50++;
+      if(E>0.1) mdc.nemc100++;
       pmap.insert(pair_t(p,idx));
       Emap.insert(pair_t(E,idx));
     }
