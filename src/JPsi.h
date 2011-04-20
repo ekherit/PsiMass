@@ -211,22 +211,6 @@ class JPsi : public Algorithm
 
 	//gamma-gamma annihilation selection
 	long gg_event_writed;
-  //struct EMC_t
-  //{
-  ////NTuple::Item<long> gg_nntrk;
-  ////NTuple::Item<long> gg_ngood_track;
-  ////NTuple::Item<long> gg_ngood_charged_track;
-  ////NTuple::Item<long> gg_S; //sphericity
-	////NTuple::Item<double> gg_cos; //aclolinearity
-	////NTuple::Item<double> gg_atheta; //theta acolinearity theta_0+theta_1 - pi
-	////NTuple::Item<double> gg_aphi; //phi aclolinearity  abs(phi_0-phi_1)-pi
-	////NTuple::Item<double> gg_Etotal; //aclolinearity
-	////NTuple::Array<double> gg_x, gg_y, gg_z; //coordinat of claster
-	////NTuple::Array<double> gg_theta, gg_phi;//angles
-	////NTuple::Array<double> gg_E, gg_dE; //energy and error
-	////NTuple::Array<long> gg_n; //number of clasters
-	////NTuple::Array<long> gg_module; //module=0: east endcap;  module=1: barrel;  module=2: west endcap.
-  //};
 	NTuple::Tuple * gg_tuple;
   EMC_t gg;
 

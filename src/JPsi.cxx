@@ -510,19 +510,6 @@ void JPsi::InitData(long nchtrack, long nneutrack)
       tof.errE[i]  =-1000;
     }
   }
-  //gg_S = -1000;
-  //for(int i=0; i<3;i++)
-  //{
-  //  //gg_x [i]=-1000;
-  //  //gg_y [i]=-1000;
-  //  //gg_z [i]=-1000;
-  //  //gg_theta [i]=-1000;
-  //  //gg_phi [i]=-1000;
-  //  //gg_E [i]=-1000;
-  //  //gg_dE [i]=-1000;
-  //  //gg_module [i]=-1000;
-  //  //gg_n[i]=-1000;
-  //}
 }
 
 StatusCode JPsi::execute()
@@ -541,9 +528,6 @@ StatusCode JPsi::execute()
     std::cout << "proceed event: " << event_proceed << " selected events: "<< event_write << std::endl;
   }
   event_proceed++;
-  //DEBUG code
-  if(event_proceed<112000) return StatusCode::SUCCESS;
-  //cout << "Proceeding event # " << event_proceed << endl;
 
   /*  Get information about reconstructed events */
   SmartDataPtr<EvtRecEvent> evtRecEvent(eventSvc(), EventModel::EvtRec::EvtRecEvent);
@@ -591,7 +575,6 @@ StatusCode JPsi::execute()
     //look thru the charged tracks and sort them on energy
     for(unsigned idx = 0; idx < evtRecEvent->totalCharged() && idx < MAX_TRACK_NUMBER ; idx++)
     {
-      clog << "Track # " <<  idx << endl;
       EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + idx;
       if(!(*itTrk)->isMdcTrackValid()) continue;  //use only valid charged tracks
       if(!(*itTrk)->isEmcShowerValid()) continue; //charged track must have energy deposition in EMC
@@ -768,7 +751,6 @@ StatusCode JPsi::execute()
         S[i][j]/=p2sum;
     mdc.S = Sphericity(S);
 
-    clog << "Check emc" << endl;
     /*  fill data for neutral tracks */
     int track=0; //index for neutral tracks
     emc.Etotal=0;
@@ -811,7 +793,6 @@ StatusCode JPsi::execute()
     if(CHECK_TOF) tof_tuple->write();
     event_write++;
   }
-  clog << "Neutral tracks for gg" << endl;
   //selection of gamma-gamma events
   gg.ngood_charged_track = good_charged_tracks;
   if(good_charged_tracks==0)
@@ -838,7 +819,6 @@ StatusCode JPsi::execute()
     vector < Hep3Vector> R(Emap.size());
     for(mmap_t::reverse_iterator ri=Emap.rbegin(); ri!=Emap.rend(); ++ri,++idx)
     {
-      clog << "Neutral grack # " << idx << endl;
       EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + ri->second;
       assert((*itTrk)->isEmcShowerValid()); //check that EMS data is present
       RecEmcShower *emcTrk = (*itTrk)->emcShower();
@@ -891,21 +871,13 @@ StatusCode JPsi::finalize()
   std::cout << "Average number of charged tracks: " << nchtr_a.average() << ", rms=" << nchtr_a.rms() << endl;
   std::cout << "Average number of neutral tracks: " << nntr_a.average() << ", rms=" << nntr_a.rms() << endl;
   head_event_selected=event_write;
-  std::clog << "Before nchtr_a.average() " << endl;
   head_ncharged_tracks=nchtr_a.average();
-  std::clog << "Before nchtr_a.rms()" << endl;
   head_ncharged_tracks_rms=nchtr_a.rms();
-  std::clog << "Before nntr_a.average()" << endl;
   head_nneutral_tracks=nntr_a.average();
-  std::clog << "Before nntr_a.rms() " << endl;
   head_nneutral_tracks_rms=nntr_a.rms();
-  std::clog << "Before nttr_a.average();" << endl;
   head_ntotal_tracks=nttr_a.average();
-  std::clog << "Before nttr_a.rms(); " << endl;
   head_ntotal_tracks_rms=nttr_a.rms();
-  std::clog << "Before head_tuple->write()" << endl;
   head_tuple->write();
-  std::clog << "After write header " << endl;
   return StatusCode::SUCCESS;
 }
 
