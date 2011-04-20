@@ -811,7 +811,7 @@ StatusCode JPsi::execute()
   }
   //selection of gamma-gamma events
   gg.ngood_charged_track = good_charged_tracks;
-  if(good_charged_track==0)
+  if(good_charged_tracks==0)
   {
     //select and sort only good neutral tracks.
     Emap.clear();
