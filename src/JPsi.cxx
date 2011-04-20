@@ -203,7 +203,7 @@ StatusCode JPsi::initialize(void)
     emc_tuple = ntupleSvc()->book("FILE1/emc", CLID_ColumnWiseTuple, "Netutral track");
     if(emc_tuple)
     {
-      emc.init_tuple(emc_tuple);
+      status = emc.init_tuple(emc_tuple);
     }
     else
     {
@@ -304,7 +304,7 @@ StatusCode JPsi::initialize(void)
     gg_tuple = ntupleSvc()->book("FILE1/gg", CLID_ColumnWiseTuple, "gamma-gamma annihilation");
     if(gg_tuple)
     {
-      gg.init_tuple(gg_tuple);
+      status = gg.init_tuple(gg_tuple);
     }
     else
     {
@@ -371,7 +371,7 @@ void JPsi::EMC_t::init(void)
   }
 }
 
-void JPsi::EMC_t::init_tuple(NTuple::Tuple * tuple)
+StatusCode JPsi::EMC_t::init_tuple(NTuple::Tuple * tuple)
 {
   StatusCode status;
   status = tuple->addItem ("ntrack", ntrack, 0, MAX_TRACK_NUMBER);
@@ -394,6 +394,7 @@ void JPsi::EMC_t::init_tuple(NTuple::Tuple * tuple)
   status = tuple->addIndexedItem ("dE",ntrack, dE );
   status = tuple->addIndexedItem ("theta", ntrack, theta );
   status = tuple->addIndexedItem ("phi", ntrack, phi);
+  return status;
 }
 
 void JPsi::InitData(long nchtrack, long nneutrack)
