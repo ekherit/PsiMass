@@ -591,6 +591,7 @@ StatusCode JPsi::execute()
     //look thru the charged tracks and sort them on energy
     for(unsigned idx = 0; idx < evtRecEvent->totalCharged(); idx++)
     {
+      clog << "Track # " <<  idx << endl;
       EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + idx;
       if(!(*itTrk)->isMdcTrackValid()) continue;  //use only valid charged tracks
       if(!(*itTrk)->isEmcShowerValid()) continue; //charged track must have energy deposition in EMC
@@ -767,6 +768,7 @@ StatusCode JPsi::execute()
         S[i][j]/=p2sum;
     mdc.S = Sphericity(S);
 
+    clog << "Check emc" << endl;
     /*  fill data for neutral tracks */
     int track=0; //index for neutral tracks
     emc.Etotal=0;
@@ -809,6 +811,7 @@ StatusCode JPsi::execute()
     if(CHECK_TOF) tof_tuple->write();
     event_write++;
   }
+  clog << "Neutral tracks for gg" << endl;
   //selection of gamma-gamma events
   gg.ngood_charged_track = good_charged_tracks;
   if(good_charged_tracks==0)
@@ -835,6 +838,7 @@ StatusCode JPsi::execute()
     vector < Hep3Vector> R(Emap.size());
     for(mmap_t::reverse_iterator ri=Emap.rbegin(); ri!=Emap.rend(); ++ri,++idx)
     {
+      clog << "Neutral grack # " << idx << endl;
       EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + ri->second;
       assert((*itTrk)->isEmcShowerValid()); //check that EMS data is present
       RecEmcShower *emcTrk = (*itTrk)->emcShower();
