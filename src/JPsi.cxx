@@ -575,7 +575,7 @@ StatusCode JPsi::execute()
   unsigned good_charged_tracks = 0;
   /************    Multihadron event and BhaBha selection ****************/
   /*  the selection is based on charged tracks */
-  if(MIN_CHARGED_TRACKS<=evtRecEvent->totalCharged() && evtRecEvent->totalCharged() <=MAX_TRACK_NUMBER)
+  if(MIN_CHARGED_TRACKS<=evtRecEvent->totalCharged())
   {
     double p2sum=0;
     double  hP[2]={0,0}; //to save maximum momentum
@@ -589,7 +589,7 @@ StatusCode JPsi::execute()
     bool ispt100=true;
     
     //look thru the charged tracks and sort them on energy
-    for(unsigned idx = 0; idx < evtRecEvent->totalCharged(); idx++)
+    for(unsigned idx = 0; idx < evtRecEvent->totalCharged() && idx < MAX_TRACK_NUMBER ; idx++)
     {
       clog << "Track # " <<  idx << endl;
       EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + idx;
