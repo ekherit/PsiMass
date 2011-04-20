@@ -542,7 +542,7 @@ StatusCode JPsi::execute()
   }
   event_proceed++;
   //DEBUG code
-  //if(event_proceed<51861) return StatusCode::SUCCESS;
+  if(event_proceed<112000) return StatusCode::SUCCESS;
   //cout << "Proceeding event # " << event_proceed << endl;
 
   /*  Get information about reconstructed events */
