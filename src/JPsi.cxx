@@ -887,13 +887,21 @@ StatusCode JPsi::finalize()
   std::cout << "Average number of charged tracks: " << nchtr_a.average() << ", rms=" << nchtr_a.rms() << endl;
   std::cout << "Average number of neutral tracks: " << nntr_a.average() << ", rms=" << nntr_a.rms() << endl;
   head_event_selected=event_write;
+  std::clog << "Before nchtr_a.average() " << endl;
   head_ncharged_tracks=nchtr_a.average();
+  std::clog << "Before nchtr_a.rms()" << endl;
   head_ncharged_tracks_rms=nchtr_a.rms();
+  std::clog << "Before nntr_a.average()" << endl;
   head_nneutral_tracks=nntr_a.average();
+  std::clog << "Before nntr_a.rms() " << endl;
   head_nneutral_tracks_rms=nntr_a.rms();
+  std::clog << "Before nttr_a.average();" << endl;
   head_ntotal_tracks=nttr_a.average();
+  std::clog << "Before nttr_a.rms(); " << endl;
   head_ntotal_tracks_rms=nttr_a.rms();
+  std::clog << "Before head_tuple->write()" << endl;
   head_tuple->write();
+  std::clog << "After write header " << endl;
   return StatusCode::SUCCESS;
 }
 
