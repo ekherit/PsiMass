@@ -118,7 +118,7 @@ class JPsi : public Algorithm
     NTuple::Item<double> aphi; //phi aclolinearity  abs(phi_0-phi_1)-pi
     void init(void);
     StatusCode init_tuple(NTuple::Tuple * tuple);
-    unsigned MAX_TRACK_NUMBER;
+    int MAX_TRACK_NUMBER;
   };
 	
   NTuple::Tuple * mdc_tuple;
