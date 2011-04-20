@@ -64,6 +64,7 @@ class JPsi : public Algorithm
   struct MDC_t
   {
     NTuple::Item<long>    ntrack; //number of charged tracks.
+    NTuple::Item<long>    ngood_track; //number of good tracks.
     NTuple::Array<double> p; //Momentum
     NTuple::Array<double> px,py,pz; //Componets of momentum
     NTuple::Array<double> pt; //transvese momentum
@@ -87,7 +88,8 @@ class JPsi : public Algorithm
     NTuple::Item<double> Eemc; //total energy using emc
     NTuple::Item<double> Emdc; //total energy using only mdc
     NTuple::Item<double> S; //Sphericity
-    NTuple::Item<double> cos; //cos between two high energy tracks.
+    NTuple::Item<double> ccos; //cos between two high energy tracks.
+    NTuple::Item<double> atheta, aphi; //acolinearity 
     NTuple::Item<long>   pt50; //flag for higher 50 MeV pt
     NTuple::Item<long>   pt100;//flag for higher 100 MeV pt.
     NTuple::Item<long>   nemc20;// flag for threashold E20
@@ -99,15 +101,23 @@ class JPsi : public Algorithm
   struct EMC_t
   {
     NTuple::Item<long>    ntrack; //number of neutral tracks.
+    NTuple::Item<long>    ngood_track; //number of good neutral tracks.
+    NTuple::Item<long>    ngood_charged_track; //number of good charged tracks.
     NTuple::Array<long>   status; //status status=1: single seed cluster; status=2: splitted from multi-seeds cluster.
     NTuple::Array<long>   ncrstl; //Number of crystals in the shower
     NTuple::Array<long>   cellId; //Central crystal’s identifier
     NTuple::Array<long>   module; //module=0: east endcap;  module=1: barrel;  module=2: west endcap.
     NTuple::Array<double> x, y, z; //coordinates of claster
     NTuple::Array<double> theta, phi;  //angles
-    NTuple::Array<double> E; // energy deposition
-    NTuple::Array<double> dE; // energy deposition error
+    NTuple::Array<double> E,dE; // energy deposition and error
     NTuple::Item<double>  Etotal;
+
+    NTuple::Item<long> S; //sphericity
+    NTuple::Item<double> ccos; //aclolinearity
+    NTuple::Item<double> atheta; //theta acolinearity theta_0+theta_1 - pi
+    NTuple::Item<double> aphi; //phi aclolinearity  abs(phi_0-phi_1)-pi
+    void init(void);
+    void init_tuple(NTuple::Tuple * tuple);
   };
 	
   NTuple::Tuple * mdc_tuple;
@@ -198,16 +208,24 @@ class JPsi : public Algorithm
 
 	//gamma-gamma annihilation selection
 	long gg_event_writed;
+  //struct EMC_t
+  //{
+  ////NTuple::Item<long> gg_nntrk;
+  ////NTuple::Item<long> gg_ngood_track;
+  ////NTuple::Item<long> gg_ngood_charged_track;
+  ////NTuple::Item<long> gg_S; //sphericity
+	////NTuple::Item<double> gg_cos; //aclolinearity
+	////NTuple::Item<double> gg_atheta; //theta acolinearity theta_0+theta_1 - pi
+	////NTuple::Item<double> gg_aphi; //phi aclolinearity  abs(phi_0-phi_1)-pi
+	////NTuple::Item<double> gg_Etotal; //aclolinearity
+	////NTuple::Array<double> gg_x, gg_y, gg_z; //coordinat of claster
+	////NTuple::Array<double> gg_theta, gg_phi;//angles
+	////NTuple::Array<double> gg_E, gg_dE; //energy and error
+	////NTuple::Array<long> gg_n; //number of clasters
+	////NTuple::Array<long> gg_module; //module=0: east endcap;  module=1: barrel;  module=2: west endcap.
+  //};
 	NTuple::Tuple * gg_tuple;
-  NTuple::Item<long> gg_nntrk;
-  NTuple::Item<long> gg_S; //sphericity
-	NTuple::Item<double> gg_cos; //aclolinearity
-	NTuple::Item<double> gg_Etotal; //aclolinearity
-	NTuple::Array<double> gg_x, gg_y, gg_z; //coordinat of claster
-	NTuple::Array<double> gg_theta, gg_phi;//angles
-	NTuple::Array<double> gg_E, gg_dE; //energy and error
-	NTuple::Array<long> gg_n; //number of clasters
-	NTuple::Array<long> gg_module; //module=0: east endcap;  module=1: barrel;  module=2: west endcap.
+  EMC_t gg;
 
 
   /*  Averagin number of tracks */
