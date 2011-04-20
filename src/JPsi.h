@@ -116,8 +116,9 @@ class JPsi : public Algorithm
     NTuple::Item<double> ccos; //aclolinearity
     NTuple::Item<double> atheta; //theta acolinearity theta_0+theta_1 - pi
     NTuple::Item<double> aphi; //phi aclolinearity  abs(phi_0-phi_1)-pi
-    void init(unsigned max_track=20);
+    void init(void);
     void init_tuple(NTuple::Tuple * tuple);
+    unsigned MAX_TRACK_NUMBER;
   };
 	
   NTuple::Tuple * mdc_tuple;

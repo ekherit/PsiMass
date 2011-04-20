@@ -97,6 +97,9 @@ JPsi::JPsi(const std::string& name, ISvcLocator* pSvcLocator) :
   declareProperty("IPTRACKS", IPTRACKS=2); //number of tracks from interection point
   declareProperty("MIN_CHARGED_TRACKS", MIN_CHARGED_TRACKS=2); //minimum number of charged tracks in selection
   declareProperty("MAX_TRACK_NUMBER", MAX_TRACK_NUMBER=30); //maximum number of charged tracks
+
+  emc.MAX_TRACK_NUMBER = MAX_TRACK_NUMBER;
+  gg.MAX_TRACK_NUMBER = MAX_TRACK_NUMBER;
 }
 
 
@@ -341,7 +344,7 @@ StatusCode JPsi::initialize(void)
   return StatusCode::SUCCESS;
 }
 
-void JPsi::EMC_t::init(unsigned MAX_TRACK_NUMBER)
+void JPsi::EMC_t::init(void)
 {
   // emc information init.
   ntrack=0;
