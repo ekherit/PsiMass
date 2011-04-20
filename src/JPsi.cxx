@@ -301,7 +301,7 @@ StatusCode JPsi::initialize(void)
     gg_tuple = ntupleSvc()->book("FILE1/gg", CLID_ColumnWiseTuple, "gamma-gamma annihilation");
     if(gg_tuple)
     {
-      gg.init_tuple(gg_tuple)
+      gg.init_tuple(gg_tuple);
     }
     else
     {
@@ -339,10 +339,9 @@ StatusCode JPsi::initialize(void)
   nttr_a.reset();
 
   return StatusCode::SUCCESS;
-
 }
 
-EMC_t::init(void)
+void JPsi::EMC_t::init(void)
 {
   // emc information init.
   ntrack=0;
@@ -367,9 +366,9 @@ EMC_t::init(void)
     theta[i]=-1000;
     phi[i]=-1000;
   }
-};
+}
 
-void EMC_t::init_tuple(NTuple::Tuple * tuple)
+void JPsi::EMC_t::init_tuple(NTuple::Tuple * tuple)
 {
   StatusCode status;
   status = tuple->addItem ("ntrack", ntrack, 0, MAX_TRACK_NUMBER);
@@ -392,7 +391,7 @@ void EMC_t::init_tuple(NTuple::Tuple * tuple)
   status = tuple->addIndexedItem ("dE",ntrack, dE );
   status = tuple->addIndexedItem ("theta", ntrack, theta );
   status = tuple->addIndexedItem ("phi", ntrack, phi);
-};
+}
 
 void JPsi::InitData(long nchtrack, long nneutrack)
 {
@@ -764,7 +763,7 @@ StatusCode JPsi::execute()
     /*  fill data for neutral tracks */
     int track=0; //index for neutral tracks
     emc.Etotal=0;
-    emc.ngood_charged_track=mdc.ngood_charged_track;
+    emc.ngood_charged_track=mdc.ngood_track;
     for(int idx = evtRecEvent->totalCharged(); idx<evtRecEvent->totalTracks() && track<MAX_TRACK_NUMBER; idx++)
     {
       EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + idx;
@@ -814,6 +813,7 @@ StatusCode JPsi::execute()
       EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + track;
       if(!(*itTrk)->isEmcShowerValid()) continue;
       RecEmcShower *emcTrk = (*itTrk)->emcShower();
+      double E = emcTrk->energy();
       Emap.insert(pair_t(E,track));
     }
     //Select more then 1 neutral track
