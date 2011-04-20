@@ -467,8 +467,8 @@ void JPsi::InitData(long nchtrack, long nneutrack)
     dedx.p[i]=-1000;
   }
 
-  emc.init(MAX_TRACK_NUMBER);
-  gg.init(MAX_TRACK_NUMBER);
+  emc.init();
+  gg.init();
   for(int i=0;i<MAX_TRACK_NUMBER;i++)
   {
     if(CHECK_TOF)
