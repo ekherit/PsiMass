@@ -341,7 +341,7 @@ StatusCode JPsi::initialize(void)
   return StatusCode::SUCCESS;
 }
 
-void JPsi::EMC_t::init(void)
+void JPsi::EMC_t::init(unsigned MAX_TRACK_NUMBER)
 {
   // emc information init.
   ntrack=0;
@@ -464,8 +464,8 @@ void JPsi::InitData(long nchtrack, long nneutrack)
     dedx.p[i]=-1000;
   }
 
-  emc.init();
-  gg.init();
+  emc.init(MAX_TRACK_NUMBER);
+  gg.init(MAX_TRACK_NUMBER);
   for(int i=0;i<MAX_TRACK_NUMBER;i++)
   {
     if(CHECK_TOF)
