@@ -753,6 +753,8 @@ StatusCode JPsi::execute()
     Hep3Vector p1(mdc.px[1], mdc.py[1],mdc.pz[1]);
 
     mdc.ccos = p0.dot(p1)/(p0.mag()*p1.mag());
+    mdc.atheta = mdc.theta[0]+mdc.theta[1] - M_PI;
+    mdc.aphi =  fabs(mdc.phi[0]-mdc.phi[1]) - M_PI;
     //normalize sphericity tensor
     for(int i=0;i<3;i++)
       for(int j=0;j<3;j++)
@@ -861,7 +863,7 @@ StatusCode JPsi::execute()
 
     //calculate colliniarity of two high energy tracks
     gg.ccos = R[0].dot(R[1])/(R[0].mag()*R[1].mag());
-    gg.atheta = gg.theta[0]-gg.theta[1] - M_PI;
+    gg.atheta = gg.theta[0]+gg.theta[1] - M_PI;
     gg.aphi = fabs(gg.phi[0]-gg.phi[1]) - M_PI;
     gg_tuple->write();
     gg_event_writed++;
