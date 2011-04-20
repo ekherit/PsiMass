@@ -572,6 +572,7 @@ StatusCode JPsi::execute()
   typedef std::pair <double, unsigned> pair_t;
   mmap_t pmap;
   mmap_t Emap;
+  unsigned good_charged_tracks = 0;
   /************    Multihadron event and BhaBha selection ****************/
   /*  the selection is based on charged tracks */
   if(MIN_CHARGED_TRACKS<=evtRecEvent->totalCharged() && evtRecEvent->totalCharged() <=MAX_TRACK_NUMBER)
@@ -615,7 +616,6 @@ StatusCode JPsi::execute()
     for(int i=0;i<3;i++)
       for(int j=0;j<3;j++)
         S[i][j]=0;
-    unsigned good_charged_tracks = 0;
     for(mmap_t::reverse_iterator ri=Emap.rbegin(); ri!=Emap.rend(); ++ri,++idx)
     {
       EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + ri->second;
@@ -810,7 +810,7 @@ StatusCode JPsi::execute()
     event_write++;
   }
   //selection of gamma-gamma events
-  gg.ngood_charged_track = mdc.ngood_track;
+  gg.ngood_charged_track = good_charged_tracks;
   if(gg.ngood_charged_track==0)
   {
     //select and sort only good neutral tracks.
