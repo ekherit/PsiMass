@@ -383,8 +383,8 @@ StatusCode JPsi::EMC_t::init_tuple(NTuple::Tuple * tuple)
   status = tuple->addItem ("atheta", atheta);
   status = tuple->addItem ("aphi", aphi);
   //arrays
-  status = tuple->addIndexedItem ("model",  ntrack, module );
-  status = tuple->addIndexedItem ("status", ntrack, status );
+  status = tuple->addIndexedItem ("module",  ntrack, module );
+  status = tuple->addIndexedItem ("status", ntrack, EMC_t::status ); //name interference of status.
   status = tuple->addIndexedItem ("ncrstl", ntrack, ncrstl );
   status = tuple->addIndexedItem ("cellId", ntrack, cellId );
   status = tuple->addIndexedItem ("x", ntrack, x );
@@ -615,6 +615,7 @@ StatusCode JPsi::execute()
     for(int i=0;i<3;i++)
       for(int j=0;j<3;j++)
         S[i][j]=0;
+    unsigned good_charged_tracks = 0;
     for(mmap_t::reverse_iterator ri=Emap.rbegin(); ri!=Emap.rend(); ++ri,++idx)
     {
       EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + ri->second;
@@ -661,7 +662,7 @@ StatusCode JPsi::execute()
       mdc.Emdc+=sqrt(mdc.p[i]*mdc.p[i]+PI_MESON_MASS*PI_MESON_MASS);
 
       // fill good tracks
-      if(mdc.rvxy[i]<1.0  && fabs(cos(mdc.theta[i]))<0.93) mdc.ngood_track++;
+      if(mdc.rvxy[i]<1.0  && fabs(cos(mdc.theta[i]))<0.93) good_charged_tracks++;
 
       /* Calculate sphericity tensor */
       for(int i=0;i<3;i++)
@@ -749,6 +750,8 @@ StatusCode JPsi::execute()
       }
     }
 
+    mdc.ngood_track = good_charged_tracks;
+
     mdc.pt50 = ispt50;
     mdc.pt100 = ispt100;
 
@@ -767,7 +770,7 @@ StatusCode JPsi::execute()
     /*  fill data for neutral tracks */
     int track=0; //index for neutral tracks
     emc.Etotal=0;
-    emc.ngood_charged_track=mdc.ngood_track;
+    emc.ngood_charged_track=good_charged_tracks;
     for(int idx = evtRecEvent->totalCharged(); idx<evtRecEvent->totalTracks() && track<MAX_TRACK_NUMBER; idx++)
     {
       EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + idx;

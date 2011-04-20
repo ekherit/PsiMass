@@ -103,6 +103,12 @@ class JPsi : public Algorithm
     NTuple::Item<long>    ntrack; //number of neutral tracks.
     NTuple::Item<long>    ngood_track; //number of good neutral tracks.
     NTuple::Item<long>    ngood_charged_track; //number of good charged tracks.
+
+    NTuple::Item<long> S; //sphericity
+    NTuple::Item<double> ccos; //aclolinearity
+    NTuple::Item<double> atheta; //theta acolinearity theta_0+theta_1 - pi
+    NTuple::Item<double> aphi; //phi aclolinearity  abs(phi_0-phi_1)-pi
+    //arrays
     NTuple::Array<long>   status; //status status=1: single seed cluster; status=2: splitted from multi-seeds cluster.
     NTuple::Array<long>   ncrstl; //Number of crystals in the shower
     NTuple::Array<long>   cellId; //Central crystal’s identifier
@@ -112,10 +118,6 @@ class JPsi : public Algorithm
     NTuple::Array<double> E,dE; // energy deposition and error
     NTuple::Item<double>  Etotal;
 
-    NTuple::Item<long> S; //sphericity
-    NTuple::Item<double> ccos; //aclolinearity
-    NTuple::Item<double> atheta; //theta acolinearity theta_0+theta_1 - pi
-    NTuple::Item<double> aphi; //phi aclolinearity  abs(phi_0-phi_1)-pi
     void init(void);
     StatusCode init_tuple(NTuple::Tuple * tuple);
     int MAX_TRACK_NUMBER;
