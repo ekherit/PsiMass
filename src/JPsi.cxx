@@ -96,7 +96,7 @@ JPsi::JPsi(const std::string& name, ISvcLocator* pSvcLocator) :
   declareProperty("IPR", IPR=1); //Interaction point cut distance.
   declareProperty("IPTRACKS", IPTRACKS=2); //number of tracks from interection point
   declareProperty("MIN_CHARGED_TRACKS", MIN_CHARGED_TRACKS=2); //minimum number of charged tracks in selection
-  declareProperty("MAX_TRACK_NUMBER", MAX_TRACK_NUMBER=30); //maximum number of charged tracks
+  declareProperty("MAX_TRACK_NUMBER", MAX_TRACK_NUMBER=50); //maximum number of charged tracks
 
   emc.MAX_TRACK_NUMBER = MAX_TRACK_NUMBER;
   gg.MAX_TRACK_NUMBER = MAX_TRACK_NUMBER;
@@ -818,7 +818,7 @@ StatusCode JPsi::execute()
   {
     //select and sort only good neutral tracks.
     Emap.clear();
-    for(int track = 0; track<evtRecEvent->totalNeutral(); track++)
+    for(int track = 0; track<evtRecEvent->totalNeutral() && track < MAX_TRACK_NUMBER; track++)
     {
       EvtRecTrackIterator itTrk=evtRecTrkCol->begin() + track;
       if(!(*itTrk)->isEmcShowerValid()) continue;
