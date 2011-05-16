@@ -509,11 +509,23 @@ int main(int argc, char **argv)
     LumLgammaInScan[is]=TMath::Max(Le[is],Lp[is]); //BES lum
     cout<<"BESLUM:"<<LumLgammaInScan[is]<<" LumInScan:"<<LumInScan[is]<<endl;
     double lum=0; //temporary luminosity could be ee, gg and bes lum
-    if(UseLumBB==0) lum=LumLgammaInScan[is];
+    if(UseLumBB==0)
+    {
+      switch(LUMINOSITY)
+      {
+        case BESLUM:
+          lum=LumLgammaInScan[is];
+          break;
+        case NEELUM:
+        case NGGLUM:
+          lum=LumInScan[is];
+          break;
+      }
+    }
     else lum=LumInScan[is];
     //calculate mhadr cross section
     CrossSInScan[is]=Nmh[is]/lum;
-    if(Nmh[is]>4) CrossSErrInScan[is]=sqrt(Nmh[is])/lum;        
+    if(Nmh[is]>4) CrossSErrInScan[is]=sqrt(Nmh[is]*(1.+Nmh[is]/NbbInScan[is]))/lum;        
     else CrossSErrInScan[is]=sqrt(Nmh[is]+4)/lum;     
     //calculate bhabha or gg cross section
     CrossSBBInScan[is]=Nbb[is]/lum;
@@ -561,18 +573,24 @@ int main(int argc, char **argv)
     MinuitRes->mnexcm("SET NOW", arglistRes,0,ierflgRes);
   }
   MinuitRes->mnexcm("SET ERR", arglistRes,1,ierflgRes);
+  arglistRes[0] = 2;
+  MinuitRes->mnexcm("SET STRATEGY", arglistRes,1,ierflgRes);
 
-  Double_t vstartRes[5]= {9.2,0.55,0.145/2.,1.6,arguments.CrBhabha};   
+  Double_t vstartRes[5]= {0.8,0.01,0.0,1.59,arguments.CrBhabha};   
 
-  Double_t stepRes[5] =  {0.10,0.01,0.01,0.01,0.0};
+  Double_t stepRes[5] =  {0.1,0.01,0.01,0.01,0.0};
 
 
 
-  MinuitRes->SetMaxIterations(10000000);                         
-  MinuitRes->DefineParameter(0,"bg",vstartRes[0],stepRes[0],-150,150.0);
-  MinuitRes->DefineParameter(1,"eff",vstartRes[1],stepRes[1],0.01,1.0);      
+  MinuitRes->SetMaxIterations(100000000);                         
+  //MinuitRes->DefineParameter(0,"bg",vstartRes[0],stepRes[0],-150,150.0);
+  //MinuitRes->DefineParameter(1,"eff",vstartRes[1],stepRes[1],0.01,1.0);      
+  //MinuitRes->DefineParameter(2,"dM/2.",vstartRes[2],stepRes[2],-0.5,0.5);      
+  //MinuitRes->DefineParameter(3,"SigmaW",vstartRes[3],stepRes[3],0.5,1.8);
+  MinuitRes->DefineParameter(0,"bg",vstartRes[0],stepRes[0],-100,+100);
+  MinuitRes->DefineParameter(1,"eff",vstartRes[1],stepRes[1],0.0,1.0);      
   MinuitRes->DefineParameter(2,"dM/2.",vstartRes[2],stepRes[2],-0.5,0.5);      
-  MinuitRes->DefineParameter(3,"SigmaW",vstartRes[3],stepRes[3],0.5,1.8);
+  MinuitRes->DefineParameter(3,"SigmaW",vstartRes[3],stepRes[3],0.5,2.0);
   //if(USE_CBS_SIGMAW) MinuitRes->FixParameter(3);
   if(FreeEnergyFit==1)
   {
@@ -580,7 +598,7 @@ int main(int argc, char **argv)
     {
       char  NameP[10];
       sprintf(NameP,"dE%d",j);         
-      MinuitRes->DefineParameter(j+4,NameP,0,0.01,-1.0,1.0);        
+      MinuitRes->DefineParameter(j+4,NameP,0,0.01,-0.5,+0.5);        
     }
   }
 
@@ -605,30 +623,28 @@ int main(int argc, char **argv)
   }
 
   MinuitRes->mnexcm("MIGRAD", arglistRes,numpar,ierflgRes);
-  MinuitRes->mnexcm("MIGRAD", arglistRes,numpar,ierflgRes);
-  MinuitRes->mnexcm("MIGRAD", arglistRes,numpar,ierflgRes);
-  MinuitRes->mnexcm("MIGRAD", arglistRes,numpar,ierflgRes);
-  MinuitRes->Migrad();
-  MinuitRes->Migrad();
-#if _HESSE_ 
+  MinuitRes->mnimpr();
   MinuitRes->mnexcm("HESSE", arglistRes,0,ierflgRes);
-  MinuitRes->mnexcm("HESSE", arglistRes,0,ierflgRes);
-#endif
-#if _MINOs_
-  MinuitRes->mnmnos();
-  MinuitRes->mnexcm("MINOs 1000000 3 3", arglistRes,0,ierflgRes);
-#endif
+  MinuitRes->mnexcm("MINOs 10000000 3 3", arglistRes,0,ierflgRes);
   // Print results
   Double_t aminRes,edmRes,errdefRes;
   Int_t nvparRes,nparxRes,icstatRes;
   Double_t * parRes= new Double_t [numpar] ;
   Double_t*       parErrRes= new Double_t [numpar] ;    
-  MinuitRes->mnstat(aminRes,edmRes,errdefRes,nvparRes,nparxRes,icstatRes);
-  MinuitRes->mnprin(numpar,aminRes);
   for(Int_t i=0;i<numpar;i++)
   {
     MinuitRes->GetParameter(i,parRes[i],parErrRes[i]);
+    //cout << i << " " << parRes[i] << endl;
   }
+  Int_t npar=numpar;
+  Double_t grad=0;
+  Double_t fval=0;
+  Int_t flag=1;
+  MinuitRes->Eval(npar, &grad, fval, parRes, flag);
+  cout << "fval = " << fval << endl;
+
+  MinuitRes->mnstat(aminRes,edmRes,errdefRes,nvparRes,nparxRes,icstatRes);
+  MinuitRes->mnprin(numpar,aminRes);
 
   int nf=MinuitRes->GetNumFreePars();
   if(FreeEnergyFit==1) nf-=NEp;
@@ -688,7 +704,7 @@ int main(int argc, char **argv)
   double EnergyChi2=0;
   for(int is=0;is<NEp;is++)
   {       
-    WInScan[is]=2.*En[is];
+    //WInScan[is]=2.*En[is];
     WErrInScan[is]=WErrInScan[is];
     //if(arguments.FreeEnergy==1) WInScan[is]+=2.*+parRes[is+4];
     EnergyChi2+= sq(parRes[is+4]/EErrInScan[is]);
@@ -706,8 +722,9 @@ int main(int argc, char **argv)
   TestCanv->SetGridy();
   TestCanv->SetFillColor(0);
   TestCanv->SetBorderMode(0);
-  TestCanv->cd();
+  //TestCanv->cd();
   GrRes->Draw("AP");
+  gPad->SetBorderMode(0);
   GrRes->GetXaxis()->SetTitle("W [MeV]");
   GrRes->GetYaxis()->SetTitle("#sigma [nb]");
   GrRes->SetTitle("#psi' scan");
@@ -795,13 +812,24 @@ void fcnResMult(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
   parmh[idRFreeGee]=0;       
   parmh[idRTauEff]=0;       
   parbb[0]=CrossBhabha;        
+  if(iflag==1)
+  {
+    cout << setw(4) << "Parnumber" <<  setw(20) << "value" << endl;
+    for(int i=0;i<npar;i++)
+    {
+      cout << setw(4)<< i << setw(20) << par[i] << endl;
+    }
+    cout << setw(4)<< "point#" << setw(15)<< "energy, MeV" <<  setw(15) << "energy chi2" << setw(15) <<  "signal chi2" << endl;
+  }
   for (Int_t i=0;i<NumEpoints;i++)
   {
     Energy=EInScan[i];
+    double echi2=0;
     if(FreeEnergyFit==1)
     { 
       Energy+=par[4+i];
-      EnergyChi2+=(par[4+i]*par[4+i]/(EErrInScan[i]*EErrInScan[i]));
+      echi2=(par[4+i]*par[4+i]/(EErrInScan[i]*EErrInScan[i]));
+      EnergyChi2+=echi2;
     }
     if(USE_CBS_SIGMAW)
     {
@@ -849,12 +877,19 @@ void fcnResMult(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
     if(NmhInScan[i]>0)
     {
       double N=sigmaMH*lumFull; //expected number of events
-      if(USE_CHI2) chisqmh = sq(N - NmhInScan[i])/(NmhInScan[i]*(1. + NmhInScan[i]/NbbInScan[i])); //just chi square
+      if(USE_CHI2)
+      {
+        chisqmh = sq(N - NmhInScan[i])/(NmhInScan[i]*(1. + NmhInScan[i]/(NbbInScan[i]/10.))); //just chi square
+      }      
       else chisqmh = 2*(NmhInScan[i]*log(NmhInScan[i]/N) +N - NmhInScan[i]); //likelihood for low statistics
     }
     else if(NmhInScan[i]==0) chisqmh =  sigmaMH*lumFull;
     SignalChi2+=chisqmh;
     chisq+=chisqmh; 
+    if(iflag==1)
+    {
+      cout << setw(4)<< i << setw(15)<< EInScan[i] << setw(15) << echi2 << setw(15) <<  chisqmh << endl;
+    }
 
 
     if(UseLumBB!=0)

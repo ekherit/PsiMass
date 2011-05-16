@@ -113,11 +113,11 @@ Double_t CrSOniumRAzimov(Int_t Id,Double_t Eb,Double_t* par)
     Double_t RS=rangescale*SiW;
     Double_t rIntegral=0.0;
     if(Id==_IdPsiPrime){
-      rIntegral= HANDLEDGAUSS(K_FuncRInterfPsiP,ParF[idW]-3.5*RS,ParF[idW]+3.5*RS,ParF,1.e-9)+
-      HANDLEDGAUSS(K_FuncRInterfPsiP,ParF[idW]-7.0*RS,ParF[idW]-3.5*RS,ParF,1.e-7)+
-      HANDLEDGAUSS(K_FuncRInterfPsiP,ParF[idW]-20.*RS,ParF[idW]-7.0*RS,ParF,1.e-5)+
-      HANDLEDGAUSS(K_FuncRInterfPsiP,ParF[idW]+3.5*RS,ParF[idW]+7.0*RS,ParF,1.e-7)+
-      HANDLEDGAUSS(K_FuncRInterfPsiP,ParF[idW]+7.0*RS,ParF[idW]+20.*RS,ParF,1.e-5);
+      rIntegral= HANDLEDGAUSS(K_FuncRInterfPsiP,ParF[idW]-3.5*RS,ParF[idW]+3.5*RS,ParF,1.e-12)+
+      HANDLEDGAUSS(K_FuncRInterfPsiP,ParF[idW]-7.0*RS,ParF[idW]-3.5*RS,ParF,1.e-12)+
+      HANDLEDGAUSS(K_FuncRInterfPsiP,ParF[idW]-20.*RS,ParF[idW]-7.0*RS,ParF,1.e-12)+
+      HANDLEDGAUSS(K_FuncRInterfPsiP,ParF[idW]+3.5*RS,ParF[idW]+7.0*RS,ParF,1.e-12)+
+      HANDLEDGAUSS(K_FuncRInterfPsiP,ParF[idW]+7.0*RS,ParF[idW]+20.*RS,ParF,1.e-12);
       }
     else if(Id==_IdJPsi){
       rIntegral= HANDLEDGAUSS(K_FuncRInterfJPsi,ParF[idW]-3.5*RS,ParF[idW]+3.5*RS,ParF,1.e-9)+
