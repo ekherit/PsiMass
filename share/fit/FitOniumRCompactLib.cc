@@ -134,37 +134,34 @@ Double_t CrSOniumRAzimov(Int_t Id,Double_t Eb,Double_t* par)
 Double_t K_FuncRInterfPsiP(Double_t W, Double_t* parf)
 {
   //  Double_t Bll=0.00716666666666666666; //psi'
-      Double_t Bll=0.00772; //psi'
-      Double_t Rrat=3.0;     
-      Double_t Ratio=Rrat*Bll/(1.-2.*Bll);             
-      Double_t  Bhadr=parf[idBhadr];
-      Double_t  beta=parf[idbeta];
-      Double_t  M=parf[idM];
-      Double_t  Wb=parf[idW];
-      Double_t  Sw=parf[idSw];
-      Double_t  Gtot=parf[idGt];      
-      Double_t  Fg=exp(-0.5*sq((W-Wb)/Sw));
-      Double_t  betaW= 4.*_alpha/TMath::Pi()*(log(W/_me)-0.5);   
-      Double_t  Delta1=_alpha/TMath::Pi()*(pow(TMath::Pi(),2.)/3.-0.5)-1./24.*sq(betaW)*(2./3.*log(W/_me)+2.*sq(TMath::Pi())-37./4.);
-      Double_t  DeltaE=Delta1+0.75*betaW;          
-      complex<double> f=0;            	 
-      complex<double> M2=complex<double>::complex(sq(M/W)-1.,-Gtot*M/W/W);
-      complex<double> beta_11=complex<double>::complex(betaW-1.,0.);
-      f=pow(M2,beta_11);      
-      Double_t rI=0.;
-      Double_t s=W*W;
-      Double_t M2_S=sq(M/W);
-      Double_t delta=(Gtot*M)/s;                 	         
-      rI= Fg*12.*TMath::Pi()/M/s*(
-                                  imag(f)*TMath::Pi()*betaW/sin(TMath::Pi()*betaW)*(1.+DeltaE)
-                                  -betaW*0.5*((atan(M/Gtot)-atan((M-W*W/M)/Gtot))*(1.+sq(M/W)))
-                                  +0.25*betaW*Gtot*M/W/W*(log((sq(M2_S)+sq(delta))/(sq(M2_S-1.)+sq(delta))))                                  
-                                  -2./3.*_alpha*sqrt(Rrat/(Bll*Bhadr))*TMath::Pi()*betaW/sin(TMath::Pi()*betaW)*Ratio*(1.+11./12.*betaW)*M/W*real(f)                                     
-                                  );
- 
-         
-    
-return rI;
+  Double_t Bll=0.00772; //psi'
+  Double_t Rrat=3.0;     
+  Double_t Ratio=Rrat*Bll/(1.-2.*Bll);             
+  Double_t  Bhadr=parf[idBhadr];
+  Double_t  beta=parf[idbeta];
+  Double_t  M=parf[idM];
+  Double_t  Wb=parf[idW];
+  Double_t  Sw=parf[idSw];
+  Double_t  Gtot=parf[idGt];      
+  Double_t  Fg=exp(-0.5*sq((W-Wb)/Sw));
+  Double_t  betaW= 4.*_alpha/TMath::Pi()*(log(W/_me)-0.5);   
+  Double_t  Delta1=_alpha/TMath::Pi()*(pow(TMath::Pi(),2.)/3.-0.5)-1./24.*sq(betaW)*(2./3.*log(W/_me)+2.*sq(TMath::Pi())-37./4.);
+  Double_t  DeltaE=Delta1+0.75*betaW;          
+  complex<double> f=0;            	 
+  complex<double> M2=complex<double>(sq(M/W)-1.,-Gtot*M/W/W);
+  complex<double> beta_11=complex<double>(betaW-1.,0.);
+  f=pow(M2,beta_11);      
+  Double_t rI=0.;
+  Double_t s=W*W;
+  Double_t M2_S=sq(M/W);
+  Double_t delta=(Gtot*M)/s;                 	         
+  rI= Fg*12.*TMath::Pi()/M/s*(
+      imag(f)*TMath::Pi()*betaW/sin(TMath::Pi()*betaW)*(1.+DeltaE)
+      -betaW*0.5*((atan(M/Gtot)-atan((M-W*W/M)/Gtot))*(1.+sq(M/W)))
+      +0.25*betaW*Gtot*M/W/W*(log((sq(M2_S)+sq(delta))/(sq(M2_S-1.)+sq(delta))))                                  
+      -2./3.*_alpha*sqrt(Rrat/(Bll*Bhadr))*TMath::Pi()*betaW/sin(TMath::Pi()*betaW)*Ratio*(1.+11./12.*betaW)*M/W*real(f)                                     
+      );
+  return rI;
 };
 
 Double_t K_FuncRInterfJPsi(Double_t W, Double_t* parf)
@@ -183,8 +180,8 @@ Double_t K_FuncRInterfJPsi(Double_t W, Double_t* parf)
       Double_t  Delta1=_alpha/TMath::Pi()*(pow(TMath::Pi(),2.)/3.-0.5)-1./24.*sq(betaW)*(2./3.*log(W/_me)+2.*sq(TMath::Pi())-37./4.);
       Double_t  DeltaE=Delta1+0.75*betaW;          
       complex<double> f=0;            
-      complex<double> M2=complex<double>::complex(sq(M/W)-1.,-Gtot*M/W/W);
-      complex<double> beta_11=complex<double>::complex(betaW-1.,0.);
+      complex<double> M2=complex<double>(sq(M/W)-1.,-Gtot*M/W/W);
+      complex<double> beta_11=complex<double>(betaW-1.,0.);
       f=pow(M2,beta_11);
       Double_t rI=0.;
       Double_t s=W*W;
@@ -305,9 +302,6 @@ Double_t FCrossSection(Double_t* Eb,Double_t* par)
 
 Double_t CrSOniumR(Int_t Method,Int_t Id,Double_t Eb,Double_t* par)
 {
-//     Routine arguments
-//     par(0) = constant, par(1) = total cross section,
-//     par(2) = mass/2,   par(3) = sigma full  //xs [10^{-33} cm^2]
      Double_t y=Eb;
      Double_t hM=0,SiW=0,Gee=0,beta,DeltaE,Delta2,SS,MD;
      Double_t Gtot=0,Bll=0,R=2.5,Gh=0;
