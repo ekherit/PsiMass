@@ -298,43 +298,52 @@ int main(int argc, char **argv)
   CrossBhabha = Kee;
   CrossGG = Kgg;
 
+	cout << "Luminosity used: ";
   switch(arguments.lum)
   {
     case 0:
       LUMINOSITY = BESLUM;
       arguments.CrBhabha=Kee;
+			cout << "BESLUM"<< endl;
       break;
     case 1:
       LUMINOSITY = NEELUM;
       arguments.CrBhabha=Kee;
+			cout << "NEELUM"<< endl;
       break;
     case 2:
       LUMINOSITY = NGGLUM;
-      std::clog << "NGGLUM in arguments switch " << std::endl;
       arguments.CrBhabha=Kgg;
+			cout << "NGGLUM"<< endl;
       break;
     case 3:
       LUMINOSITY = NEEGGLUM;
-      arguments.CrBhabha=1./(1./Kee+1./Kgg);
+      arguments.CrBhabha=Kee+Kgg;
+			cout << "NEEGGLUM"<< endl;
       break;
     case 4:
       LUMINOSITY = NMHEELUM;
       arguments.CrBhabha=Kee;
+			cout << "NMHEELUM"<< endl;
       break;
     case 5:
       LUMINOSITY = NMHGGLUM;
       arguments.CrBhabha=Kgg;
+			cout << "NMHGGLUM"<< endl;
       break;
     case 6:
       LUMINOSITY = NMHEEGGLUM;
-      arguments.CrBhabha=1./(1./Kee+1./Kgg);
+      arguments.CrBhabha=Kee+Kgg;
+			cout << "NMHEEGGLUM"<< endl;
       break;
     default:
       LUMINOSITY = BESLUM;
       arguments.CrBhabha=Kee;
+			cout << "BESLUM"<< endl;
       break;
   }
-  cout << "Cross section of luminosity measurement process: " << CrossBhabha << " nb" << endl;
+	cout << "Luminosity type: " << LUMINOSITY << endl;
+  cout << "Average cross section of luminosity measurement process: " << arguments.CrBhabha << " nb" << endl;
   FreeEnergyFit= arguments.FreeEnergy;
   if(arguments.quickly==0)
   {
@@ -760,7 +769,7 @@ int main(int argc, char **argv)
 
   GrRes=new TGraphErrors(NEp,WInScan,CrossSInScan,WErrInScan,CrossSErrInScan);
   TF1* FitPsiP=new TF1("FitPsiP",FCrSPPrimeAzimov,1836.*ScaleEGr,1855*ScaleEGr,idRNP);  
-  TF1* FitPsiP2=new TF1("FitPsiP",FCrSPPrimeAzimov,1836.*ScaleEGr,1855*ScaleEGr,idRNP);  
+  TF1* FitPsiP2=new TF1("FitPsiP2",FCrSPPrimeAzimov,1836.*ScaleEGr,1855*ScaleEGr,idRNP);  
   FitPsiP->SetParameters( parPsiPF);
   FitPsiP2->SetParameters( parPsiPF2);
   TCanvas* TestCanv=new TCanvas("BES_PSIP_SCAN","BES PsiP Scan",900,700); 
