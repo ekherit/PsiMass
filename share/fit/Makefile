@@ -1,7 +1,7 @@
 all : fitscan
 
-LIBS = `root-config --libs`
-CXXFLAGS = `root-config --cflags`
+LIBS = `root-config --libs` -L$(HOME)/local/lib
+CXXFLAGS = `root-config --cflags` -I$(HOME)/local/include
 
 BINDIR=../../bin
 fitscan : FitOniumRCompactLib.o fitscan.o
