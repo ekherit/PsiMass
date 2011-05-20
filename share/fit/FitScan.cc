@@ -89,6 +89,8 @@ Double_t dSigmaWInScan[NumMaxP];
 Double_t WInScan[NumMaxP];
 Double_t EErrInScan[NumMaxP];
 Double_t WErrInScan[NumMaxP];
+Double_t SignalDiscrepancy[NumMaxP];
+Double_t SignalDiscrepancyError[NumMaxP];
 Int_t    NumEpoints=0;
 Double_t MinChi2=1e+7;
 void fcnResMult    (Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
@@ -757,15 +759,18 @@ int main(int argc, char **argv)
 
 
   double EnergyChi2=0;
-	TGraphErrors * dEgr = new TGraphErrors;
+	TGraphErrors * dEgr = new TGraphErrors;//energy deviation graph
+	TGraphErrors * dNgr = new TGraphErrors;//signal discrepancy graph
+	gStyle->SetOptFit(kTRUE);
   for(int is=0;is<NEp;is++)
   {       
-    //WInScan[is]=2.*En[is];
     WErrInScan[is]=WErrInScan[is];
     //if(arguments.FreeEnergy==1) WInScan[is]+=2.*+parRes[is+4];
     EnergyChi2+= sq(parRes[is+4]/EErrInScan[is]);
 		dEgr->SetPoint(is, WInScan[is], parRes[is+4]*2);
 		dEgr->SetPointError(is, 0,  WErrInScan[is]);
+		dNgr->SetPoint(is, WInScan[is], SignalDiscrepancy[is]);
+		dNgr->SetPointError(is, WErrInScan[is], SignalDiscrepancyError[is]);
   }
 	TCanvas * dEc = new TCanvas("dEc", "Energy deviation");
 	dEgr->SetMarkerStyle(21);
@@ -773,8 +778,16 @@ int main(int argc, char **argv)
 	dEgr->SetMarkerSize(1);
 	dEgr->Draw("ap");
 	dEgr->GetXaxis()->SetTitle("W, MeV");
-	dEgr->GetYaxis()->SetTitle("W_{exp}-W_{meas}, MeV");
-	dEgr->Fit("pol0");
+	dEgr->GetYaxis()->SetTitle("W_{exp}-W_{CBS}, MeV");
+	dEgr->Fit("pol0", "Q");
+	TCanvas * dNc = new TCanvas("dNc", "Number of visible events of signal deviation");
+	dNgr->SetMarkerStyle(21);
+	dNgr->SetLineWidth(2);
+	dNgr->SetMarkerSize(1);
+	dNgr->Draw("ap");
+	dNgr->GetXaxis()->SetTitle("W, MeV");
+	dNgr->GetYaxis()->SetTitle("N_{vis} - N_{exp}");
+	dNgr->Fit("pol0", "Q");
 
   cout << "Energy Chi2 contribution:" << EnergyChi2 << endl;
 
@@ -960,6 +973,8 @@ void fcnResMult(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
         chisqmh = sq(N - NmhInScan[i])/(NmhInScan[i]*(1. + NmhInScan[i]/nFull)); //just chi square
       } 
       else chisqmh = 2*(NmhInScan[i]*log(NmhInScan[i]/N) +N - NmhInScan[i]); //likelihood for low statistics
+			SignalDiscrepancy[i] = NmhInScan[i]-N;
+			SignalDiscrepancyError[i] = sqrt(NmhInScan[i]*(1. + NmhInScan[i]/nFull));
     }
     else if(NmhInScan[i]==0) 
     {
