@@ -757,13 +757,24 @@ int main(int argc, char **argv)
 
 
   double EnergyChi2=0;
+	TGraphErrors * dEgr = new TGraphErrors;
   for(int is=0;is<NEp;is++)
   {       
     //WInScan[is]=2.*En[is];
     WErrInScan[is]=WErrInScan[is];
     //if(arguments.FreeEnergy==1) WInScan[is]+=2.*+parRes[is+4];
     EnergyChi2+= sq(parRes[is+4]/EErrInScan[is]);
+		dEgr->SetPoint(is, WInScan[is], parRes[is+4]*2);
+		dEgr->SetPointError(is, 0,  WErrInScan[is]);
   }
+	TCanvas * dEc = new TCanvas("dEc", "Energy deviation");
+	dEgr->SetMarkerStyle(21);
+	dEgr->SetLineWidth(2);
+	dEgr->SetMarkerSize(1);
+	dEgr->Draw("ap");
+	dEgr->GetXaxis()->SetTitle("W, MeV");
+	dEgr->GetYaxis()->SetTitle("W_{exp}-W_{meas}, MeV");
+	dEgr->Fit("pol0");
 
   cout << "Energy Chi2 contribution:" << EnergyChi2 << endl;
 
