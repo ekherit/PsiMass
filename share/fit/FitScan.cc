@@ -789,8 +789,6 @@ int main(int argc, char **argv)
 	dNgr->GetYaxis()->SetTitle("N_{vis} - N_{exp}");
 	dNgr->Fit("pol0", "Q");
 
-  cout << "Energy Chi2 contribution:" << EnergyChi2 << endl;
-
   GrRes=new TGraphErrors(NEp,WInScan,CrossSInScan,WErrInScan,CrossSErrInScan);
   TF1* FitPsiP=new TF1("FitPsiP",FCrSPPrimeAzimov,1836.*ScaleEGr,1855*ScaleEGr,idRNP);  
   TF1* FitPsiP2=new TF1("FitPsiP2",FCrSPPrimeAzimov,1836.*ScaleEGr,1855*ScaleEGr,idRNP);  
