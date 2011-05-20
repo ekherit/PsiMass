@@ -6,6 +6,6 @@ set tempfile=`${CMTROOT}/mgr/cmt -quiet build temporary_name`
 if $status != 0 then
   set tempfile=/tmp/cmt.$$
 endif
-${CMTROOT}/mgr/cmt cleanup -csh -pack=JPsi -version=JPsi-00-00-01 -path=/afs/ihep.ac.cn/users/n/nikolaev/cmthome/workarea $* >${tempfile}; source ${tempfile}
+${CMTROOT}/mgr/cmt cleanup -csh -pack=JPsi -version=JPsi-00-00-01 -path=/ihepbatch/bes/nikolaev/work655 $* >${tempfile}; source ${tempfile}
 /bin/rm -f ${tempfile}
 
