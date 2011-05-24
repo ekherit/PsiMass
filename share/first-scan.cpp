@@ -171,6 +171,15 @@ struct ScanPoint_t
 };
 
 
+ScanPoint_t * get_scan_point_by_run(vector <ScanPoint_t> & pv, unsigned run)
+{
+  for(unsigned pn=0; pn<pv.size(); pn++)
+  {
+    for(list<unsigned>::iterator i=pv[pn].runs.begin();i!=pv[pn].runs.end(); ++i)
+      if(*i==run) return &pv[pn];
+  }
+  return 0;
+}
 
 void track_number(void)
 {
@@ -348,7 +357,7 @@ void read_scan_info(const char * filename, vector<ScanPoint_t> &pv)
   pv.resize(0);
   string s;
   cout << "Reading scan informaion: " << endl;
-  cout << setw(5) << "#" << setw(10) << "pnt id" << setw(15) << "W,MeV" << setw(15) << "dW,MeV" << setw(15) << "lum" << setw(16) << "BES runs list"<< endl;
+  cout << setw(3) << "#" << setw(3) << "pnt id" << setw(15) << "W,MeV" << setw(15) << "dW,MeV" << setw(15) << "lum" << setw(16) << "BES runs list"<< endl;
   while(getline(file,s))
   {
     istringstream is(s);
@@ -365,7 +374,7 @@ void read_scan_info(const char * filename, vector<ScanPoint_t> &pv)
       sp.runs.push_back(run);
     }
     pv.push_back(sp);
-    cout << setw(5) << i << setw(10) << sp.pn << setw(15) << sp.W << setw(15) << sp.dW << setw(15) << sp.lum;
+    cout << setw(3) << i << setw(3) << sp.pn << setw(15) << sp.W << setw(15) << sp.dW << setw(15) << sp.lum;
     for(list<unsigned>::iterator I = sp.runs.begin(); I!=sp.runs.end(); ++I)
     {
       cout << setw(8) << *I;
@@ -427,8 +436,7 @@ void make_scan_points(vector <ScanPoint_t> &pv)
 }
 
 
-
-void make_result(void)
+void set_selection(int selection_version, TCut & mh_cut, TCut & ee_cut , TCut & gg_cut)
 {
   TCut mh_base_cut; //base cut for signal
   TCut mh_strict_cut; //strict cut for signal
@@ -443,15 +451,7 @@ void make_result(void)
   TCut ip_cut[3]; //interaction point cut
   TCut mdcEcut;
   TCut ggEcut;
-
-  //Cut used in selection;
-  TCut  mh_cut;
-  TCut  ee_cut;
-  TCut  gg_cut;
-
-
-  int SELECTION_VERSION=7;
-  switch(SELECTION_VERSION)
+  switch(selection_version)
   {
     case 3:
       mh_base_cut = "nemc>2  && S>0.05 && Eemc<2.5 && Emdc<4";
@@ -530,13 +530,13 @@ void make_result(void)
 
         TCut ee_acol =   "abs(atheta)<0.03 && -0.06 < aphi && aphi<0.01";
         TCut ee_endcup = "abs(cos(mdc.theta[0]))>0.86 && abs(cos(mdc.theta[1]))>0.86";
-        TCut ee_E =      "mdc.E[0]/1.843>0.8 && mdc.E[1]/1.843>0.8 && Emdc<5";
+        TCut ee_E("mdc.E[0]/Eb>0.8 && mdc.E[1]/Eb>0.8 && Emdc<5");
         ee_base_cut = "mdc.ntrack>1 && mdc.ntrack<4" && good_track && ee_endcup && ee_acol && ee_E;
         ee_cut = ee_base_cut  && "q[0]*q[1]<0";
 
         TCut gg_acol = "abs(atheta) < 0.05 &&  aphi>-0.08 && aphi<0.04";
         TCut gg_barel = "Sum$(cos(theta)<0.8)";
-        TCut gg_E = "E[0]/1.843>0.8 && E[1]/1.843>0.8";
+        TCut gg_E("E[0]/Eb && E[1]/Eb>0.8");
         gg_base_cut = gg_acol && gg_barel && gg_E;
         gg_cut = gg_base_cut;
       }
@@ -555,20 +555,35 @@ void make_result(void)
 
         TCut ee_acol =   "abs(atheta)<0.03 && -0.06 < aphi && aphi<0.01";
         TCut ee_endcup = "abs(cos(mdc.theta[0]))>0.86 && abs(cos(mdc.theta[1]))>0.86";
-        TCut ee_E =      "mdc.E[0]/1.843>0.8 && mdc.E[1]/1.843>0.8 && mdc.E[0]/1.843<1.2 && mdc.E[1]/1.843<1.2";
-        TCut ee_p =  "mdc.p[0]<2.5 && mdc.p[1]<2.5 && mdc.p[0]/1.843>0.9 && mdc.p[1]/1.843>0.9";
+        
+        TCut ee_E("mdc.E[0]/Eb>0.8 && mdc.E[1]/Eb>0.8 && mdc.E[0]/Eb<1.2 && mdc.E[1]/Eb<1.2");
+        TCut ee_p =  "mdc.p[0]<2.5 && mdc.p[1]<2.5 && mdc.p[0]/Eb>0.9 && mdc.p[1]/Eb>0.9";
         ee_base_cut = "mdc.ntrack>1 && mdc.ntrack<4" && good_track && ee_endcup && ee_acol && ee_E && ee_p;
         ee_cut = ee_base_cut  && "q[0]*q[1]<0";
 
         TCut gg_n = "ngct==0 && ngt>1";
         TCut gg_acol = "abs(atheta) < 0.05 &&  aphi>-0.06 && aphi<0.02";
         TCut gg_barel = "cos(theta[0])<0.8 && cos(theta[1])<0.8";
-        TCut gg_E = "E[0]/1.843>0.8 && E[1]/1.843>0.8 && E[0]/1.843<1.2 && E[1]/1.843<1.2";
+        TCut gg_E = "E[0]/Eb>0.8 && E[1]/Eb>0.8 && E[0]/Eb<1.2 && E[1]/Eb<1.2";
         gg_base_cut = gg_acol && gg_barel && gg_E && gg_n;
         gg_cut = gg_base_cut;
       }
       break;
   }
+}
+
+
+void make_result(void)
+{
+
+  //Cut used in selection;
+  TCut  mh_cut;
+  TCut  ee_cut;
+  TCut  gg_cut;
+
+
+  int SELECTION_VERSION=7;
+  set_selection(SELECTION_VERSION, mh_cut, ee_cut, gg_cut);
   
   list<RunInfo_t> runinfo;
   make_runinfo(runinfo);
@@ -597,6 +612,8 @@ void make_result(void)
   TGraphErrors * nntr2_g = new TGraphErrors;
   for(unsigned run=20334; run!=20368;++run)
   {
+    ScanPoint_t * sp = get_scan_point_by_run(pv,run);
+    if(!sp) continue;
     char buf[1024];
     sprintf(buf,"psip-%d.root",run);
     TFile file(buf);
@@ -606,13 +623,15 @@ void make_result(void)
       TTree * mdc = (TTree*)file.Get("mdc");
       TTree * emc = (TTree*)file.Get("emc");
       TTree * tof = (TTree*)file.Get("tof");
+      TTree * gg = (TTree*)file.Get("gg");
+      char Ebeem_str[1024];
+      sprintf(Ebeem_str,"(%f*1)",sp->W/2*1e-3);
+      mdc->SetAlias("Eb",Ebeem_str);
+      gg->SetAlias("Eb",Ebeem_str);
       mhadr->AddFriend(mdc);
       mhadr->AddFriend(emc);
       mhadr->AddFriend(tof);
       set_alias(mhadr);
-      TTree * gg = (TTree*)file.Get("gg");
-      //gg->SetAlias("atheta","theta[0]+theta[1]-3.1415926535");
-      //gg->SetAlias("aphi","abs(phi[0]-phi[1])-3.1415926535");
       mhadr->Draw("Etotal",mh_cut,"goff");
       unsigned Nsignal = mhadr->GetSelectedRows();
       mhadr->Draw("Etotal",ee_cut,"goff");
@@ -762,6 +781,7 @@ void make_result(void)
     << " ch2/ndf=" << flum->GetChisquare()/(flum->GetNumberFitPoints()-flum->GetNumberFreeParameters()) << endl;
   rat_c->cd(2);
   TCanvas * ee_gg_c = new TCanvas;
+  ee_gg_c->SetFillColor(kWhite);
   bb_gg_g->Draw("ap");
   bb_gg_g->SetMarkerStyle(21);
   bb_gg_g->SetMarkerSize(1.5);
