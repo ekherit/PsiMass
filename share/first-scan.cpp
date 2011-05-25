@@ -555,15 +555,17 @@ void set_selection(int selection_version, TCut & mh_cut, TCut & ee_cut , TCut & 
 
         TCut ee_acol =   "abs(atheta)<0.03 && -0.06 < aphi && aphi<0.01";
         TCut ee_endcup = "abs(cos(mdc.theta[0]))>0.86 && abs(cos(mdc.theta[1]))>0.86";
-        
         TCut ee_E("mdc.E[0]/Eb>0.8 && mdc.E[1]/Eb>0.8 && mdc.E[0]/Eb<1.2 && mdc.E[1]/Eb<1.2");
         TCut ee_p =  "mdc.p[0]<2.5 && mdc.p[1]<2.5 && mdc.p[0]/Eb>0.9 && mdc.p[1]/Eb>0.9";
         ee_base_cut = "mdc.ntrack>1 && mdc.ntrack<4" && good_track && ee_endcup && ee_acol && ee_E && ee_p;
         ee_cut = ee_base_cut  && "q[0]*q[1]<0";
+        
+        cout << "Bhabha cut selection: " << endl;
+        cout << ee_cut << endl;
 
         TCut gg_n = "ngct==0 && ngt>1";
         TCut gg_acol = "abs(atheta) < 0.05 &&  aphi>-0.06 && aphi<0.02";
-        TCut gg_barel = "cos(theta[0])<0.8 && cos(theta[1])<0.8";
+        TCut gg_barel = "abs(cos(theta[0]))<0.8 && abs(cos(theta[1]))<0.8";
         TCut gg_E = "E[0]/Eb>0.8 && E[1]/Eb>0.8 && E[0]/Eb<1.2 && E[1]/Eb<1.2";
         gg_base_cut = gg_acol && gg_barel && gg_E && gg_n;
         gg_cut = gg_base_cut;
@@ -589,7 +591,6 @@ void make_result(void)
   make_runinfo(runinfo);
   vector <ScanPoint_t> pv;
   make_scan_points(pv);
-  cout << setw(10) << "run #" << setw(20) << "Nmh" << setw(20) << "Nee" << setw(20) << "Ngg" << setw(20) << "Nee/Ngg"<< endl;
   //reset luminosity in order to fill it from runinfo table.
   for(unsigned point=0;point<pv.size();++point)
   {
@@ -606,92 +607,42 @@ void make_result(void)
       }
     }
   }
-//temporary
-  unsigned runidx=0;
-  TGraphErrors * nchtr2_g = new TGraphErrors;
-  TGraphErrors * nntr2_g = new TGraphErrors;
-  for(unsigned run=20334; run!=20368;++run)
+  cout << setw(6) << "pnt#" << setw(10) << "Nmh" << setw(10) << "Nee" << setw(10) << "Ngg" << setw(10) << "Nee/Ngg"<< endl;
+  for(unsigned pn=0; pn<pv.size(); pn++)
   {
-    ScanPoint_t * sp = get_scan_point_by_run(pv,run);
-    if(!sp) continue;
-    char buf[1024];
-    sprintf(buf,"psip-%d.root",run);
-    TFile file(buf);
-    if(file.IsOpen())
+    TChain * mdc = new TChain("mdc","mdc");
+    TChain * emc = new TChain("emc","emc");
+    TChain * gg  = new TChain("gg","gg");
+    //Tune the beem energy
+    char Ebeem_str[1024];
+    sprintf(Ebeem_str,"(%f*1)",pv[pn].W/2.*1e-3);
+    mdc->SetAlias("Eb",Ebeem_str);
+    gg->SetAlias("Eb",Ebeem_str);
+    //for each run for this scan point
+    for(list<unsigned>::iterator i=pv[pn].runs.begin();i!=pv[pn].runs.end(); ++i)
     {
-      TTree * mhadr = (TTree*)file.Get("mhadr");
-      TTree * mdc = (TTree*)file.Get("mdc");
-      TTree * emc = (TTree*)file.Get("emc");
-      TTree * tof = (TTree*)file.Get("tof");
-      TTree * gg = (TTree*)file.Get("gg");
-      char Ebeem_str[1024];
-      sprintf(Ebeem_str,"(%f*1)",sp->W/2*1e-3);
-      mdc->SetAlias("Eb",Ebeem_str);
-      gg->SetAlias("Eb",Ebeem_str);
-      mhadr->AddFriend(mdc);
-      mhadr->AddFriend(emc);
-      mhadr->AddFriend(tof);
-      set_alias(mhadr);
-      mhadr->Draw("Etotal",mh_cut,"goff");
-      unsigned Nsignal = mhadr->GetSelectedRows();
-      mhadr->Draw("Etotal",ee_cut,"goff");
-      unsigned Nbhabha = mhadr->GetSelectedRows();
-      //draw  number of charged tracks
-      mhadr->Draw("mdc.ntrack>>hnchtr",mh_cut,"goff");
-      //TCut nn_cut = "ntrack>2 && Emdc<5&&S<0.05 && S<0.05 && Eemc>2.5&& rvxy[0]<0.5 && rvxy[1]<0.5 && abs(rvz[0]<5 && abs(rvz[1])<5)";
-      TCut nn_cut = mh_cut;
-      mhadr->Draw("mdc.ntrack>>hnchtr", nn_cut,"goff");
-      TH1F * hnchtr = (TH1F*)gDirectory->Get("hnchtr");
-      hnchtr->Fit("gaus","IQ0");
-      TF1 * nchtr_f = hnchtr->GetFunction("gaus");
-      double nchtr=0, nntr=0, nchtr_rms=1, nntr_rms=1;
-      nchtr=nchtr_f->GetParameter(1);
-      //double nchtr_sigma = nchtr_f->GetParError(1)*sqrt(nchtr_f->GetChisquare()/nchtr_f->GetNDF());
-      //nchtr2_g->SetPoint(runidx,run,nchtr);
-      //nchtr2_g->SetPointError(runidx,0,nchtr_sigma);
-      
-      //nchtr2_g->SetPoint(runidx,run,hnchtr->GetMean());
-      //nchtr2_g->SetPointError(runidx,0,hnchtr->GetRMS()/sqrt(mhadr->GetSelectedRows()));
-      nchtr = hnchtr->GetMean(); //number of charged tracks
-      nchtr_rms = hnchtr->GetRMS()/sqrt(hnchtr->GetEntries()); //RMS of charged tracks.
-      //mhadr->Draw("emc.ntrack>>hnntr",mh_cut ,"goff");
-      mhadr->Draw("emc.ntrack>>hnntr" ,nn_cut,"goff");
-      TH1F * hnntr = (TH1F*)gDirectory->Get("hnntr");
-      hnntr->Fit("gaus","IQ0");
-      //TF1 * nntr_f = hnntr->GetFunction("gaus");
-      nntr = hnntr->GetMean(); //number of neutral tracks
-      nntr_rms = hnntr->GetRMS()/sqrt(hnntr->GetEntries()); //RMS of number of neutral tracks.
-      
-      gg->Draw("Etotal",gg_cut,"goff");
-      unsigned Ngg = gg->GetSelectedRows();
-      cout << setw(10) << run << setw(20) << Nsignal << setw(20)<< Nbhabha << setw(20)<< Ngg 
-        <<  setw(20)<< double(Nbhabha)/double(Ngg) << endl;
-
-      for(unsigned pn=0; pn<pv.size(); pn++)
-      {
-        bool found=false;
-        for(list<unsigned>::iterator i=pv[pn].runs.begin();i!=pv[pn].runs.end(); ++i)
-        {
-          if(*i==run) found=true;
-        }
-        if(found) 
-        {
-          pv[pn].Nh+=Nsignal;
-          pv[pn].Nee+=Nbhabha;
-          pv[pn].Ngg+=Ngg;
-          pv[pn].Nchtr.add(nchtr,1./sq(nchtr_rms));
-          pv[pn].Nntr.add(nntr,1./sq(nntr_rms));
-          nchtr2_g->SetPoint(runidx,pv[pn].W,nchtr);
-          nchtr2_g->SetPointError(runidx,pv[pn].dW,nchtr_rms);
-          nntr2_g->SetPoint(runidx,pv[pn].W,nntr);
-          nntr2_g->SetPointError(runidx,pv[pn].dW,nntr_rms);
-          runidx++;
-        }
-      }
+      unsigned run=*i;
+      char file_name[1024];
+      sprintf(file_name,"psip-%d.root",run);
+      mdc->AddFile(file_name);
+      emc->AddFile(file_name);
+      gg->AddFile(file_name);
     }
+    mdc->Draw("ntrack",mh_cut,"goff");
+    unsigned Nsignal = mdc->GetSelectedRows();
+    mdc->Draw("ntrack",ee_cut,"goff");
+    unsigned Nbhabha = mdc->GetSelectedRows();
+    gg->Draw("ntrack",gg_cut,"goff");
+    unsigned Ngg = gg->GetSelectedRows();
+    pv[pn].Nh=Nsignal;
+    pv[pn].Nee=Nbhabha;
+    pv[pn].Ngg=Ngg;
+    cout << setw(6) << pn+1 << setw(10) << Nsignal << setw(10)<< Nbhabha << setw(10)<< Ngg 
+      <<  setw(10)<< setprecision(4) << double(Nbhabha)/double(Ngg) << endl;
+    delete mdc;
+    delete emc;
+    delete gg;
   }
-
-
 
   int fw = 14; //format width
   cout.precision(8);
@@ -756,14 +707,14 @@ void make_result(void)
   //nntr_g->GetXaxis()->SetTitle("point");
   //nntr_g->GetYaxis()->SetTitle("neutral tracks");
 
-  TCanvas * tr_c = new TCanvas("tracks_number","Number of tracks");
-  tr_c->Divide(1,2);
-  tr_c->cd(1);
-  nchtr2_g->SetMarkerStyle(21);
-  nchtr2_g->Draw("ap");
-  tr_c->cd(2);
-  nntr2_g->SetMarkerStyle(22);
-  nntr2_g->Draw("ap");
+  //TCanvas * tr_c = new TCanvas("tracks_number","Number of tracks");
+  //tr_c->Divide(1,2);
+  //tr_c->cd(1);
+  //nchtr2_g->SetMarkerStyle(21);
+  //nchtr2_g->Draw("ap");
+  //tr_c->cd(2);
+  //nntr2_g->SetMarkerStyle(22);
+  //nntr2_g->Draw("ap");
 
   TCanvas * rat_c = new TCanvas;
   rat_c->Divide(1,2);
