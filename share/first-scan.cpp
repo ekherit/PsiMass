@@ -586,6 +586,10 @@ void make_result(void)
 
   int SELECTION_VERSION=7;
   set_selection(SELECTION_VERSION, mh_cut, ee_cut, gg_cut);
+  ofstream cuts_file("cuts.txt");
+  cuts_file << "Multihadronic cut: " << mh_cut << endl;
+  cuts_file << "Bhabha cut: " << ee_cut << endl;
+  cuts_file << "Gamma gamma cut: " << gg_cut << endl;
   
   list<RunInfo_t> runinfo;
   make_runinfo(runinfo);
