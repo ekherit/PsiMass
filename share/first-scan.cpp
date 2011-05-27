@@ -37,7 +37,9 @@
 #include <sstream>
 #include <fstream>
 #include "averager.h"
+#include "utils.h"
 #include "selection.h"
+#include "interference.h"
 using namespace std;
 
 
@@ -59,7 +61,6 @@ TTree * get_tree(const char * file)
     return 0;
 }
 
-inline double sq(double x) {return  x*x; }
 struct RunInfo_t
 {
   unsigned run;
@@ -503,7 +504,7 @@ void make_result(void)
     gg->Draw("ntrack",gg_cut,"goff");
     unsigned Ngg = gg->GetSelectedRows();
     pv[pn].Nh=Nsignal;
-    pv[pn].Nee=Nbhabha;
+    pv[pn].Nee=Nbhabha*BBIntCor(pv[pn].W);
     pv[pn].Ngg=Ngg;
     cout << setw(6) << pn+1 << setw(10) << Nsignal << setw(10)<< Nbhabha << setw(10)<< Ngg 
       <<  setw(10)<< setprecision(4) << double(Nbhabha)/double(Ngg) << endl;

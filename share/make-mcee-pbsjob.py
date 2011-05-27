@@ -73,3 +73,4 @@ for job in range(1,jobs+1):
 	#this is extra point
 	do_mc(1842.0, N, job,  "-20361, -20360")
 	do_mc(1842.5, N, job,  "-20361, -20360")
+	do_mc(1842.75, N, job,  "-20361, -20360")

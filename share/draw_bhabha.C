@@ -18,35 +18,18 @@
 
 #include <iomanip>
 #include "selection.h"
-const double MPDG=3686.09;
-const double ALPHA=1./136.037;
-const double PI = 3.1415926535897;
-const double ME = 0.51099; //Mass of the electron,  MeV
-double sq(double x) { return x*x;}
+#include "interference.h"
 
 const unsigned JOB_NUMBER=4;
 //string file_prefix="bbyg_ee_";
-string file_prefix="bhwide_";
+//string file_prefix="bhwide_";
+string file_prefix="bbyg_ee_";
 
-double sigma(double *x,  double *p)
-{
-	double W = MPDG+x[0];
-	double G = p[3]; //width
-	double a = atan(-G/2./(W-MPDG));
-	double beta = 4*ALPHA/PI*(log(W/ME)-0.5);
-	//resonance beheavioure
-	double A=PI*beta/sin(PI*beta)*G/2./sqrt(sq(W-MPDG)+sq(G/2.));
-	//interference contribution max
-	double C = p[0]*sq(MPDG/W); //continuum
-	double I = p[1]*A*cos(a*(1-beta)); 
-	double R = p[2]*A*sin(a*(1-beta)); 
-	return C+I+R;
-}
 
 void draw_bhabha(void)
 {
-	unsigned Elist_size=12;
-	double Elist[12]={1839.0, 
+	unsigned Elist_size=14;
+	double Elist[14]={1839.0, 
                   1841.4, 
                   1843.2, 
                   1844.1, 
@@ -57,7 +40,9 @@ void draw_bhabha(void)
                   1843.0, 
                   1843.5, 
                   1845.1, 
-                  1846.5};
+                  1846.5, 
+									1842.0, 
+									1842.5};
 	unsigned N0[1024];
 	string Estr[1024];
 	//energy in GeV
@@ -256,10 +241,31 @@ void draw_bhabha(void)
 	fun_sigma->SetParameter(1, 10);//nb
 	fun_sigma->SetParameter(2, 10);//nb
 	fun_sigma->SetParameter(3, 1);//MeV
-	fun_sigma->FixParameter(1, 0); //From PDG table
-	fun_sigma->FixParameter(2, 0); //From PDG table
-	fun_sigma->FixParameter(3, 0.304); //From PDG table
+	//fun_sigma->FixParameter(1, 0); 
+	//fun_sigma->FixParameter(2, 0); 
+	//fun_sigma->FixParameter(3, 0.304); //From PDG table
 	sigma_g->Fit("fun_sigma");
+
+	TF1 * sfun = new TF1("sfun",&sigma_spread,-10, 10, 5 );
+	double par[5];
+	par[0]=1.6; //Beam spread
+	par[1]=fun_sigma->GetParameter(0);//QED
+	double qed = fun_sigma->GetParameter(0);
+	par[1] = 0;
+	par[2]=fun_sigma->GetParameter(1)/qed;//INT
+	par[3]=fun_sigma->GetParameter(2)/qed;//RES
+	par[4]=fun_sigma->GetParameter(3);//GAMMA
+	sfun->SetParameters(par);
+	sfun->Draw();
+	//for(unsigned i=0; i<Elist_size; i++)
+	//{
+	//	cout << 2*Elist[i] << " " << Elist[i] << setw(15) << sfun->Eval(Elist[i]*2-MPDG) << endl;
+	//}
+	cout << "Parameters of correction is for spread " << par[0] <<  " MeV" <<  endl;
+	cout << "QED: " << fun_sigma->GetParameter(0) << endl;
+	cout << "INT: " << fun_sigma->GetParameter(1) << endl;
+	cout << "RES: " << fun_sigma->GetParameter(2) << endl;
+	cout << "GAM: " << fun_sigma->GetParameter(3) << endl;
 	/* number of gamma gamma and multihadronic events 
 	TCanvas * nggc = new TCanvas("ngg_canvas", "Number of gg events");
 	ngg_g->SetMarkerStyle(21);
@@ -290,4 +296,4 @@ void draw_bhabha(void)
 	fun_ggsigma->FixParameter(2, 0); 
 	fun_ggsigma->FixParameter(3, 1); //From PDG table
 	ggsigma_g->Fit("fun_ggsigma");
-}
+};
