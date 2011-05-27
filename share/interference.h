@@ -23,6 +23,7 @@ const double ALPHA=1./136.037;
 const double PI = 3.1415926535897;
 const double ME = 0.51099; //Mass of the electron,  MeV
 
+#include <TF1.h>
 double sigma(double *x,  double *p)
 {
 	double W = MPDG+x[0];
@@ -71,9 +72,9 @@ double sigma_spread(double *x,  double *par)
 	p[3] = par[2]; //Interf
 	p[4] = par[3]; //Res
 	p[5] = par[4]; //Gamma
-	TF1 * f = new TF1("tmp", &sigma_spread_sub, -20, 20, 6);
-	f->SetParameters(p);
-	double res = f->Integral(p[0]-p[1]*5, p[0]+p[1]*5);
+	TF1  f("tmpbbfun", &sigma_spread_sub, -20, 20, 6);
+	f.SetParameters(p);
+	double res = f.Integral(p[0]-p[1]*5, p[0]+p[1]*5);
 	return res;
 }
 
@@ -86,15 +87,24 @@ double BBIntCor(double W)
 	double INT = 1.06325; //nb
 	double RES = 3.82139; //nb
 	double GAMMA = 2.66043; //MeV
-	TF1 * f = new TF1("fbbcor",  &sigma_spread,  5);
-	f->SetParameter(0,SPREAD);
-	f->SetParameter(1, 0);//QED is zero because we are looking for the correction.
-	f->SetParameter(2, INT/QED);
-	f->SetParameter(3, RES/QED);
-	f->SetParameter(4, GAMMA);
-	double cor =  1./(1+f->Eval(W-MPDG));
-	cout << W << " " << cor << endl;
-	delete f;
+  double cor=0; //result of calculation
+	//TF1  f("fbbcor",  &sigma_spread,  5);
+	//f.SetParameter(0,SPREAD);
+	//f.SetParameter(1, 0);//QED is zero because we are looking for the correction.
+	//f.SetParameter(2, INT/QED);
+	//f.SetParameter(3, RES/QED);
+	//f.SetParameter(4, GAMMA);
+	//double cor =  1./(1+f.Eval(W-MPDG));
+	TF1 * sfun = new TF1("fbbcor_tmp",&sigma_spread,-10, 10, 5 );
+	double par[5];
+	par[0]=SPREAD; //Beam spread
+	par[1] = 0;
+	par[2]=INT/QED;//INT
+	par[3]=RES/QED;//RES
+	par[4]=GAMMA;//GAMMA
+	sfun->SetParameters(par);
+  cor = 1./(1.+sfun->Eval(W-MPDG));
+  delete sfun;
 	return cor;
 };
 
