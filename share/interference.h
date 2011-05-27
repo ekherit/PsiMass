@@ -51,7 +51,7 @@ double sigma_spread_sub(double *x,  double *P)
 {
 	double W=P[0];
 	double S=P[1];
-	double p[3];
+	double p[4];
 	p[0] = P[2];
 	p[1] = P[3];
 	p[2] = P[4];
