@@ -140,7 +140,7 @@ void set_selection(int selection_version, TCut & mh_cut, TCut & ee_cut , TCut & 
         TCut ee_acol =   "abs(atheta)<0.03 && -0.06 < aphi && aphi<0.01";
         TCut ee_endcup = "abs(cos(mdc.theta[0]))>0.86 && abs(cos(mdc.theta[1]))>0.86";
         TCut ee_barrel = "abs(cos(mdc.theta[0]))<0.8 && abs(cos(mdc.theta[1]))<0.8";
-        TCut ee_barrel2 = "abs(cos(mdc.theta[0]))>0.5 && abs(cos(mdc.theta[1]))>0.5";
+        TCut ee_barrel2 = "abs(cos(mdc.theta[0]))>=0 && abs(cos(mdc.theta[1]))>=0";
         TCut ee_E("mdc.E[0]/Eb>0.8 && mdc.E[1]/Eb>0.8 && mdc.E[0]/Eb<1.2 && mdc.E[1]/Eb<1.2");
         TCut ee_p =  "mdc.p[0]<2.5 && mdc.p[1]<2.5 && mdc.p[0]/Eb>0.9 && mdc.p[1]/Eb>0.9";
         //ee_base_cut = "mdc.ntrack>1 && mdc.ntrack<4" && good_track && ee_barrel && ee_barrel2 && ee_acol && ee_E && ee_p;
