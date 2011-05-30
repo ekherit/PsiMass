@@ -19,17 +19,24 @@
 #include <iomanip>
 #include "selection.h"
 #include "interference.h"
+#include "utils.h"
 
 const unsigned JOB_NUMBER=4;
-//string file_prefix="bbyg_ee_";
+//string file_prefix="bbyg_gg_";
 //string file_prefix="bhwide_";
 string file_prefix="bbyg_ee_";
 
+void FixParNoInterference(TF1 * f)
+{
+	f->FixParameter(1, 0); 
+	f->FixParameter(2, 0); 
+	f->FixParameter(3, 1); //From PDG table
+}
 
 void draw_bhabha(void)
 {
 	unsigned Elist_size=14;
-	double Elist[14]={1839.0, 
+	double Elist[15]={1839.0, 
                   1841.4, 
                   1843.2, 
                   1844.1, 
@@ -41,8 +48,7 @@ void draw_bhabha(void)
                   1843.5, 
                   1845.1, 
                   1846.5, 
-									1842.0, 
-									1842.5};
+									1842.0, 1842.5,  1842.75}; //this is extra points.
 	unsigned N0[1024];
 	string Estr[1024];
 	//energy in GeV
@@ -60,11 +66,13 @@ void draw_bhabha(void)
 		double wsum=0;
 		unsigned job=1;
 		N0[i]=0;
-		TGraphErrors * graph = new TGraphErrors(JOB_NUMBER);
+		TGraphErrors graph(0);
 		for(unsigned job=1;job<JOB_NUMBER+1;++job)
 		{
 			char name[1024];
 			sprintf(name, "%s%4.1f_%d", file_prefix.c_str(), Elist[i], job);
+			if(Elist[i]==1842.75)
+			sprintf(name, "%s%4.2f_%d", file_prefix.c_str(), Elist[i], job);
 			char cros_name[1024];
 			sprintf(cros_name, "%s/CrossSection.txt",name);
 			double cross_section;
@@ -128,18 +136,18 @@ void draw_bhabha(void)
 					}
 				}
 			}
-			graph->SetPoint(job, job,  cross_section);
-			graph->SetPointError(job, 0,  cross_section_error);
+			graph.SetPoint(job-1, job-1,  cross_section);
+			graph.SetPointError(job-1, 0,  cross_section_error);
 			w = 1./sq(cross_section_error);
 			sum+=cross_section*w;
 			sum2+=sq(cross_section)*w;
 			wsum+=w;
-			//cout << files[i] << ": " << cross_section << "+-" << cross_section_error << endl;
+			cout << Elist[i] <<  " " << job << ": " << cross_section << "+-" << cross_section_error << endl;
 		}
 		double cross_section = sum/wsum;
 		double cross_section_error = sqrt(sum2/wsum - sq(cross_section));
-		graph->Fit("pol0", "Qgoff");
-		TF1 * fun = graph->GetFunction("pol0");
+		graph.Fit("pol0", "Qgoff");
+		TF1 * fun = graph.GetFunction("pol0");
 		cross_section = fun->GetParameter(0);
 		cross_section_error = fun->GetParError(0);
 		CR0[i] = cross_section;
@@ -154,17 +162,27 @@ void draw_bhabha(void)
 	fun_cr0->SetParameter(1, 30);//nb
 	fun_cr0->SetParameter(2, 30);//nb
 	fun_cr0->SetParameter(3, 0.3);//MeV
-	fun_cr0->FixParameter(3, 0.304); //From PDG table
+	//fun_cr0->FixParameter(3, 0.304); //From PDG table
 	fun_cr0->SetParName(0, "QED");
 	fun_cr0->SetParName(1, "INT");
 	fun_cr0->SetParName(2, "RES");
 	fun_cr0->SetParName(3, "Gamma");
+	FixParNoInterference(fun_cr0);
 	TCanvas * cr0c = new TCanvas("cr0c", "Total crossection from generator");
 	cr0g->SetMarkerStyle(21);
 	cr0g->Draw("ap");
 	cr0g->GetXaxis()->SetTitle("W-M_{#psi},  MeV");
 	cr0g->GetYaxis()->SetTitle("#sigma_{ee},  nb");
-	cr0g->Fit("fun_cr0");
+	TF1 * cr0_sfun = new TF1("cr0_sfun",&sigma_spread,-10, 10, 5 );
+	double par_cr0[5];
+	par_cr0[0]=0.1; //some spread.
+	par_cr0[1]=900;
+	par_cr0[2]=0;
+	par_cr0[3]=0;
+	par_cr0[4]=0.304; //psip width
+	cr0_sfun->SetParameters(par_cr0);
+	cr0_sfun->FixParameter(4, 0.304); //From PDG table
+	cr0g->Fit("cr0_sfun");
 
 	TCut mh_cut,  ee_cut,  gg_cut;
 	set_selection(7, mh_cut,  ee_cut,  gg_cut);
@@ -190,12 +208,16 @@ void draw_bhabha(void)
 		{
 			char dir_name[1024];
 			sprintf(dir_name, "%s%4.1f_%d", file_prefix.c_str(), Elist[i], job);
+			if(Elist[i]==1842.75)
+			sprintf(dir_name, "%s%4.2f_%d", file_prefix.c_str(), Elist[i], job);
 			char file_name[1024];
 			sprintf(file_name, "%s/%s.root", dir_name, dir_name);
 			//cout << dir_name << " " << file_name<< endl;
-			mdc->AddFile(file_name);
-			gg->AddFile(file_name);
+			int rcmdc = mdc->AddFile(file_name);
+			int rcgg = gg->AddFile(file_name);
+			//if(rcgg==0 || rcmdc==0) continue;
 		}
+		if(mdc->GetEntries()==0) continue;
 		mdc->Draw("ntrack", ee_cut, "goff");
 		double Nee=mdc->GetSelectedRows();
 		double dNee = sqrt(Nee*(1.-Nee/N0[i]));
@@ -241,9 +263,8 @@ void draw_bhabha(void)
 	fun_sigma->SetParameter(1, 10);//nb
 	fun_sigma->SetParameter(2, 10);//nb
 	fun_sigma->SetParameter(3, 1);//MeV
-	//fun_sigma->FixParameter(1, 0); 
-	//fun_sigma->FixParameter(2, 0); 
-	//fun_sigma->FixParameter(3, 0.304); //From PDG table
+	fun_sigma->SetNpx(1000);
+	FixParNoInterference(fun_sigma);
 	sigma_g->Fit("fun_sigma");
 
 	TF1 * sfun = new TF1("sfun",&sigma_spread,-10, 10, 5 );
@@ -252,15 +273,12 @@ void draw_bhabha(void)
 	par[1]=fun_sigma->GetParameter(0);//QED
 	double qed = fun_sigma->GetParameter(0);
 	par[1] = 0;
-	par[2]=fun_sigma->GetParameter(1)/qed;//INT
-	par[3]=fun_sigma->GetParameter(2)/qed;//RES
+	par[2]=fun_sigma->GetParameter(1)/qed*100;//INT
+	par[3]=fun_sigma->GetParameter(2)/qed*100;//RES
 	par[4]=fun_sigma->GetParameter(3);//GAMMA
 	sfun->SetParameters(par);
-	sfun->Draw();
-	//for(unsigned i=0; i<Elist_size; i++)
-	//{
-	//	cout << 2*Elist[i] << " " << Elist[i] << setw(15) << sfun->Eval(Elist[i]*2-MPDG) << endl;
-	//}
+	//sfun->Draw("same");
+	//sfun->Draw("");
 	cout << "Parameters of correction is for spread " << par[0] <<  " MeV" <<  endl;
 	cout << "QED: " << fun_sigma->GetParameter(0) << endl;
 	cout << "INT: " << fun_sigma->GetParameter(1) << endl;
@@ -294,6 +312,6 @@ void draw_bhabha(void)
 	//No resonance contribution here
 	fun_ggsigma->FixParameter(1, 0); 
 	fun_ggsigma->FixParameter(2, 0); 
-	fun_ggsigma->FixParameter(3, 1); //From PDG table
+	fun_ggsigma->FixParameter(3, 0); //From PDG table
 	ggsigma_g->Fit("fun_ggsigma");
 };

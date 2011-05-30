@@ -114,6 +114,7 @@ struct ScanPoint_t
   unsigned long Nh; //number of multihadron
   unsigned long Nee; //number of e+e- (bhabha)
   unsigned long Ngg;  //number of gamma gamma
+	double lum_ee_cor; //correction to Nee luminosity
   ibn::averager<double> Nchtr, Nntr; //number of charged tracks and it rms
   unsigned pn;
   ScanPoint_t(void)
@@ -504,10 +505,11 @@ void make_result(void)
     gg->Draw("ntrack",gg_cut,"goff");
     unsigned Ngg = gg->GetSelectedRows();
     pv[pn].Nh=Nsignal;
-    pv[pn].Nee=Nbhabha*BBIntCor(pv[pn].W);
+		pv[pn].lum_ee_cor = BBIntCor(pv[pn].W);
+    pv[pn].Nee=Nbhabha;
     pv[pn].Ngg=Ngg;
     cout << setw(6) << pn+1 << setw(10) << Nsignal << setw(10)<< Nbhabha << setw(10)<< Ngg 
-      <<  setw(10)<< setprecision(4) << double(Nbhabha)/double(Ngg) << endl;
+      <<  setw(10)<< setprecision(4) << double(Nbhabha)/double(Ngg) <<  " " << (pv[pn].lum_ee_cor-1)*100.;
     delete mdc;
     delete emc;
     delete gg;
@@ -535,7 +537,8 @@ void make_result(void)
       setw(fw)<< pv[i].Sw  << setw(fw) << pv[i].dSw << 
       setw(fw)<< pv[i].Nh  << 
       setw(fw)<< pv[i].Nee <<
-      setw(fw)<< pv[i].Ngg;
+      setw(fw)<< pv[i].Ngg <<
+			setw(fw)<< pv[i].lum_ee_cor;
     cout << os.str() << setw(fw) << double(pv[i].Nee)/pv[i].lum << setw(fw) << double(pv[i].Nee)/double(pv[i].Ngg) << endl;
     scan12 << os.str() << endl;
     switch(pv[i].scan)

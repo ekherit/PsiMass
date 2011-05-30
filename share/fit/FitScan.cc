@@ -91,6 +91,8 @@ Double_t EErrInScan[NumMaxP];
 Double_t WErrInScan[NumMaxP];
 Double_t SignalDiscrepancy[NumMaxP];
 Double_t SignalDiscrepancyError[NumMaxP];
+Double_t BBLumCorr[NumMaxP];
+
 Int_t    NumEpoints=0;
 Double_t MinChi2=1e+7;
 void fcnResMult    (Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
@@ -120,10 +122,12 @@ static char args_doc[] = "";
 #define OPT_SW             14
 #define OPT_USE_CHI2             15
 #define OPT_lum             16
+#define OPT_lum_cor             17
 
 
 bool USE_CBS_SIGMAW = false;
 bool USE_CHI2 = false;
+bool LUM_COR=true;
 Int_t   FreeEnergyFit=0;
 
 enum LuminosityType
@@ -159,6 +163,7 @@ static struct argp_option options[] = {
   {"ERangeR",OPT_ERangeR,"MeV",0,"ERangeR",3},
   {"NeeFlag",OPT_NeeFlag,"sel",0,"NeeFlag",4}, 
   {"lum",OPT_lum,"sel",0,"Luminosity type",OPT_lum}, 
+  {"lum_cor",OPT_lum_cor,"sel",0,"Use luminosity correction",OPT_lum_cor}, 
   {"NmhFlag",OPT_NmhFlag,"sel",0,"NmhFlag",5}, 
   {"CrBhabha",OPT_CrBhabha,"nb",0,"CrBhabha",6}, 
   {"dEmin",OPT_dEmin,"MeV",0,"dEmin",7}, 
@@ -192,6 +197,7 @@ struct arguments
   int sel;
   int lumbb;
   int lum; //luminosity type
+	int lum_cor; //luminosity correction flag;
   int both;
   int scan;
   int SW; //use cbs measure sigmaW
@@ -219,6 +225,7 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
     case OPT_ERangeR:arg_union.arguments->ERangeR =atof(arg);break;
     case OPT_NeeFlag:arg_union.arguments->NeeFlag=atoi(arg);break;
     case OPT_lum:arg_union.arguments->lum=atoi(arg);break;
+    case OPT_lum_cor:arg_union.arguments->lum_cor=atoi(arg);break;
     case OPT_NmhFlag:arg_union.arguments->NmhFlag=atoi(arg);break;            
     case OPT_dEmin:arg_union.arguments->dEmin=atof(arg);break;            
     case OPT_Emin:arg_union.arguments->Emin=atof(arg);break;            
@@ -261,6 +268,8 @@ int main(int argc, char **argv)
 
   arguments.CrBhabha=80; 
   arguments.both=0; 
+	arguments.lum_cor=1;
+	arguments.lum=0;
 
 
 
@@ -276,6 +285,16 @@ int main(int argc, char **argv)
 
   if(arguments.SW==1) USE_CBS_SIGMAW=true;
   if(arguments.use_chi2==1) USE_CHI2=true;
+	if(arguments.lum_cor==1) 
+	{
+		LUM_COR=true;
+		cout << "Use luminosity corrections." << endl;
+	}
+	else
+	{
+		LUM_COR = false;
+		cout << "No luminosity corrections." << endl;
+	}
   ifstream kfile("CrBhabha.txt");
   if(kfile) 
   {
@@ -356,7 +375,7 @@ int main(int argc, char **argv)
   TF1* FitResBG=0;
   TGraphErrors* GrRes=0;
   TLine* LineRes=0;
-  int dimMHFile=9;
+  int dimMHFile=10;
   int MHRun=0;
   int MHLum=1;
   int MHEnergy=2;
@@ -366,6 +385,7 @@ int main(int argc, char **argv)
   int MHNmh=6; 
   int MHNee=7;
   int MHNgg=8; 
+  int MHLumCor=9; 
   double** AllMH=0;
   int      npMHFile=0; 
 
@@ -395,7 +415,7 @@ int main(int argc, char **argv)
 
   cout<<"npMHFile:"<<npMHFile<<endl;
 
-  int dimAP= 18;
+  int dimAP= 19;
   int ARun=0;
   int AEnergy =1;
   int AEnergyErr=2;
@@ -414,6 +434,7 @@ int main(int argc, char **argv)
   int ASE  =15;
   int ASigmaW = 16;
   int AdSigmaW = 17;
+	int ALumCor = 18;
   int npAP=0;    
   npAP=npMHFile;
   double** AP=new double* [npAP];
@@ -432,6 +453,7 @@ int main(int argc, char **argv)
     AP[Aind][AdSigmaW] = AllMH[i][MHdSigmaW];
     AP[Aind][AEE]=AllMH[i][MHNee];
     AP[Aind][AGG]=AllMH[i][MHNgg];
+    AP[Aind][ALumCor]=AllMH[i][MHLumCor];
     Aind++;
   }
 
@@ -488,6 +510,7 @@ int main(int argc, char **argv)
   Double_t *Ngg_=new Double_t[np];
   Double_t *Le_=new Double_t[np];
   Double_t *Lp_=new Double_t[np];    
+  Double_t *Lcor_=new Double_t[np];    
   Int_t*        Euse=new Int_t[np];
   np=0;
 
@@ -503,6 +526,7 @@ int main(int argc, char **argv)
     Lp_[np]=AP[i][ALp];  
     SigmaW_[np]=AP[i][ASigmaW];
     dSigmaW_[np]=AP[i][AdSigmaW];
+		Lcor_[np] = AP[i][ALumCor];
     np++;      
   }
   int  NEp=0;
@@ -517,6 +541,7 @@ int main(int argc, char **argv)
   Double_t *Ngg=new  Double_t[NEp];
   Double_t *Le=new  Double_t[NEp];
   Double_t *Lp=new  Double_t[NEp];
+  Double_t *Lcor=new  Double_t[NEp];
 
   SumPointsByQuant(np,NEp,Euse,En_,Nbb_,Eerr_,En,Eerr,false);
   SumPointsSimple(np,NEp,Euse,Nmh_,Nmh);
@@ -526,6 +551,7 @@ int main(int argc, char **argv)
   SumPointsSimple(np,NEp,Euse,Lp_,Lp);     
   SumPointsSimple(np,NEp,Euse,SigmaW_,SW);     
   SumPointsSimple(np,NEp,Euse,dSigmaW_,dSW);     
+  SumPointsSimple(np,NEp,Euse,Lcor_,Lcor);     
   NumEpoints=NEp;
   int numpar=4;
   if(FreeEnergyFit==1) numpar+=NEp;
@@ -555,7 +581,8 @@ int main(int argc, char **argv)
     Lee+= LumInScanEE[is];
     Lgg+= LumInScanGG[is];
     LumLgammaInScan[is]=TMath::Max(Le[is],Lp[is]); //BES lum
-    cout<<"BESLUM:"<<LumLgammaInScan[is]<<" LumInScan:"<<LumInScan[is]<<endl;
+		BBLumCorr[is] = Lcor[is];
+    cout<<"BESLUM:"<<LumLgammaInScan[is]<<" LumInScan:"<<LumInScan[is]<< ", BBLumCor=" << BBLumCorr[is] << endl;;
     double lum=0; //temporary luminosity could be ee, gg and bes lum
     double Nobs=0; //temporary number of luminosity events
     switch(LUMINOSITY)
@@ -944,7 +971,7 @@ void fcnResMult(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
         break;
       default:
         nFull = NLum[i];
-        lumFull=LumInScan[i];
+        lumFull=LumInScan[i]*(LUM_COR ? BBLumCorr[i] : 1);
         Nexp=NLum[i];
         break;
     }

@@ -83,18 +83,11 @@ double BBIntCor(double W)
 {
 	//this number are taken from MC draw_bhabha
 	double SPREAD = 1.6; //MeV
-	double QED = 124.479; //nb
-	double INT = 1.06325; //nb
-	double RES = 3.82139; //nb
-	double GAMMA = 2.66043; //MeV
+	double QED = 124.505; //nb
+	double INT = 0.89923; //nb
+	double RES = 3.69557; //nb
+	double GAMMA = 2.70303; //MeV
   double cor=0; //result of calculation
-	//TF1  f("fbbcor",  &sigma_spread,  5);
-	//f.SetParameter(0,SPREAD);
-	//f.SetParameter(1, 0);//QED is zero because we are looking for the correction.
-	//f.SetParameter(2, INT/QED);
-	//f.SetParameter(3, RES/QED);
-	//f.SetParameter(4, GAMMA);
-	//double cor =  1./(1+f.Eval(W-MPDG));
 	TF1 * sfun = new TF1("fbbcor_tmp",&sigma_spread,-10, 10, 5 );
 	double par[5];
 	par[0]=SPREAD; //Beam spread

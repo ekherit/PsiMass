@@ -133,7 +133,7 @@ void set_selection(int selection_version, TCut & mh_cut, TCut & ee_cut , TCut & 
         TCut mh_2good2 = "mdc.rvxy[0]<1 && mdc.rvxy[1]<1&& abs(cos(mdc.theta[0]))<0.93 &&abs(cos(mdc.theta[1]))<0.93";
         mh_base_cut  =   "mdc.ntrack>3" && good_track && "S>0.06"&& mh_p;
         //mh_base_cut  =   "mdc.ntrack>2" && good_track; //week cut
-        //mh_base_cut  =   "mdc.ntrack>4" && good_track && "S>0.06" && "Sum$(cos(theta)<1.8&&pt>0.05)==mdc.ntrack"; //strong cut
+        mh_base_cut  =   "mdc.ntrack>4" && good_track && "S>0.06" && "Sum$(cos(theta)<0.8&&pt>0.05)==mdc.ntrack" &&mh_p; //strong cut
         //mh_base_cut = "mdc.ntrack>2" && "S>0.06" && mh_2good2;
         mh_cut = mh_base_cut;
 
