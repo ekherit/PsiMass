@@ -24,7 +24,8 @@
 const unsigned JOB_NUMBER=4;
 //string file_prefix="bbyg_gg_";
 //string file_prefix="bhwide_";
-string file_prefix="bbyg_ee_";
+//string file_prefix="bbyg_ee_";
+string file_prefix="bbyg_geom_ee_";
 
 void FixParNoInterference(TF1 * f)
 {
@@ -35,7 +36,7 @@ void FixParNoInterference(TF1 * f)
 
 void draw_bhabha(void)
 {
-	unsigned Elist_size=14;
+	unsigned Elist_size=15;
 	double Elist[15]={1839.0, 
                   1841.4, 
                   1843.2, 
@@ -167,22 +168,27 @@ void draw_bhabha(void)
 	fun_cr0->SetParName(1, "INT");
 	fun_cr0->SetParName(2, "RES");
 	fun_cr0->SetParName(3, "Gamma");
-	FixParNoInterference(fun_cr0);
+	//FixParNoInterference(fun_cr0);
 	TCanvas * cr0c = new TCanvas("cr0c", "Total crossection from generator");
 	cr0g->SetMarkerStyle(21);
 	cr0g->Draw("ap");
 	cr0g->GetXaxis()->SetTitle("W-M_{#psi},  MeV");
 	cr0g->GetYaxis()->SetTitle("#sigma_{ee},  nb");
-	TF1 * cr0_sfun = new TF1("cr0_sfun",&sigma_spread,-10, 10, 5 );
+	TF1 * cr0_sfun = new TF1("sfun_cr0",&sigma_spread,-10, 10, 5 );
 	double par_cr0[5];
-	par_cr0[0]=0.1; //some spread.
+	par_cr0[0]=1; //some spread.
 	par_cr0[1]=900;
 	par_cr0[2]=0;
 	par_cr0[3]=0;
 	par_cr0[4]=0.304; //psip width
 	cr0_sfun->SetParameters(par_cr0);
+	cr0_sfun->SetParLimits(0,0.1, 3);
+	//cr0_sfun->SetParLimits(2,-100, 100);
+	//cr0_sfun->SetParLimits(3,-100, 100);
 	cr0_sfun->FixParameter(4, 0.304); //From PDG table
-	cr0g->Fit("cr0_sfun");
+	cr0g->Fit("fun_cr0");
+	//cr0g->Fit("sfun_cr0");
+	return;
 
 	TCut mh_cut,  ee_cut,  gg_cut;
 	set_selection(7, mh_cut,  ee_cut,  gg_cut);
@@ -262,22 +268,23 @@ void draw_bhabha(void)
 	fun_sigma->SetParameter(0, 100);//nb
 	fun_sigma->SetParameter(1, 10);//nb
 	fun_sigma->SetParameter(2, 10);//nb
-	fun_sigma->SetParameter(3, 1);//MeV
+	fun_sigma->SetParameter(3, 0.1);//MeV
+	fun_sigma->FixParameter(3, 0.304);
 	fun_sigma->SetNpx(1000);
-	FixParNoInterference(fun_sigma);
-	sigma_g->Fit("fun_sigma");
+	//FixParNoInterference(fun_sigma);
+	sigma_g->Fit("fun_sigma", "E");
 
 	TF1 * sfun = new TF1("sfun",&sigma_spread,-10, 10, 5 );
 	double par[5];
-	par[0]=1.6; //Beam spread
+	par[0]=1.58; //Beam spread
 	par[1]=fun_sigma->GetParameter(0);//QED
 	double qed = fun_sigma->GetParameter(0);
-	par[1] = 0;
-	par[2]=fun_sigma->GetParameter(1)/qed*100;//INT
-	par[3]=fun_sigma->GetParameter(2)/qed*100;//RES
+	par[1] = qed;
+	par[2]=fun_sigma->GetParameter(1);//INT
+	par[3]=fun_sigma->GetParameter(2);//RES
 	par[4]=fun_sigma->GetParameter(3);//GAMMA
 	sfun->SetParameters(par);
-	//sfun->Draw("same");
+	sfun->Draw("same");
 	//sfun->Draw("");
 	cout << "Parameters of correction is for spread " << par[0] <<  " MeV" <<  endl;
 	cout << "QED: " << fun_sigma->GetParameter(0) << endl;

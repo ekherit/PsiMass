@@ -133,7 +133,7 @@ void set_selection(int selection_version, TCut & mh_cut, TCut & ee_cut , TCut & 
         TCut mh_2good2 = "mdc.rvxy[0]<1 && mdc.rvxy[1]<1&& abs(cos(mdc.theta[0]))<0.93 &&abs(cos(mdc.theta[1]))<0.93";
         mh_base_cut  =   "mdc.ntrack>3" && good_track && "S>0.06"&& mh_p;
         //mh_base_cut  =   "mdc.ntrack>2" && good_track; //week cut
-        mh_base_cut  =   "mdc.ntrack>4" && good_track && "S>0.06" && "Sum$(cos(theta)<0.8&&pt>0.05)==mdc.ntrack" &&mh_p; //strong cut
+        //mh_base_cut  =   "mdc.ntrack>4" && good_track && "S>0.06" && "Sum$(cos(theta)<0.8&&pt>0.05)==mdc.ntrack" &&mh_p; //strong cut
         //mh_base_cut = "mdc.ntrack>2" && "S>0.06" && mh_2good2;
         mh_cut = mh_base_cut;
 
@@ -144,11 +144,8 @@ void set_selection(int selection_version, TCut & mh_cut, TCut & ee_cut , TCut & 
         TCut ee_E("mdc.E[0]/Eb>0.8 && mdc.E[1]/Eb>0.8 && mdc.E[0]/Eb<1.2 && mdc.E[1]/Eb<1.2");
         TCut ee_p =  "mdc.p[0]<2.5 && mdc.p[1]<2.5 && mdc.p[0]/Eb>0.9 && mdc.p[1]/Eb>0.9";
         //ee_base_cut = "mdc.ntrack>1 && mdc.ntrack<4" && good_track && ee_barrel && ee_barrel2 && ee_acol && ee_E && ee_p;
-        ee_base_cut = "mdc.ntrack>1 && mdc.ntrack<4" && good_track && ee_endcup && ee_acol && ee_E && ee_p;
+        TCut ee_base_cut = "mdc.ntrack>1 && mdc.ntrack<4" && good_track && ee_endcup && ee_acol && ee_E && ee_p;
         ee_cut = ee_base_cut  && "q[0]*q[1]<0";
-        
-        cout << "Bhabha cut selection: " << endl;
-        cout << ee_cut << endl;
 
         TCut gg_n = "ngct==0 && ngt>1";
         TCut gg_acol = "abs(atheta) < 0.05 &&  aphi>-0.06 && aphi<0.02";

@@ -19,7 +19,7 @@
 #ifndef IBN_BHABHA_INTERFERENCE_H
 #define IBN_BHABHA_INTERFERENCE_H
 const double MPDG=3686.09;
-const double ALPHA=1./136.037;
+const double ALPHA=1./137.036;
 const double PI = 3.1415926535897;
 const double ME = 0.51099; //Mass of the electron,  MeV
 
@@ -27,6 +27,7 @@ const double ME = 0.51099; //Mass of the electron,  MeV
 double sigma(double *x,  double *p)
 {
 	double W = MPDG+x[0];
+	if(W<=0) return 1e100;
 	double G = p[3]; //width
 	double a = atan(-G/2./(W-MPDG));
 	double beta = 4*ALPHA/PI*(log(W/ME)-0.5);
@@ -42,7 +43,6 @@ double sigma(double *x,  double *p)
 //energy spread
 double spread(double dW,   double S)
 {
-	const double PI=3.1415926535;
 	return 1./(sqrt(2*PI)*S)*exp(-0.5*sq(dW/S));
 }
 
@@ -75,6 +75,8 @@ double sigma_spread(double *x,  double *par)
 	TF1  f("tmpbbfun", &sigma_spread_sub, -20, 20, 6);
 	f.SetParameters(p);
 	double res = f.Integral(p[0]-p[1]*5, p[0]+p[1]*5);
+	//clog << "W="<<p[0]<< ", sig="<<p[1] << ",  qed="<<p[2]<<", int="<< p[3] << ", res=" << p[4]
+	//	<< ", gam=" << p[5] << ",  sigma_spread=" << res << endl;
 	return res;
 }
 
