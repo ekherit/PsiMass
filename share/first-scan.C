@@ -17,6 +17,7 @@
  */
 {
   gSystem->CompileMacro("share/first-scan.cpp","kO");
+  gSystem->CompileMacro("share/interference.cpp","kO");
   make_result();
   //track_number();
 }

@@ -96,11 +96,11 @@ double sigma_spread(double *x,  double *par)
 double BBIntCor(double W)
 {
 	//this number are taken from MC draw_bhabha
-	double SPREAD = 1.6; //MeV
-	double QED = 124.505; //nb
-	double INT = 0.89923; //nb
-	double RES = 3.69557; //nb
-	double GAMMA = 2.70303; //MeV
+	double SPREAD = 1.58; //MeV
+	double QED = 125.057; //nb
+	double INT = 10.7287; //nb
+	double RES = -4.34519; //nb
+	double GAMMA = 0.304; //MeV
   double cor=0; //result of calculation
 	TF1 * sfun = new TF1("fbbcor_tmp",&sigma_spread,-10, 10, 5 );
 	double par[5];
