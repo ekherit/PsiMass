@@ -35,8 +35,10 @@ double sigma(double *x,  double *p)
 	if(W<=0) return 1e100;
 	double G = p[3]; //width
   double den=sqrt(sq(W-MPDG)+sq(G/2.));
-	//double a = atan(-G/2./(W-MPDG));
-	double a = asin(G/(2*den));
+  //I must be accurate with calculating the phase
+	double a = atan(-G/2./(W-MPDG));
+  //if atan is negative it correspond angle > 90degre
+  if(a<0) a+=PI;
 	double beta = 4*ALPHA/PI*(log(W/ME)-0.5);
 	double beta0 = 4*ALPHA/PI*(log((2*MPDG)/ME)-0.5);
   double bsin = PI*beta/sin(PI*beta);
