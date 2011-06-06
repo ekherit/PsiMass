@@ -24,8 +24,8 @@
 const unsigned JOB_NUMBER=4;
 //string file_prefix="bbyg_gg_";
 //string file_prefix="bhwide_";
-//string file_prefix="bbyg_ee_";
-string file_prefix="bbyg_geom_ee_";
+string file_prefix="bbyg_ee_";
+//string file_prefix="bbyg_geom_ee_";
 
 void FixParNoInterference(TF1 * f)
 {
@@ -57,6 +57,7 @@ void draw_bhabha(void)
 	//initial cross section and error
 	double CR0[1024], CR0err[1024];
 
+	TFile tmp_file("tmp.root", "RECREATE");
 	//extracting the CrossSection
 	cout << "Reading cross section" << endl;
 	TGraphErrors * cr0g = new TGraphErrors;
@@ -188,7 +189,10 @@ void draw_bhabha(void)
 	cr0_sfun->FixParameter(4, 0.304); //From PDG table
 	cr0g->Fit("fun_cr0");
 	//cr0g->Fit("sfun_cr0");
-	return;
+	cr0g->SetName("cr0g");
+	cr0c->Write();
+	cr0g->Write();
+
 
 	TCut mh_cut,  ee_cut,  gg_cut;
 	set_selection(7, mh_cut,  ee_cut,  gg_cut);
@@ -291,6 +295,9 @@ void draw_bhabha(void)
 	cout << "INT: " << fun_sigma->GetParameter(1) << endl;
 	cout << "RES: " << fun_sigma->GetParameter(2) << endl;
 	cout << "GAM: " << fun_sigma->GetParameter(3) << endl;
+	sigmac->Write();
+	sigma_g->SetName("sigmaee_obs");
+	sigma_g->Write();
 	/* number of gamma gamma and multihadronic events 
 	TCanvas * nggc = new TCanvas("ngg_canvas", "Number of gg events");
 	ngg_g->SetMarkerStyle(21);
@@ -321,4 +328,8 @@ void draw_bhabha(void)
 	fun_ggsigma->FixParameter(2, 0); 
 	fun_ggsigma->FixParameter(3, 0); //From PDG table
 	ggsigma_g->Fit("fun_ggsigma");
+	ggsigmac->Write();
+	tmp_file.Close();
+	cout << "Save tmp.root" << endl;
+	exit(0);
 };
