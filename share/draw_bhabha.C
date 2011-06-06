@@ -24,8 +24,9 @@
 const unsigned JOB_NUMBER=4;
 //string file_prefix="bbyg_gg_";
 //string file_prefix="bhwide_";
-string file_prefix="bbyg_ee_";
+//string file_prefix="bbyg_ee_";
 //string file_prefix="bbyg_geom_ee_";
+string file_prefix="mcpsip_";
 
 void FixParNoInterference(TF1 * f)
 {
@@ -148,10 +149,19 @@ void draw_bhabha(void)
 		}
 		double cross_section = sum/wsum;
 		double cross_section_error = sqrt(sum2/wsum - sq(cross_section));
-		graph.Fit("pol0", "Qgoff");
-		TF1 * fun = graph.GetFunction("pol0");
-		cross_section = fun->GetParameter(0);
-		cross_section_error = fun->GetParError(0);
+		if(graph.GetN()>0)
+		{
+			graph.Fit("pol0", "Qgoff");
+			TF1 * fun = graph.GetFunction("pol0");
+			cross_section = fun->GetParameter(0);
+			cross_section_error = fun->GetParError(0);
+		}
+		else
+		{
+			cross_section = 1;
+			cross_section_error = 1;
+			N0[i] = 2e4;
+		}
 		CR0[i] = cross_section;
 		CR0err[i] = cross_section_error;
 		cout << name << ": " << cross_section<< "+-"<< cross_section_error << " nb,   N0="<< N0[i] <<  endl;
@@ -259,11 +269,6 @@ void draw_bhabha(void)
 	sigma_g->Draw("ap");
 	sigma_g->GetXaxis()->SetTitle("W-M_{#psi},  MeV");
 	sigma_g->GetYaxis()->SetTitle("#sigma_{vis},  nb");
-	//char fit_formula[1024];
-	//sprintf(fit_formula, "[0]*pow(%f/(%f+x), 2)+2*[0]*[1]/sqrt(x**2+[2]**2)*cos()", MPDG, MPDG);
-	////TF1 * fun = new TF1("fun", "[0]*pow(3686./x, 2)");
-	//TF1 * fun = new TF1("fun", fit_formula);
-	fun->SetParameter(0, 120);
 	TF1 * fun_sigma = new TF1("fun_sigma",&sigma, -10, 10, 4);
 	fun_sigma->SetParName(0, "QED");
 	fun_sigma->SetParName(1, "INT");
