@@ -248,12 +248,12 @@ void draw_bhabha(void)
 		sigma_g->SetPointError(i, 0, dsigma_ee);
 
 		mdc->Draw("ntrack", mh_cut, "goff");
-		unsigned Nmh=mdc->GetSelectedRows();
+		double Nmh=mdc->GetSelectedRows();
 		double dNmh = sqrt(Nmh*(1.-Nmh/N0[i]));
 		nmh_g->SetPoint(i, Elist[i]*2-MPDG,Nmh);
 		nmh_g->SetPointError(i, 0,dNmh);
     effmh_g->SetPoint(i, Elist[i]*2-MPDG, Nmh/N0[i]);
-    effmh_g->SetPointError(i, Elist[i]*2-MPDG, dNmh/N0[i]);
+    effmh_g->SetPointError(i, 0, dNmh/N0[i]);
 
 		gg->Draw("ntrack", gg_cut, "goff");
 		double Ngg=gg->GetSelectedRows();
@@ -355,7 +355,7 @@ void draw_and_fit_graph(string name, string title, TGraphErrors * graph, int fit
   string fun_name = name+"_f";
   
 	TF1 * fun =0;
-  if(isres==1 || isres==2 || isres==3) 
+  if(fitopt==1 || fitopt==2 || fitopt==3) 
   {
     fun = new TF1(fun_name.c_str(),&sigma, -10, 10, 4);
     fun->SetParName(0, "QED");
@@ -366,9 +366,9 @@ void draw_and_fit_graph(string name, string title, TGraphErrors * graph, int fit
     fun->SetParameter(1, 0);
     fun->SetParameter(2, 0);
     if(isred==2) fun->FixParameter(3,GAMMA_PSI2S); //fix only GAMMA
-    if(isres==1) FixParNoInterference(fun); //suppress interference  just  QED
+    if(fitopt==1) FixParNoInterference(fun); //suppress interference  just  QED
   }
-  if(isres==0)
+  if(fitopt==0)
   {
     fun = new TF1(fun_name.c_str(),"[0]+x*[1]", -10, 10, 4);
     fun->SetParameter(0, 0);
