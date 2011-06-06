@@ -18,10 +18,15 @@
 
 #ifndef IBN_BHABHA_INTERFERENCE_H
 #define IBN_BHABHA_INTERFERENCE_H
+#include "utils.h"
 const double MPDG=3686.09;
-const double ALPHA=1./137.036;
 const double PI = 3.1415926535897;
-const double ME = 0.51099; //Mass of the electron,  MeV
+const double ALPHA = 1./136.037;
+const double GAMMAEE_PSI2S = 0.00235; //MeV
+const double GAMMA_PSI2S = 0.304; // MeV
+const double M_PSI2S  = 3686.09; //MeV
+const double ME = 0.510998910; //MeV
+const double HC2 = 0.389379304*1e6*1e3; //MeV^2*nbarn
 
 #include <TF1.h>
 double sigma(double *x,  double *p)
@@ -29,10 +34,15 @@ double sigma(double *x,  double *p)
 	double W = MPDG+x[0];
 	if(W<=0) return 1e100;
 	double G = p[3]; //width
-	double a = atan(-G/2./(W-MPDG));
+  double den=sqrt(sq(W-MPDG)+sq(G/2.));
+	//double a = atan(-G/2./(W-MPDG));
+	double a = asin(G/(2*den));
 	double beta = 4*ALPHA/PI*(log(W/ME)-0.5);
+	double beta0 = 4*ALPHA/PI*(log((2*MPDG)/ME)-0.5);
+  double bsin = PI*beta/sin(PI*beta);
+  double bsin0 = PI*beta0/sin(PI*beta0);
 	//resonance beheavioure
-	double A=PI*beta/sin(PI*beta)*G/2./sqrt(sq(W-MPDG)+sq(G/2.));
+	double A=bsin/bsin0*pow(G/(2*den),1.-beta);
 	//interference contribution max
 	double C = p[0]*sq(MPDG/W); //continuum
 	double I = p[1]*A*cos(a*(1-beta)); 
@@ -103,5 +113,18 @@ double BBIntCor(double W)
 	return cor;
 };
 
+inline double ee_interference(double W, double theta);
+
+double ee_interference_vs_W(double *x, double *p)
+{
+    return  ee_interference(x[0], p[0]);
+}
+
+double ee_interference_vs_theta(double *x, double *p)
+{
+    return  ee_interference(p[0], x[0]);
+}
+
+double ee_interference(double W, double theta_min, double theta_max);
 
 #endif
