@@ -32,7 +32,7 @@ void FixParNoInterference(TF1 * f)
 {
 	f->FixParameter(1, 0); 
 	f->FixParameter(2, 0); 
-	f->FixParameter(3, 1); //From PDG table
+	f->FixParameter(3, GAMMA_PSI2S); //From PDG table
 }
 
 void draw_bhabha(void)
@@ -211,6 +211,7 @@ void draw_bhabha(void)
 	TGraphErrors * ggsigma_g = new TGraphErrors;
 	TGraphErrors * ngg_g = new TGraphErrors; //Number of selected gg events
 	TGraphErrors * nmh_g = new TGraphErrors; //Number of selected gg events
+	TGraphErrors * effmh_g = new TGraphErrors; //Efficiency of multihadronic selection
 	//open root file and procceed number of events
 	cout << "Calculating number of events" << endl;
 	cout << setw(12) << "Energy, MeV" << setw(10) << "Nmh" << setw(10)  
@@ -251,6 +252,8 @@ void draw_bhabha(void)
 		double dNmh = sqrt(Nmh*(1.-Nmh/N0[i]));
 		nmh_g->SetPoint(i, Elist[i]*2-MPDG,Nmh);
 		nmh_g->SetPointError(i, 0,dNmh);
+    effmh_g->SetPoint(i, Elist[i]*2-MPDG, Nmh/N0[i]);
+    effmh_g->SetPointError(i, Elist[i]*2-MPDG, dNmh/N0[i]);
 
 		gg->Draw("ntrack", gg_cut, "goff");
 		double Ngg=gg->GetSelectedRows();
@@ -334,7 +337,45 @@ void draw_bhabha(void)
 	fun_ggsigma->FixParameter(3, 0); //From PDG table
 	ggsigma_g->Fit("fun_ggsigma");
 	ggsigmac->Write();
+  draw_and_fit_graph("hadr","Multihadrons registration efficiency",effmh_g,0);
 	tmp_file.Close();
 	cout << "Save tmp.root" << endl;
 	exit(0);
 };
+
+
+void draw_and_fit_graph(string name, string title, TGraphErrors * graph, int fitopt=0)
+{
+  string canvas_name = name+"_c";
+	TCanvas * canvas = new TCanvas(canvas_name.c_str(), title.c_str());
+	graph->SetMarkerStyle(21);
+	graph->Draw("ap");
+	graph->GetXaxis()->SetTitle("W-M_{#psi},  MeV");
+	graph->GetYaxis()->SetTitle(title.c_str());
+  string fun_name = name+"_f";
+  
+	TF1 * fun =0;
+  if(isres==1 || isres==2 || isres==3) 
+  {
+    fun = new TF1(fun_name.c_str(),&sigma, -10, 10, 4);
+    fun->SetParName(0, "QED");
+    fun->SetParName(1, "INT");
+    fun->SetParName(2, "RES");
+    fun->SetParName(3, "GAMMA");
+    fun->SetParameter(0, 1);
+    fun->SetParameter(1, 0);
+    fun->SetParameter(2, 0);
+    if(isred==2) fun->FixParameter(3,GAMMA_PSI2S); //fix only GAMMA
+    if(isres==1) FixParNoInterference(fun); //suppress interference  just  QED
+  }
+  if(isres==0)
+  {
+    fun = new TF1(fun_name.c_str(),"[0]+x*[1]", -10, 10, 4);
+    fun->SetParameter(0, 0);
+    fun->SetParameter(1, 0);
+  }
+	graph->Fit(fun_name.c_str());
+  graph->SetName(name.c_str());
+	canvas->Write();
+  graph->Write();
+}
