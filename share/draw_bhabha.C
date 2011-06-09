@@ -344,9 +344,9 @@ void draw_bhabha(void)
   draw_and_fit_graph("hadr","Multihadrons registration efficiency",effmh_g,0);
 
   /* Draw histograph with the angular distribution */
-  TCanvas * eetheta  = new TCanvas("eetheta_c","Angular distribution for ee events");
+  TCanvas * eethetac  = new TCanvas("eetheta_c","Angular distribution for ee events");
   eechain->Draw("cos(theta[0])",ee_cut);
-  eechain->Write();
+  eethetac->Write();
 	tmp_file.Close();
 	cout << "Save tmp.root" << endl;
 	exit(0);
