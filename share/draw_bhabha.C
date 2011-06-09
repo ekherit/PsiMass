@@ -160,7 +160,7 @@ void draw_bhabha(void)
 		{
 			cross_section = 1;
 			cross_section_error = 1;
-			N0[i] = 2e4;
+			N0[i] = 2e5;
 		}
 		CR0[i] = cross_section;
 		CR0err[i] = cross_section_error;
