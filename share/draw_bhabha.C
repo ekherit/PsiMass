@@ -352,7 +352,7 @@ void draw_bhabha(void)
   TH1F * his = eechain->GetHistogram();
   his->SetName("eehis");
   his->Write();
-  TTree * eetree = CopyTree(ee_cut);
+  TTree * eetree = eechain->CopyTree(ee_cut);
   eetree->Write();
 	tmp_file.Close();
   cout << "Total number of events: " << Ntotal << endl;
@@ -374,7 +374,9 @@ void draw_and_fit_graph(string name, string title, TGraphErrors * graph, int fit
 	TF1 * fun =0;
   if(fitopt==1 || fitopt==2 || fitopt==3) 
   {
-    fun = new TF1(fun_name.c_str(),&sigma, -10, 10, 4);
+    char buf[1024];
+    sprintf(buf,"%s",fun_name.c_str());
+    fun = new TF1(buf,&sigma, -10, 10, 4);
     fun->SetParName(0, "QED");
     fun->SetParName(1, "INT");
     fun->SetParName(2, "RES");
