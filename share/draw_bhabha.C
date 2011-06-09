@@ -217,6 +217,8 @@ void draw_bhabha(void)
 	cout << setw(12) << "Energy, MeV" << setw(10) << "Nmh" << setw(10)  
 		<< "Nee" << setw(10) << "Ngg" 
 		<< setw(15) << "See, nb" << setw(15) << "Sgg, nb" << endl;
+  TChain * eechain = new TChain("mdc","ee chain");
+  eechain->SetAlias("Eb","1.843*1");
 	for(unsigned i=0; i< Elist_size; i++)
 	{
 		TChain * mdc = new TChain("mdc", "mdc");
@@ -236,6 +238,7 @@ void draw_bhabha(void)
 			//cout << dir_name << " " << file_name<< endl;
 			int rcmdc = mdc->AddFile(file_name);
 			int rcgg = gg->AddFile(file_name);
+      eechain->AddFile(file_name);
 			//if(rcgg==0 || rcmdc==0) continue;
 		}
 		if(mdc->GetEntries()==0) continue;
@@ -317,27 +320,33 @@ void draw_bhabha(void)
 	nmh_g->Draw("ap");
 	nmh_g->GetXaxis()->SetTitle("W-M_{#psi},  MeV");
 	nmh_g->GetYaxis()->SetTitle("number of multihadronic  events"); */
-	TCanvas * ggsigmac = new TCanvas("sigma_gg_canvas", "#sigma_{gg}^{vis}");
-	ggsigma_g->SetMarkerStyle(21);
-	ggsigma_g->Draw("ap");
-	ggsigma_g->GetXaxis()->SetTitle("W-M_{#psi},  MeV");
-	ggsigma_g->GetYaxis()->SetTitle("#sigma_{vis},  nb");
-	TF1 * fun_sigma = new TF1("fun_ggsigma",&sigma, -10, 10, 4);
-	fun_ggsigma->SetParameter(0, 100);//nb
-	fun_ggsigma->SetParName(0, "QED");
-	fun_ggsigma->SetParName(1, "INT");
-	fun_ggsigma->SetParName(2, "RES");
-	fun_ggsigma->SetParName(3, "Gamma");
-	fun_ggsigma->SetParameter(1, 10);//nb
-	fun_ggsigma->SetParameter(2, 0);//nb
-	fun_ggsigma->SetParameter(3, 0);//MeV
-	//No resonance contribution here
-	fun_ggsigma->FixParameter(1, 0); 
-	fun_ggsigma->FixParameter(2, 0); 
-	fun_ggsigma->FixParameter(3, 0); //From PDG table
-	ggsigma_g->Fit("fun_ggsigma");
-	ggsigmac->Write();
+	//TCanvas * ggsigmac = new TCanvas("sigma_gg_canvas", "#sigma_{gg}^{vis}");
+	//ggsigma_g->SetMarkerStyle(21);
+	//ggsigma_g->Draw("ap");
+	//ggsigma_g->GetXaxis()->SetTitle("W-M_{#psi},  MeV");
+	//ggsigma_g->GetYaxis()->SetTitle("#sigma_{vis},  nb");
+	//TF1 * fun_sigma = new TF1("fun_ggsigma",&sigma, -10, 10, 4);
+	//fun_ggsigma->SetParameter(0, 100);//nb
+	//fun_ggsigma->SetParName(0, "QED");
+	//fun_ggsigma->SetParName(1, "INT");
+	//fun_ggsigma->SetParName(2, "RES");
+	//fun_ggsigma->SetParName(3, "Gamma");
+	//fun_ggsigma->SetParameter(1, 10);//nb
+	//fun_ggsigma->SetParameter(2, 0);//nb
+	//fun_ggsigma->SetParameter(3, 0);//MeV
+	////No resonance contribution here
+	//fun_ggsigma->FixParameter(1, 0); 
+	//fun_ggsigma->FixParameter(2, 0); 
+	//fun_ggsigma->FixParameter(3, 0); //From PDG table
+	//ggsigma_g->Fit("fun_ggsigma");
+	//ggsigmac->Write();
+  draw_and_fit_graph("gg","gamma gamma events",ggsigma_g,0);
   draw_and_fit_graph("hadr","Multihadrons registration efficiency",effmh_g,0);
+
+  /* Draw histograph with the angular distribution */
+  TCanvas * eetheta  = new TCanvas("eetheta_c","Angular distribution for ee events");
+  eechain->Draw("cos(theta[0])",ee_cut);
+  eechain->Write();
 	tmp_file.Close();
 	cout << "Save tmp.root" << endl;
 	exit(0);
