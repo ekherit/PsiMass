@@ -219,6 +219,7 @@ void draw_bhabha(void)
 		<< setw(15) << "See, nb" << setw(15) << "Sgg, nb" << endl;
   TChain * eechain = new TChain("mdc","ee chain");
   eechain->SetAlias("Eb","1.843*1");
+  double Ntotal = 0; //total number of events in all points.
 	for(unsigned i=0; i< Elist_size; i++)
 	{
 		TChain * mdc = new TChain("mdc", "mdc");
@@ -242,6 +243,7 @@ void draw_bhabha(void)
 			//if(rcgg==0 || rcmdc==0) continue;
 		}
 		if(mdc->GetEntries()==0) continue;
+    Ntotal+=N0[i];
 		mdc->Draw("ntrack", ee_cut, "goff");
 		double Nee=mdc->GetSelectedRows();
 		double dNee = sqrt(Nee*(1.-Nee/N0[i]));
@@ -345,9 +347,15 @@ void draw_bhabha(void)
 
   /* Draw histograph with the angular distribution */
   TCanvas * eethetac  = new TCanvas("eetheta_c","Angular distribution for ee events");
-  eechain->Draw("cos(theta[0])",ee_cut);
+  eechain->Draw("abs(cos(theta[0]))",ee_cut);
   eethetac->Write();
+  TH1F * his = eechain->GetHistogram();
+  his->SetName("eehis");
+  his->Write();
+  TTree * eetree = CopyTree(ee_cut);
+  eetree->Write();
 	tmp_file.Close();
+  cout << "Total number of events: " << Ntotal << endl;
 	cout << "Save tmp.root" << endl;
 	exit(0);
 };
