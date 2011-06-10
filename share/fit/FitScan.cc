@@ -1,11 +1,10 @@
 #define _HESSE_ 1 // calculate errors with HESSE
 #define _MINOs_ 1 // use minos errors
-
 #include<iostream>
 #include<stdlib.h>
 #include<iomanip>
 #include<math.h>
-#include <complex.h>
+#include <complex>
 #include<string>
 #include<assert.h>
 #include<stdio.h>
@@ -59,6 +58,9 @@ TROOT root("ROOTPROGRAM","ROOTPROGRAM", initfuncs);
 using namespace std;
 //Double_t epsilon=0.000001;
 //#include "FitTools/jpsiM.h"
+
+#include "../interference.h"
+
 #define  NumMaxP 120
 Double_t EMaxRange=1550.;
 Double_t EMinRange=1530.;
@@ -150,8 +152,7 @@ double CHI2_ENERGY;
 double CHI2_SIGNAL;
 
 
-inline double sq(double x) { return x*x; }
-
+#include "../utils.h"
 static struct argp_option options[] = {
   {"verbose",'v',0,0,"produce verbose information",100},
   {"quickly",'q',0,0," fast mode",100},
@@ -285,7 +286,7 @@ int main(int argc, char **argv)
 
   if(arguments.SW==1) USE_CBS_SIGMAW=true;
   if(arguments.use_chi2==1) USE_CHI2=true;
-	if(arguments.lum_cor==1) 
+	if(arguments.lum_cor==1 && arguments.lum==1) 
 	{
 		LUM_COR=true;
 		cout << "Use luminosity corrections." << endl;
@@ -943,6 +944,8 @@ void fcnResMult(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
       //parmh[idRSw]=SigmaWInScan[i];
       SigmaWChi2+= sq((parmh[idRSw] - SigmaWInScan[i])/dSigmaWInScan[i]);
     }
+    parmh[idReff]=par[1]*MhadrCor(2*Energy);
+    //cout << "Correction to efficiency: " << (MhadrCor(2*Energy)-1)*1000. << " ppm" << endl;
     sigmaMH=CrSOniumR(_MethodAzimov,_IdPsiPrime,Energy,parmh);  
     sigmaBB=CrossSBhabhaPP(Energy,&CrossBhabha);                        
     sigmaGG=CrossSBhabhaPP(Energy,&CrossGG);                        
@@ -971,7 +974,9 @@ void fcnResMult(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
         break;
       default:
         nFull = NLum[i];
-        lumFull=LumInScan[i]*(LUM_COR ? BBLumCorr[i] : 1);
+        //lumFull=LumInScan[i]*(LUM_COR ? BBLumCorr[i] : 1);
+        lumFull=LumInScan[i]*(LUM_COR ? BBIntCor(Energy*2, par[3]) : 1);
+        //cout << "W=" << Energy*2 << " cor =" << BBIntCor(Energy*2) << endl;
         Nexp=NLum[i];
         break;
     }

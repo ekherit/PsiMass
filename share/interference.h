@@ -18,7 +18,10 @@
 
 #ifndef IBN_BHABHA_INTERFERENCE_H
 #define IBN_BHABHA_INTERFERENCE_H
+
 #include "utils.h"
+#include <iostream>
+
 const double MPDG=3686.09;
 const double PI = 3.1415926535897;
 const double ALPHA = 1./136.03599911;
@@ -29,7 +32,7 @@ const double ME = 0.510998910; //MeV
 const double HC2 = 0.389379304*1e6*1e6; //MeV^2*nbarn
 
 #include <TF1.h>
-double sigma(double *x,  double *p)
+inline double sigma(double *x,  double *p)
 {
 	double W = MPDG+x[0];
 	if(W<=0) return 1e100;
@@ -53,14 +56,109 @@ double sigma(double *x,  double *p)
 }
 
 //energy spread
-double spread(double dW,   double S)
+inline double spread(double dW,   double S)
 {
 	return 1./(sqrt(2*PI)*S)*exp(-0.5*sq(dW/S));
 }
 
 
+
+
+
+double ee_interference(double W, double theta);
+
+double ee_interference(double W, double cos_min, double cos_max);
+
+inline double ee_interference_vs_W(double *x, double *p)
+{
+    return  ee_interference(x[0], p[0], p[1]);
+}
+
+
+
+inline double cs_bhabha_with_interference(double *x, double *p)
+{
+  double W = x[0]+M_PSI2S;
+  double QED = p[0];
+  double INT = p[1];
+  //this parameters should be fixed
+  double cmin  = p[2];
+  double cmax = p[3]; 
+	double C = QED*sq(M_PSI2S/W); //continuum
+  double I = INT*2.0*ee_interference(W, cmin, cmax); 
+  /*
+   *  The 2.0 must be becase integration over angle was made only for one side
+   *  cmin and cmax here is absolute values of the cos theta.
+   */
+  return C+I;
+}
+
+inline double interference_correction(double W, double QED, double INT, double cmin, double cmax)
+{
+	double C = QED*sq(M_PSI2S/W); //continuum
+  double I = INT*2.0*ee_interference(W, cmin, cmax); 
+  return I/C;
+}
+
+inline double interference_correction(double *x, double *p)
+{
+  double W = x[0]+M_PSI2S;
+  double QED = p[0];
+  double INT = p[1];
+  //this parameters should be fixed
+  double cmin  = p[2];
+  double cmax = p[3]; 
+  return interference_correction(W,QED,INT,cmin,cmax);
+	//double C = QED*sq(M_PSI2S/W); //continuum
+  //double I = INT*2.0*ee_interference(W, cmin, cmax); 
+  ///*
+  // *  The 2.0 must be becase integration over angle was made only for one side
+  // *  cmin and cmax here is absolute values of the cos theta.
+  // */
+  //return I/C;
+}
+
+inline double ee_interference2_vs_W(double *x, double *p)
+{
+    return  ee_interference(x[0], p[0]);
+}
+
+inline double ee_interference_vs_theta(double *x, double *p)
+{
+    return  ee_interference(p[0], x[0]);
+}
+
+double ee_interference(double W, double theta_min, double theta_max);
+
+double ee_interference_spreaded(double W, double spread, double eff, double cmin, double cmax);
+
+double ee_cs_qed_spreaded(double W, double spread, double qed);
+
+inline double ee_interference_spreaded(double *x, double *p)
+{
+  double W = x[0]+M_PSI2S;
+  double SPREAD=p[0];
+  double EFF = p[1];
+  double CMIN = p[2];
+  double CMAX = p[3];
+  return ee_interference_spreaded(W,SPREAD,EFF, CMIN,CMAX);
+}
+
+
+inline double ee_int_cor(double *x, double *p)
+{
+  double W = x[0]+M_PSI2S;
+  double SPREAD=p[0];
+  double QED = p[1];
+  double EFF = p[2];
+  double CMIN = p[3];
+  double CMAX = p[4];
+  return ee_interference_spreaded(W,SPREAD, EFF, CMIN, CMAX)/ee_cs_qed_spreaded(W,SPREAD,QED);
+};
+
+
 //subintegral 
-double sigma_spread_sub(double *x,  double *P)
+inline double sigma_spread_sub(double *x,  double *P)
 {
 	double W=P[0];
 	double S=P[1];
@@ -75,7 +173,7 @@ double sigma_spread_sub(double *x,  double *P)
 
 
 //the bhabha with the interference and energy spread
-double sigma_spread(double *x,  double *par)
+inline double sigma_spread(double *x,  double *par)
 {
 	double p[6];
 	p[0] = x[0]; //beam energy
@@ -92,67 +190,42 @@ double sigma_spread(double *x,  double *par)
 	return res;
 }
 
+//double BBIntCor(double W)
+//{
+//	//this number are taken from MC draw_bhabha
+//	double SPREAD = 1.58; //MeV
+//	double QED = 125.057; //nb
+//	double INT = 10.7287; //nb
+//	double RES = -4.34519; //nb
+//	double GAMMA = 0.304; //MeV
+//  double cor=0; //result of calculation
+//	TF1 * sfun = new TF1("fbbcor_tmp",&sigma_spread,-10, 10, 5 );
+//	double par[5];
+//	par[0]=SPREAD; //Beam spread
+//	par[1] = 0;
+//	par[2]=INT/QED;//INT
+//	par[3]=RES/QED;//RES
+//	par[4]=GAMMA;//GAMMA
+//	sfun->SetParameters(par);
+//  cor = 1./(1.+sfun->Eval(W-MPDG));
+//  delete sfun;
+//	return cor;
+//};
 
-double BBIntCor(double W)
+inline double BBIntCor(double W,double SPREAD=1.58)
 {
-	//this number are taken from MC draw_bhabha
-	double SPREAD = 1.58; //MeV
-	double QED = 125.057; //nb
-	double INT = 10.7287; //nb
-	double RES = -4.34519; //nb
-	double GAMMA = 0.304; //MeV
-  double cor=0; //result of calculation
-	TF1 * sfun = new TF1("fbbcor_tmp",&sigma_spread,-10, 10, 5 );
-	double par[5];
-	par[0]=SPREAD; //Beam spread
-	par[1] = 0;
-	par[2]=INT/QED;//INT
-	par[3]=RES/QED;//RES
-	par[4]=GAMMA;//GAMMA
-	sfun->SetParameters(par);
-  cor = 1./(1.+sfun->Eval(W-MPDG));
-  delete sfun;
-	return cor;
-};
-
-double ee_interference(double W, double theta);
-
-double ee_interference(double W, double cos_min, double cos_max);
-
-double ee_interference_vs_W(double *x, double *p)
-{
-    return  ee_interference(x[0], p[0], p[1]);
+  double QED = 124.7;
+  double EFF = 0.5545;
+  double CMIN = 0.86;
+  double CMAX = 0.93;
+  double cor = ee_interference_spreaded(W,SPREAD, EFF, CMIN, CMAX)/ee_cs_qed_spreaded(W,SPREAD,QED);
+  return 1./(1.+cor);
 }
 
-
-
-double cs_bhabha_with_interference(double *x, double *p)
+inline double MhadrCor(double W)
 {
-  double W = x[0];
-  double QED = p[0];
-  double INT = p[1];
-  //this parameters should be fixed
-  double cmin  = p[2];
-  double cmax = p[3]; 
-	double C = QED*sq(MPDG/W); //continuum
-  double I = INT*2.0*ee_interference(W, cmin, cmax); 
-  /*
-   *  The 2.0 must be becase integration over angle was made only for one side
-   *  cmin and cmax here is absolute values of the cos theta.
-   */
-  return C+I;
+  double k=5.164e-4;
+  return  1.+ k*(W-M_PSI2S);
 }
-
-double ee_interference2_vs_W(double *x, double *p)
-{
-    return  ee_interference(x[0], p[0]);
-}
-
-double ee_interference_vs_theta(double *x, double *p)
-{
-    return  ee_interference(p[0], x[0]);
-}
-
-double ee_interference(double W, double theta_min, double theta_max);
 
 #endif

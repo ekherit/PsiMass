@@ -443,7 +443,6 @@ void make_scan_points(vector <ScanPoint_t> &pv)
 
 void make_result(void)
 {
-
   //Cut used in selection;
   TCut  mh_cut;
   TCut  ee_cut;

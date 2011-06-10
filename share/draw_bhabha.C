@@ -170,40 +170,37 @@ void draw_bhabha(void)
 		cr0g->SetPointError(i, 0, CR0err[i]);
 	}
 	gStyle->SetOptFit();
-	TF1 * fun_cr0 = new TF1("fun_cr0",&sigma, -10, 10, 4);
-	fun_cr0->SetParameter(0, 900);//nb
-	fun_cr0->SetParameter(1, 30);//nb
-	fun_cr0->SetParameter(2, 30);//nb
-	fun_cr0->SetParameter(3, 0.3);//MeV
-	//fun_cr0->FixParameter(3, 0.304); //From PDG table
+	//TF1 * fun_cr0 = new TF1("fun_cr0",&sigma, -10, 10, 4);
+	//fun_cr0->SetParameter(0, 900);//nb
+	//fun_cr0->SetParameter(1, 30);//nb
+	//fun_cr0->SetParameter(2, 30);//nb
+	//fun_cr0->SetParameter(3, 0.3);//MeV
+	////fun_cr0->FixParameter(3, 0.304); //From PDG table
+	//fun_cr0->SetParName(0, "QED");
+	//fun_cr0->SetParName(1, "INT");
+	//fun_cr0->SetParName(2, "RES");
+	//fun_cr0->SetParName(3, "Gamma");
+
+	TF1 * fun_cr0 = new TF1("fun_cr0",&cs_bhabha_with_interference, -10, 10, 4);
 	fun_cr0->SetParName(0, "QED");
 	fun_cr0->SetParName(1, "INT");
-	fun_cr0->SetParName(2, "RES");
-	fun_cr0->SetParName(3, "Gamma");
+	fun_cr0->SetParName(2, "COS_MIN");
+	fun_cr0->SetParName(3, "COS_MAX");
+	fun_cr0->SetParameter(0, 900);//nb
+	fun_cr0->SetParameter(1, 1);//nb
+	fun_cr0->FixParameter(2, 0);//nb
+	fun_cr0->FixParameter(3, cos(15./180.*3.1415926535));//MeV
+	//fun_cr0->FixParameter(3, 0.304); //From PDG table
 	//FixParNoInterference(fun_cr0);
 	TCanvas * cr0c = new TCanvas("cr0c", "Total crossection from generator");
 	cr0g->SetMarkerStyle(21);
 	cr0g->Draw("ap");
 	cr0g->GetXaxis()->SetTitle("W-M_{#psi},  MeV");
 	cr0g->GetYaxis()->SetTitle("#sigma_{ee},  nb");
-	TF1 * cr0_sfun = new TF1("sfun_cr0",&sigma_spread,-10, 10, 5 );
-	double par_cr0[5];
-	par_cr0[0]=1; //some spread.
-	par_cr0[1]=900;
-	par_cr0[2]=0;
-	par_cr0[3]=0;
-	par_cr0[4]=0.304; //psip width
-	cr0_sfun->SetParameters(par_cr0);
-	cr0_sfun->SetParLimits(0,0.1, 3);
-	//cr0_sfun->SetParLimits(2,-100, 100);
-	//cr0_sfun->SetParLimits(3,-100, 100);
-	cr0_sfun->FixParameter(4, 0.304); //From PDG table
 	cr0g->Fit("fun_cr0");
-	//cr0g->Fit("sfun_cr0");
 	cr0g->SetName("cr0g");
 	cr0c->Write();
 	cr0g->Write();
-
 
 	TCut mh_cut,  ee_cut,  gg_cut;
 	set_selection(7, mh_cut,  ee_cut,  gg_cut);
@@ -368,8 +365,8 @@ void draw_bhabha(void)
   TH1F * his = eechain->GetHistogram();
   his->SetName("eehis");
   his->Write();
-  TTree * eetree = eechain->CopyTree(ee_cut);
-  eetree->Write();
+  //TTree * eetree = eechain->CopyTree(ee_cut);
+  //eetree->Write();
 	tmp_file.Close();
   cout << "Total number of events: " << Ntotal << endl;
 	cout << "Save tmp.root" << endl;

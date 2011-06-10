@@ -63,7 +63,8 @@ inline double ee_interference(double W, double cos_min, double cos_max)
       0.5*(sq(cos_max)-sq(cos_min)+6.*(cos_max-cos_min))); 
   double I = - 1.5*ALPHA*gee*I_angular_integral*F.real();
   double result = HC2/sq(M_PSI2S)*(R + I); //result should be in nano barn
-  cout << "Res = " << R << ", Inte = " << I <<  " res = " << result << " Rang = " << R_angular_integral/2./M_PI << " Iang="<< I_angular_integral/2./M_PI << endl;
+  //cout << "W=" << W << " Res = " << R << ", Inte = " << I <<  " res = " << result << " Rang = " << R_angular_integral/2./M_PI << " Iang="<< I_angular_integral/2./M_PI << endl;
+  //if(isnan(result)) return 1e300;
   return result; //result should be in nano barn
 }
 
@@ -78,3 +79,53 @@ class eeint_sub
       return ee_interference(W,theta)*sin(theta)*2.*M_PI;
     } 
 };
+
+
+class ee_cs_spreaded_sub
+{
+  const double W; //c.m. beam energy, MeV
+  const double SPREAD; //beam energy spread in c.m.,MeV
+  const double QED; //QED part in nb.
+  const double EFF; //registration efficiency for interference
+  const double CMIN; //minimum cosinus
+  const double CMAX;//maximum cosinus
+  public:
+  ee_cs_spreaded_sub(double w, double s, double qed, double eff, double cmin, double cmax):
+      W(w), SPREAD(s),QED(qed), EFF(eff), CMIN(cmin), CMAX(cmax){}
+  double operator()(double w)
+  {
+    double C = QED*sq(M_PSI2S/w);
+    double I = (EFF == 0) ? 0  : EFF*2.0*ee_interference(w, CMIN, CMAX); 
+    return  (I+C)*spread(w-W,SPREAD);
+  }
+};
+
+//class ee_interference_spreaded_sub
+//{
+//  const double W; //c.m. beam energy, MeV
+//  const double SPREAD; //beam energy spread in c.m.,MeV
+//  const double EFF; //registration efficiency for interference
+//  const double CMIN; //minimum cosinus
+//  const double CMAX;//maximum cosinus
+//  const double QED; //QED part in nb.
+//  public:
+//  ee_interference_spreaded_sub(double w, double s, double eff, double cmin, double cmax, double qed=0):
+//      W(w), SPREAD(s), EFF(eff), CMIN(cmin), CMAX(cmax), QED(qed){}
+//  double operator()(double w)
+//  {
+//    double C = QED*sq(M_PSI2S/w);
+//    double I = EFF*2.0*ee_interference(w, CMIN, CMAX); 
+//    return  (I+C)*spread(w-W,SPREAD);
+//  }
+//};
+
+double ee_interference_spreaded(double W, double spread, double int_eff, double cmin, double cmax)
+{
+  return ibn::dgaus(ee_cs_spreaded_sub(W,spread,0, int_eff,cmin,cmax),W-spread*5,W+spread*5,1e-12);
+}
+
+double ee_cs_qed_spreaded(double W, double spread, double qed)
+{
+  return ibn::dgaus(ee_cs_spreaded_sub(W,spread, qed, 0,0,0),W-spread*5,W+spread*5,1e-12);
+}
+
