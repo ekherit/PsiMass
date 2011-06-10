@@ -7,8 +7,8 @@
   {
     char buf[1024];
     sprintf(buf,"f%d",i);
-    TF1 * f = new TF1(buf,&ee_interference_vs_W,3680,3690,1);
-    f->SetParameter(0,deg[i]/180.*3.1415926535);
+    TF1 * f = new TF1(buf,&ee_interference2_vs_W,3680,3690,1);
+    f->SetParameter(0,deg[i]/180.*3.1415926);
     f->SetLineColor(i+1);
     if(i==0) f->Draw();
     else f->Draw("same");
@@ -17,4 +17,8 @@
   }
   l1->Draw();
   TCanvas * c2 = new TCanvas;
+  TF1 * f2 = new TF1(buf,&ee_interference_vs_W,3680,3690,2);
+  f2->SetParameter(0,0.86);
+  f2->SetParameter(1,0.93);
+  f2->Draw();
 }

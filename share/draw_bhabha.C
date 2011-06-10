@@ -24,9 +24,9 @@
 const unsigned JOB_NUMBER=4;
 //string file_prefix="bbyg_gg_";
 //string file_prefix="bhwide_";
-//string file_prefix="bbyg_ee_";
+string file_prefix="bbyg_ee_";
 //string file_prefix="bbyg_geom_ee_";
-string file_prefix="mcpsip_";
+//string file_prefix="mcpsip_";
 
 void FixParNoInterference(TF1 * f)
 {
@@ -37,6 +37,7 @@ void FixParNoInterference(TF1 * f)
 
 void draw_bhabha(void)
 {
+  gSystem->CompileMacro("interference.cpp","kO");
 	unsigned Elist_size=15;
 	double Elist[15]={1839.0, 
                   1841.4, 
@@ -291,6 +292,21 @@ void draw_bhabha(void)
 	//FixParNoInterference(fun_sigma);
 	sigma_g->Fit("fun_sigma", "E");
 
+  TF1 * fun_real_interf = new TF1("fun_real_interf",&cs_bhabha_with_interference, -10,10,4);
+  //define parameters
+  fun_real_interf->SetParName(0,"QED");
+  fun_real_interf->SetParName(1,"INT");
+  fun_real_interf->SetParName(2,"COS_MIN");
+  fun_real_interf->SetParName(3,"COS_MAX");
+  //Set initial fit value for parameters close to expected
+  fun_real_interf->SetParameter(0,125);
+  fun_real_interf->SetParameter(1,1);
+  //Fix geometrical parameters.
+  fun_real_interf->SetFixParameter(2,0.86);
+  fun_real_interf->SetFixParameter(3,0.93);
+  fun_real_interf->SetLineColor(kRed);
+  sigma_g->Fit("fun_real_interf","S"); //Fit on the same graphs.
+
 	TF1 * sfun = new TF1("sfun",&sigma_spread,-10, 10, 5 );
 	double par[5];
 	par[0]=1.58; //Beam spread
@@ -372,10 +388,10 @@ void draw_and_fit_graph(string name, string title, TGraphErrors * graph, int fit
   string fun_name = name+"_f";
   
 	TF1 * fun =0;
+  char buf[1024];
+  sprintf(buf,"%s",fun_name.c_str());
   if(fitopt==1 || fitopt==2 || fitopt==3) 
   {
-    char buf[1024];
-    sprintf(buf,"%s",fun_name.c_str());
     fun = new TF1(buf,&sigma, -10, 10, 4);
     fun->SetParName(0, "QED");
     fun->SetParName(1, "INT");
@@ -393,7 +409,8 @@ void draw_and_fit_graph(string name, string title, TGraphErrors * graph, int fit
     fun->SetParameter(0, 0);
     fun->SetParameter(1, 0);
   }
-	graph->Fit(fun_name.c_str());
+	//graph->Fit(fun_name.c_str());
+	graph->Fit(buf);
   graph->SetName(name.c_str());
 	canvas->Write();
   graph->Write();

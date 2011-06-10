@@ -21,12 +21,12 @@
 #include "utils.h"
 const double MPDG=3686.09;
 const double PI = 3.1415926535897;
-const double ALPHA = 1./136.037;
+const double ALPHA = 1./136.03599911;
 const double GAMMAEE_PSI2S = 0.00235; //MeV
 const double GAMMA_PSI2S = 0.304; // MeV
 const double M_PSI2S  = 3686.09; //MeV
 const double ME = 0.510998910; //MeV
-const double HC2 = 0.389379304*1e6*1e3; //MeV^2*nbarn
+const double HC2 = 0.389379304*1e6*1e6; //MeV^2*nbarn
 
 #include <TF1.h>
 double sigma(double *x,  double *p)
@@ -115,9 +115,31 @@ double BBIntCor(double W)
 	return cor;
 };
 
-inline double ee_interference(double W, double theta);
+double ee_interference(double W, double theta);
+
+double ee_interference(double W, double cos_min, double cos_max);
 
 double ee_interference_vs_W(double *x, double *p)
+{
+    return  ee_interference(x[0], p[0], p[1]);
+}
+
+
+
+double cs_bhabha_with_interference(double *x, double *p)
+{
+  double W = x[0];
+  double QED = p[0];
+  double INT = p[1];
+  //this parameters should be fixed
+  double cmin  = p[2];
+  double cmax = p[3]; 
+	double C = QED*sq(MPDG/W); //continuum
+  double I = INT*ee_interference(W, cmin, cmax);
+  return C+I;
+}
+
+double ee_interference2_vs_W(double *x, double *p)
 {
     return  ee_interference(x[0], p[0]);
 }
