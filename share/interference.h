@@ -135,7 +135,11 @@ double cs_bhabha_with_interference(double *x, double *p)
   double cmin  = p[2];
   double cmax = p[3]; 
 	double C = QED*sq(MPDG/W); //continuum
-  double I = INT*ee_interference(W, cmin, cmax);
+  double I = INT*2.0*ee_interference(W, cmin, cmax); 
+  /*
+   *  The 2.0 must be becase integration over angle was made only for one side
+   *  cmin and cmax here is absolute values of the cos theta.
+   */
   return C+I;
 }
 

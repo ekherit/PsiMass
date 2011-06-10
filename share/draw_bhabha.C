@@ -302,8 +302,8 @@ void draw_bhabha(void)
   fun_real_interf->SetParameter(0,125);
   fun_real_interf->SetParameter(1,1);
   //Fix geometrical parameters.
-  fun_real_interf->SetFixParameter(2,0.86);
-  fun_real_interf->SetFixParameter(3,0.93);
+  fun_real_interf->FixParameter(2,0.86);
+  fun_real_interf->FixParameter(3,0.93);
   fun_real_interf->SetLineColor(kRed);
   sigma_g->Fit("fun_real_interf","S"); //Fit on the same graphs.
 
