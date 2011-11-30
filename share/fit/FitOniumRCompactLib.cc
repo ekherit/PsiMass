@@ -300,6 +300,24 @@ Double_t FCrossSection(Double_t* Eb,Double_t* par)
   return cross;
 }
 
+Double_t myJPsiCrossSection(Double_t* Eb,Double_t* par)
+{
+//     par(0) = constant, par(1) = total cross section,
+//     par(2) = mass/2,   par(3) = sigma full  //xs [10^{-33} cm^2]
+  double y=Eb[0];
+  double cross=CrSOniumR(_MethodAzimov,_IdJPsi,y,par);
+  return cross;
+}
+
+Double_t myPsiPrimeCrossSection(Double_t* Eb,Double_t* par)
+{
+//     par(0) = constant, par(1) = total cross section,
+//     par(2) = mass/2,   par(3) = sigma full  //xs [10^{-33} cm^2]
+  double y=Eb[0];
+  double cross=CrSOniumR(_MethodAzimov,_IdPsiPrime,y,par);
+  return cross;
+}
+
 Double_t CrSOniumR(Int_t Method,Int_t Id,Double_t Eb,Double_t* par)
 {
      Double_t y=Eb;
