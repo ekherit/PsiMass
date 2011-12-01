@@ -944,7 +944,8 @@ void fcnResMult(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
       //parmh[idRSw]=SigmaWInScan[i];
       SigmaWChi2+= sq((parmh[idRSw] - SigmaWInScan[i])/dSigmaWInScan[i]);
     }
-    parmh[idReff]=par[1]*MhadrCor(2*Energy);
+    //Correction to efficiency
+    //parmh[idReff]=par[1]*MhadrCor(2*Energy);
     //cout << "Correction to efficiency: " << (MhadrCor(2*Energy)-1)*1000. << " ppm" << endl;
     sigmaMH=CrSOniumR(_MethodAzimov,_IdPsiPrime,Energy,parmh);  
     sigmaBB=CrossSBhabhaPP(Energy,&CrossBhabha);                        

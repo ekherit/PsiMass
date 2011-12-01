@@ -78,7 +78,7 @@ inline double ee_interference_vs_W(double *x, double *p)
 
 inline double cs_bhabha_with_interference(double *x, double *p)
 {
-  double W = x[0]+M_PSI2S;
+  double W = x[0]+M_PSI2S-p[4];
   double QED = p[0];
   double INT = p[1];
   //this parameters should be fixed
@@ -128,11 +128,24 @@ inline double ee_interference_vs_theta(double *x, double *p)
     return  ee_interference(p[0], x[0]);
 }
 
+double ee_cs_spreaded(double W, double spread, double qed, double eff, double cmin, double cmax);
+
 double ee_interference(double W, double theta_min, double theta_max);
 
 double ee_interference_spreaded(double W, double spread, double eff, double cmin, double cmax);
 
 double ee_cs_qed_spreaded(double W, double spread, double qed);
+
+inline double ee_cs_spreaded(double *x, double *p)
+{
+  double W = x[0]+M_PSI2S;
+  double SPREAD=p[0];
+  double QED=p[1];
+  double EFF = p[2];
+  double CMIN = p[3];
+  double CMAX = p[4];
+  return ee_cs_spreaded(W,SPREAD,QED, EFF, CMIN,CMAX);
+}
 
 inline double ee_interference_spreaded(double *x, double *p)
 {
@@ -153,7 +166,7 @@ inline double ee_int_cor(double *x, double *p)
   double EFF = p[2];
   double CMIN = p[3];
   double CMAX = p[4];
-  return ee_interference_spreaded(W,SPREAD, EFF, CMIN, CMAX)/ee_cs_qed_spreaded(W,SPREAD,QED);
+  return 100.*ee_interference_spreaded(W,SPREAD, EFF, CMIN, CMAX)/ee_cs_qed_spreaded(W,SPREAD,QED);
 };
 
 
@@ -215,7 +228,8 @@ inline double sigma_spread(double *x,  double *par)
 inline double BBIntCor(double W,double SPREAD=1.58)
 {
   double QED = 124.7;
-  double EFF = 0.5545;
+  double EFF = 0.5545; //From psip->ee efficiency t
+  //double EFF = 0.3452;// from fit of babayaga mc
   double CMIN = 0.86;
   double CMAX = 0.93;
   double cor = ee_interference_spreaded(W,SPREAD, EFF, CMIN, CMAX)/ee_cs_qed_spreaded(W,SPREAD,QED);

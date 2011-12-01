@@ -119,6 +119,11 @@ class ee_cs_spreaded_sub
 //  }
 //};
 
+double ee_cs_spreaded(double W, double spread, double qed, double int_eff, double cmin, double cmax)
+{
+  return ibn::dgaus(ee_cs_spreaded_sub(W,spread, qed, int_eff,cmin,cmax),W-spread*5,W+spread*5,1e-12);
+}
+
 double ee_interference_spreaded(double W, double spread, double int_eff, double cmin, double cmax)
 {
   return ibn::dgaus(ee_cs_spreaded_sub(W,spread,0, int_eff,cmin,cmax),W-spread*5,W+spread*5,1e-12);
