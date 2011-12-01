@@ -113,14 +113,16 @@ Double_t CrSOniumRAzimov(Int_t Id,Double_t Eb,Double_t* par)
     Double_t RS=rangescale*SiW;
     Double_t rIntegral=0.0;
     if(Id==_IdPsiPrime){
-      rIntegral= HANDLEDGAUSS(K_FuncRInterfPsiP,ParF[idW]-3.5*RS,ParF[idW]+3.5*RS,ParF,1.e-12)+
+      rIntegral= 
+      HANDLEDGAUSS(K_FuncRInterfPsiP,ParF[idW]-3.5*RS,ParF[idW]+3.5*RS,ParF,1.e-12)+
       HANDLEDGAUSS(K_FuncRInterfPsiP,ParF[idW]-7.0*RS,ParF[idW]-3.5*RS,ParF,1.e-12)+
       HANDLEDGAUSS(K_FuncRInterfPsiP,ParF[idW]-20.*RS,ParF[idW]-7.0*RS,ParF,1.e-12)+
       HANDLEDGAUSS(K_FuncRInterfPsiP,ParF[idW]+3.5*RS,ParF[idW]+7.0*RS,ParF,1.e-12)+
       HANDLEDGAUSS(K_FuncRInterfPsiP,ParF[idW]+7.0*RS,ParF[idW]+20.*RS,ParF,1.e-12);
       }
     else if(Id==_IdJPsi){
-      rIntegral= HANDLEDGAUSS(K_FuncRInterfJPsi,ParF[idW]-3.5*RS,ParF[idW]+3.5*RS,ParF,1.e-9)+
+      rIntegral= 
+      HANDLEDGAUSS(K_FuncRInterfJPsi,ParF[idW]-3.5*RS,ParF[idW]+3.5*RS,ParF,1.e-9)+
       HANDLEDGAUSS(K_FuncRInterfJPsi,ParF[idW]-7.0*RS,ParF[idW]-3.5*RS,ParF,1.e-7)+
       HANDLEDGAUSS(K_FuncRInterfJPsi,ParF[idW]-20.*RS,ParF[idW]-7.0*RS,ParF,1.e-5)+
       HANDLEDGAUSS(K_FuncRInterfJPsi,ParF[idW]+3.5*RS,ParF[idW]+7.0*RS,ParF,1.e-7)+
@@ -225,61 +227,61 @@ Double_t HANDLEDGAUSS(Double_t F(Double_t W,Double_t* parf),Double_t A,Double_t 
   if(B<=A){goto end;}
   CONST=0.005/fabs(B-A);
   BB=A;
-  case1:     AA=BB; BB=B;
-  case2:     C1=0.5*(BB+AA); C2=0.5*(BB-AA);   
-  S16=wgauss16[0]*(F(C1+C2*xgauss16[0],par)+F(C1-C2*xgauss16[0],par))+
-      wgauss16[1]*(F(C1+C2*xgauss16[1],par)+F(C1-C2*xgauss16[1],par))+
-      wgauss16[2]*(F(C1+C2*xgauss16[2],par)+F(C1-C2*xgauss16[2],par))+
-      wgauss16[3]*(F(C1+C2*xgauss16[3],par)+F(C1-C2*xgauss16[3],par))+
-      wgauss16[4]*(F(C1+C2*xgauss16[4],par)+F(C1-C2*xgauss16[4],par))+
-      wgauss16[5]*(F(C1+C2*xgauss16[5],par)+F(C1-C2*xgauss16[5],par))+
-      wgauss16[6]*(F(C1+C2*xgauss16[6],par)+F(C1-C2*xgauss16[6],par))+
-      wgauss16[7]*(F(C1+C2*xgauss16[7],par)+F(C1-C2*xgauss16[7],par));  
+case1:     AA=BB; BB=B;
+case2:     C1=0.5*(BB+AA); C2=0.5*(BB-AA);   
+           S16=wgauss16[0]*(F(C1+C2*xgauss16[0],par)+F(C1-C2*xgauss16[0],par))+
+             wgauss16[1]*(F(C1+C2*xgauss16[1],par)+F(C1-C2*xgauss16[1],par))+
+             wgauss16[2]*(F(C1+C2*xgauss16[2],par)+F(C1-C2*xgauss16[2],par))+
+             wgauss16[3]*(F(C1+C2*xgauss16[3],par)+F(C1-C2*xgauss16[3],par))+
+             wgauss16[4]*(F(C1+C2*xgauss16[4],par)+F(C1-C2*xgauss16[4],par))+
+             wgauss16[5]*(F(C1+C2*xgauss16[5],par)+F(C1-C2*xgauss16[5],par))+
+             wgauss16[6]*(F(C1+C2*xgauss16[6],par)+F(C1-C2*xgauss16[6],par))+
+             wgauss16[7]*(F(C1+C2*xgauss16[7],par)+F(C1-C2*xgauss16[7],par));  
 
-  S32=wgauss32[0]*(F(C1+C2*xgauss32[0],par)+F(C1-C2*xgauss32[0],par))+
-      wgauss32[1]*(F(C1+C2*xgauss32[1],par)+F(C1-C2*xgauss32[1],par))+
-      wgauss32[2]*(F(C1+C2*xgauss32[2],par)+F(C1-C2*xgauss32[2],par))+
-      wgauss32[3]*(F(C1+C2*xgauss32[3],par)+F(C1-C2*xgauss32[3],par))+
-      wgauss32[4]*(F(C1+C2*xgauss32[4],par)+F(C1-C2*xgauss32[4],par))+
-      wgauss32[5]*(F(C1+C2*xgauss32[5],par)+F(C1-C2*xgauss32[5],par))+
-      wgauss32[6]*(F(C1+C2*xgauss32[6],par)+F(C1-C2*xgauss32[6],par))+
-      wgauss32[7]*(F(C1+C2*xgauss32[7],par)+F(C1-C2*xgauss32[7],par))+
-      wgauss32[8]*(F(C1+C2*xgauss32[8],par)+F(C1-C2*xgauss32[8],par))+
-      wgauss32[9]*(F(C1+C2*xgauss32[9],par)+F(C1-C2*xgauss32[9],par))+
-      wgauss32[10]*(F(C1+C2*xgauss32[10],par)+F(C1-C2*xgauss32[10],par))+
-      wgauss32[11]*(F(C1+C2*xgauss32[11],par)+F(C1-C2*xgauss32[11],par))+
-      wgauss32[12]*(F(C1+C2*xgauss32[12],par)+F(C1-C2*xgauss32[12],par))+
-      wgauss32[13]*(F(C1+C2*xgauss32[13],par)+F(C1-C2*xgauss32[13],par))+
-      wgauss32[14]*(F(C1+C2*xgauss32[14],par)+F(C1-C2*xgauss32[14],par))+
-      wgauss32[15]*(F(C1+C2*xgauss32[15],par)+F(C1-C2*xgauss32[15],par));  
+           S32=wgauss32[0]*(F(C1+C2*xgauss32[0],par)+F(C1-C2*xgauss32[0],par))+
+             wgauss32[1]*(F(C1+C2*xgauss32[1],par)+F(C1-C2*xgauss32[1],par))+
+             wgauss32[2]*(F(C1+C2*xgauss32[2],par)+F(C1-C2*xgauss32[2],par))+
+             wgauss32[3]*(F(C1+C2*xgauss32[3],par)+F(C1-C2*xgauss32[3],par))+
+             wgauss32[4]*(F(C1+C2*xgauss32[4],par)+F(C1-C2*xgauss32[4],par))+
+             wgauss32[5]*(F(C1+C2*xgauss32[5],par)+F(C1-C2*xgauss32[5],par))+
+             wgauss32[6]*(F(C1+C2*xgauss32[6],par)+F(C1-C2*xgauss32[6],par))+
+             wgauss32[7]*(F(C1+C2*xgauss32[7],par)+F(C1-C2*xgauss32[7],par))+
+             wgauss32[8]*(F(C1+C2*xgauss32[8],par)+F(C1-C2*xgauss32[8],par))+
+             wgauss32[9]*(F(C1+C2*xgauss32[9],par)+F(C1-C2*xgauss32[9],par))+
+             wgauss32[10]*(F(C1+C2*xgauss32[10],par)+F(C1-C2*xgauss32[10],par))+
+             wgauss32[11]*(F(C1+C2*xgauss32[11],par)+F(C1-C2*xgauss32[11],par))+
+             wgauss32[12]*(F(C1+C2*xgauss32[12],par)+F(C1-C2*xgauss32[12],par))+
+             wgauss32[13]*(F(C1+C2*xgauss32[13],par)+F(C1-C2*xgauss32[13],par))+
+             wgauss32[14]*(F(C1+C2*xgauss32[14],par)+F(C1-C2*xgauss32[14],par))+
+             wgauss32[15]*(F(C1+C2*xgauss32[15],par)+F(C1-C2*xgauss32[15],par));  
 
-    S32*=C2;    
-   if(fabs(S32-C2*S16) <= eps*(1.+fabs(S32)))
-     {
-       H+=S32;
-       if(BB != B) goto case1;
-    }     
-  else
-    {      
-      BB=C1;
-      if(1.+CONST*fabs(C2)!=1.) goto case2;
-      if(ichanges<3)
-	{
-          cout<<"D103: TOO HIGH ACCURACY REQUIRED I'm trying change accuracy!"<<endl;
-          cout<<"A = " << A << " B = " << B << " EPS = " << eps <<endl;
-          eps*=10.;
-          ichanges++;
-          goto case2;
-	}
-      else
-	{
-          cout<<"D103: TOO HIGH ACCURACY REQUIRED ! I can't to change  accuracy !"<<endl;
-          H=0;
-	}
-      goto end;
-    }
-  
- end: 	return H;
+           S32*=C2;    
+           if(fabs(S32-C2*S16) <= eps*(1.+fabs(S32)))
+           {
+             H+=S32;
+             if(BB != B) goto case1;
+           }     
+           else
+           {      
+             BB=C1;
+             if(1.+CONST*fabs(C2)!=1.) goto case2;
+             if(ichanges<3)
+             {
+               cout<<"D103: TOO HIGH ACCURACY REQUIRED I'm trying change accuracy!"<<endl;
+               cout<<"A = " << A << " B = " << B << " EPS = " << eps <<endl;
+               eps*=10.;
+               ichanges++;
+               goto case2;
+             }
+             else
+             {
+               cout<<"D103: TOO HIGH ACCURACY REQUIRED ! I can't to change  accuracy !"<<endl;
+               H=0;
+             }
+             goto end;
+           }
+
+end: 	return H;
 };
 
 
@@ -304,7 +306,7 @@ Double_t myJPsiCrossSection(Double_t* Eb,Double_t* par)
 {
 //     par(0) = constant, par(1) = total cross section,
 //     par(2) = mass/2,   par(3) = sigma full  //xs [10^{-33} cm^2]
-  double y=Eb[0];
+  double y=Eb[0]*2;
   double cross=CrSOniumR(_MethodAzimov,_IdJPsi,y,par);
   return cross;
 }
@@ -313,7 +315,7 @@ Double_t myPsiPrimeCrossSection(Double_t* Eb,Double_t* par)
 {
 //     par(0) = constant, par(1) = total cross section,
 //     par(2) = mass/2,   par(3) = sigma full  //xs [10^{-33} cm^2]
-  double y=Eb[0];
+  double y=Eb[0]*2;
   double cross=CrSOniumR(_MethodAzimov,_IdPsiPrime,y,par);
   return cross;
 }

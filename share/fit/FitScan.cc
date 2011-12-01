@@ -125,6 +125,7 @@ static char args_doc[] = "";
 #define OPT_USE_CHI2             15
 #define OPT_lum             16
 #define OPT_lum_cor             17
+#define OPT_VIEW           18
 
 
 bool USE_CBS_SIGMAW = false;
@@ -176,6 +177,7 @@ static struct argp_option options[] = {
   {"both",OPT_both,"both",0,"both",13},     
   {"SW",OPT_SW,"SW",0,"SW",14},     
   {"use-chi2",OPT_USE_CHI2,"use-chi2",0,"use-chi2",15},     
+  {"view",OPT_VIEW,"view",0,"view",OPT_VIEW},     
   {0}
 };
 
@@ -203,7 +205,9 @@ struct arguments
   int scan;
   int SW; //use cbs measure sigmaW
   int use_chi2; //use chi2 algorithm
+  int view; //view or not the resonances with scenario points layout.
 };
+
 static error_t parse_opt (int key, char *arg, struct argp_state *state)
 {
   union ArG
@@ -237,6 +241,7 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
     case OPT_both:arg_union.arguments->both=atoi(arg);break;            
     case OPT_SW:arg_union.arguments->SW=atoi(arg);break;            
     case OPT_USE_CHI2:arg_union.arguments->use_chi2=atoi(arg);break;            
+    case OPT_VIEW:arg_union.arguments->view=atoi(arg);break;            
   }
   return 0;
 };
@@ -272,6 +277,7 @@ int main(int argc, char **argv)
   arguments.both=0; 
 	arguments.lum_cor=1;
 	arguments.lum=0;
+  arguments.view=0;
 
 
 
@@ -373,51 +379,57 @@ int main(int argc, char **argv)
     theApp=new  TApplication("App", &argc, argv);
   };  
 
-  if(true)
-
+  if(arguments.view==1 || arguments.view==2)
   {
-  /* draw function */
-  Double_t* scen_psi2s_par  = new Double_t [4];
-  scen_psi2s_par[0]=0;
-  scen_psi2s_par[1]=1;   
-  scen_psi2s_par[2]=_MPsiPrime/2.;
-  scen_psi2s_par[3]=1.6/sqrt(2);
-  TF1* scen_psi2s=new TF1("scenpsi",myPsiPrimeCrossSection,1836.,1855,4);  
-  scen_psi2s->SetParameters(scen_psi2s_par);
-  scen_psi2s->Draw();
-  double dm=0.1;
-  //double EPSI[7] = {1838.0+dm, 1841.8+dm, 1842.4+dm, 1843.0+dm, 1843.7+dm, 1844.4+dm, 1847.0+dm};
-  //double EPSI[7] = {1838.0, 1841, 1842, 1843, 1844, 1845, 1847.0};
-  double EPSI[7] = {1838.0, 1841.4, 1842.2, 1843, 1843.8, 1844.6, 1848.0};
-  TGraph * scen_psi2s_g = new TGraph;
-  for(int i=0;i<7;i++)
-  {
-    scen_psi2s_g->SetPoint(i,EPSI[i],scen_psi2s->Eval(EPSI[i]));
-  }
-  scen_psi2s_g->SetMarkerStyle(21);
-  scen_psi2s_g->SetMarkerSize(1.5);
-  scen_psi2s_g->Draw("p");
+    if(arguments.view==1)
+    {
+      TCanvas * psip_c  = new TCanvas;
+      /* draw function */
+      Double_t* scen_psi2s_par  = new Double_t [4];
+      scen_psi2s_par[0]=0;
+      scen_psi2s_par[1]=1;   
+      scen_psi2s_par[2]=_MPsiPrime/2;
+      scen_psi2s_par[3]=1.56;
+      TF1* scen_psi2s=new TF1("scenpsi",myPsiPrimeCrossSection,1836.,1855,4);  
+      scen_psi2s->SetParameters(scen_psi2s_par);
+      scen_psi2s->Draw();
+      double dm=0;
+      double EPSI[7] = {1838.0+dm, 1841.8+dm, 1842.4+dm, 1843.0+dm, 1843.7+dm, 1844.4+dm, 1847.0+dm};
+      //double EPSI[7] = {1838.0, 1841, 1842, 1843, 1844, 1845, 1847.0};
+      //double EPSI[7] = {1838.0, 1841.4, 1842.2, 1843, 1843.8, 1844.6, 1848.0};
+      TGraph * scen_psi2s_g = new TGraph;
+      for(int i=0;i<7;i++)
+      {
+        scen_psi2s_g->SetPoint(i,EPSI[i],scen_psi2s->Eval(EPSI[i]));
+      }
+      scen_psi2s_g->SetMarkerStyle(21);
+      scen_psi2s_g->SetMarkerSize(1.5);
+      scen_psi2s_g->Draw("p");
+      scen_psi2s_g->GetXaxis()->SetTitle("E, MeV");
+    }
+    if(arguments.view==2)
+    {
+      TCanvas * jpsi_c  = new TCanvas;
+      Double_t* scen_jpsi_par  = new Double_t [4];
+      scen_jpsi_par[0]=0;
+      scen_jpsi_par[1]=1;   
+      scen_jpsi_par[2]=_MJPsi/2.;
+      scen_jpsi_par[3]=1.1;
+      TF1* scen_jpsi=new TF1("scenjpsi",myJPsiCrossSection,1540.,1555,4);  
+      scen_jpsi->SetParameters(scen_jpsi_par);
+      scen_jpsi->Draw();
+      double EJPSI[7] = {1544.0, 1547.7, 1548.1, 1548.5, 1548.9, 1549.3,1552.0};
+      TGraph * scen_jpsi_g = new TGraph;
+      for(int i=0;i<7;i++)
+      {
+        scen_jpsi_g->SetPoint(i,EJPSI[i],scen_jpsi->Eval(EJPSI[i]));
+      }
+      scen_jpsi_g->SetMarkerStyle(21);
+      scen_jpsi_g->SetMarkerSize(1.5);
+      scen_jpsi_g->Draw("p");
+    }
 
-  new TCanvas;
-  Double_t* scen_jpsi_par  = new Double_t [4];
-  scen_jpsi_par[0]=0;
-  scen_jpsi_par[1]=1;   
-  scen_jpsi_par[2]=_MJPsi/2.;
-  scen_jpsi_par[3]=1.1;
-  TF1* scen_jpsi=new TF1("scenjpsi",myJPsiCrossSection,1540.,1555,4);  
-  scen_jpsi->SetParameters(scen_jpsi_par);
-  scen_jpsi->Draw();
-  double EJPSI[7] = {1544.0, 1547.7, 1548.1, 1548.5, 1548.9, 1549.3,1552.0};
-  TGraph * scen_jpsi_g = new TGraph;
-  for(int i=0;i<7;i++)
-  {
-    scen_jpsi_g->SetPoint(i,EJPSI[i],scen_jpsi->Eval(EJPSI[i]));
-  }
-  scen_jpsi_g->SetMarkerStyle(21);
-  scen_jpsi_g->SetMarkerSize(1.5);
-  scen_jpsi_g->Draw("p");
-
-  theApp->Run();
+    theApp->Run();
   }
 
   TMinuit*  MinuitRes=0; 
