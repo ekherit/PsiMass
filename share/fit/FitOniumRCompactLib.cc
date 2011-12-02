@@ -89,115 +89,223 @@ Double_t CrSOniumRAzimov(Int_t Id,Double_t Eb,Double_t* par)
     }
     hM=par[idRM]+0.5*MR; //0     
     if(Id==_IdJPsi){
+      Gtot=Gee/Bll;   
       Gh=Gtot*(1.-2.*Bll);
       Bh=1.-2.*Bll;
+      ParF[idBhadr]=Bh;
     }
+
     if(Id==_IdPsiPrime){
       //      Gh=Gtot*(1.-3.*Bll);
       //      Gtot=0.286;//!!!!!
       Gee=_GeePsiPrime;
       Gtot=0.317;//!!!!!
-      Bh=0.9785;// more precisely -> 0.13% //        //1.-3.*Bll;
+      Bh=0.9785;// more precisely -> 0.13% //    
+      ParF[idBhadr]=Bh;
     }     
     Double_t M=2.*hM;
     beta=4.*_alpha/TMath::Pi()*(log(2.*y/_me)-0.5);
     Double_t SSA=0;
-    SSA=Gee*Bh*_ConvConstant;	 	 
+    if(Id==_IdJPsi){
+         SSA= 12.*TMath::Pi()*Gee*Bh;	 
+    }
+    else
+      {
+        SSA=Gee*Bh*_ConvConstant;	 
+      }
+   
+
     ParF[idbeta]=beta;
     ParF[idM]=M;
     ParF[idW]=y*2.;
     ParF[idSw]=SiW;
     ParF[idGt]=Gtot;
+    ParF[ideff]=par[idReff];
+    ParF[idefftau]=par[idRTauEff];
     ParF[idGee]=Gee; 
-    ParF[idBhadr]=Bh;     
+    ParF[idFreeInt]=par[idRFreeInt];
+    ParF[idLambda]=par[idRLambda];
+
     Double_t RS=rangescale*SiW;
     Double_t rIntegral=0.0;
     if(Id==_IdPsiPrime){
-      rIntegral= 
-      HANDLEDGAUSS(K_FuncRInterfPsiP,ParF[idW]-3.5*RS,ParF[idW]+3.5*RS,ParF,1.e-12)+
+      rIntegral= HANDLEDGAUSS(K_FuncRInterfPsiP,ParF[idW]-3.5*RS,ParF[idW]+3.5*RS,ParF,1.e-12)+
       HANDLEDGAUSS(K_FuncRInterfPsiP,ParF[idW]-7.0*RS,ParF[idW]-3.5*RS,ParF,1.e-12)+
       HANDLEDGAUSS(K_FuncRInterfPsiP,ParF[idW]-20.*RS,ParF[idW]-7.0*RS,ParF,1.e-12)+
       HANDLEDGAUSS(K_FuncRInterfPsiP,ParF[idW]+3.5*RS,ParF[idW]+7.0*RS,ParF,1.e-12)+
       HANDLEDGAUSS(K_FuncRInterfPsiP,ParF[idW]+7.0*RS,ParF[idW]+20.*RS,ParF,1.e-12);
       }
     else if(Id==_IdJPsi){
-      rIntegral= 
-      HANDLEDGAUSS(K_FuncRInterfJPsi,ParF[idW]-3.5*RS,ParF[idW]+3.5*RS,ParF,1.e-9)+
-      HANDLEDGAUSS(K_FuncRInterfJPsi,ParF[idW]-7.0*RS,ParF[idW]-3.5*RS,ParF,1.e-7)+
-      HANDLEDGAUSS(K_FuncRInterfJPsi,ParF[idW]-20.*RS,ParF[idW]-7.0*RS,ParF,1.e-5)+
-      HANDLEDGAUSS(K_FuncRInterfJPsi,ParF[idW]+3.5*RS,ParF[idW]+7.0*RS,ParF,1.e-7)+
-      HANDLEDGAUSS(K_FuncRInterfJPsi,ParF[idW]+7.0*RS,ParF[idW]+20.*RS,ParF,1.e-5);
+       rIntegral=         
+         HANDLEDGAUSS(K_FuncRInterfJPsi,ParF[idW]-3.5*RS,ParF[idW]+3.5*RS,ParF,1e-8)+
+         HANDLEDGAUSS(K_FuncRInterfJPsi,ParF[idW]-7.0*RS,ParF[idW]-3.5*RS,ParF,1.e-7)+
+         HANDLEDGAUSS(K_FuncRInterfJPsi,ParF[idW]-20.*RS,ParF[idW]-7.0*RS,ParF,1.e-4)+
+         HANDLEDGAUSS(K_FuncRInterfJPsi,ParF[idW]+3.5*RS,ParF[idW]+7.0*RS,ParF,1.e-7)+
+         HANDLEDGAUSS(K_FuncRInterfJPsi,ParF[idW]+7.0*RS,ParF[idW]+20.*RS,ParF,1.e-4);
     }
     Double_t xRes=rIntegral*SSA/(SiW*sqrt(2.*TMath::Pi()));   
-    //    if(y<1843.1&&y>1842.9) cout<<"y:"<<y<<" xRes:"<<xRes<<endl;
     return xRes;      
 };
 
 Double_t K_FuncRInterfPsiP(Double_t W, Double_t* parf)
 {
-  //  Double_t Bll=0.00716666666666666666; //psi'
+ 
   Double_t Bll=0.00772; //psi'
-  Double_t Rrat=3.0;     
-  Double_t Ratio=Rrat*Bll/(1.-2.*Bll);             
-  Double_t  Bhadr=parf[idBhadr];
+  Double_t Ratio=0;      
+  Double_t  Rrat=2.14;
+  
+  Double_t  Bhadr=parf[idBhadr];    
   Double_t  beta=parf[idbeta];
   Double_t  M=parf[idM];
   Double_t  Wb=parf[idW];
   Double_t  Sw=parf[idSw];
-  Double_t  Gtot=parf[idGt];      
-  Double_t  Fg=exp(-0.5*sq((W-Wb)/Sw));
-  Double_t  betaW= 4.*_alpha/TMath::Pi()*(log(W/_me)-0.5);   
-  Double_t  Delta1=_alpha/TMath::Pi()*(pow(TMath::Pi(),2.)/3.-0.5)-1./24.*sq(betaW)*(2./3.*log(W/_me)+2.*sq(TMath::Pi())-37./4.);
-  Double_t  DeltaE=Delta1+0.75*betaW;          
-  complex<double> f=0;            	 
-  complex<double> M2=complex<double>(sq(M/W)-1.,-Gtot*M/W/W);
-  complex<double> beta_11=complex<double>(betaW-1.,0.);
-  f=pow(M2,beta_11);      
-  Double_t rI=0.;
-  Double_t s=W*W;
-  Double_t M2_S=sq(M/W);
-  Double_t delta=(Gtot*M)/s;                 	         
-  rI= Fg*12.*TMath::Pi()/M/s*(
-      imag(f)*TMath::Pi()*betaW/sin(TMath::Pi()*betaW)*(1.+DeltaE)
-      -betaW*0.5*((atan(M/Gtot)-atan((M-W*W/M)/Gtot))*(1.+sq(M/W)))
-      +0.25*betaW*Gtot*M/W/W*(log((sq(M2_S)+sq(delta))/(sq(M2_S-1.)+sq(delta))))                                  
-      -2./3.*_alpha*sqrt(Rrat/(Bll*Bhadr))*TMath::Pi()*betaW/sin(TMath::Pi()*betaW)*Ratio*(1.+11./12.*betaW)*M/W*real(f)                                     
-      );
+  Double_t  Gtot=parf[idGt];   
+  Double_t  GeeBhadr=parf[idGee];  // Gee*Bhadr    for fixed  efficiency
+  Double_t  effh=parf[ideff];
+  Double_t  efftt=parf[idefftau];
+  Double_t  vy=sqrt(1.-sq(2*_MTau/W));  
+  Double_t  Rtt=(3.-sq(vy))*0.5*vy*(1.-0.00015245952901473550*(0.5*W-1839.01));//simple approximation
+
+     if(parf[idFreeInt]==1)
+      { 
+        Ratio=fabs(parf[idLambda]);
+      }
+     else
+       {
+//       Ratio=(sqrt(Rrat*Bll)+efftt/effh*sqrt(Rtt*_BttPP/Rrat))/sqrt(0.9785+efftt/effh*_BttPP);
+//fixed lambda
+         Ratio=(sqrt(Rrat)+efftt/effh*sqrt(Rtt*_BttPP/Rrat/Bll))/sqrt(1.+efftt/effh*_BttPP/0.9785);
+       }    
+      Double_t  Fg=1;    
+#ifdef _ParChromOn_
+      Double_t mchrom=1.+parf[idChrom]*(W-Wb);
+      if(mchrom<0) mchrom=0;
+      Fg=exp(-0.5*sq((W-Wb)/Sw))*mchrom;      
+#else
+      Fg=exp(-0.5*sq((W-Wb)/Sw));
+#endif
+      Double_t  betaW= 4.*_alpha/TMath::Pi()*(log(W/_me)-0.5);   
+      Double_t  Delta1=_alpha/TMath::Pi()*(pow(TMath::Pi(),2.)/3.-0.5)-1./24.*sq(betaW)*(2./3.*log(W/_me)+2.*sq(TMath::Pi())-37./4.);
+      Double_t  DeltaE=Delta1+0.75*betaW;          
+      complex<double> f=0;      
+      complex<double> fp=0;      
+      Double_t  PiHre=-0.6e-2;//  ! Berends, Kommen for W from 2 to 4 GeV
+      complex<double> Pi10C=complex<double>::complex(1.-(PiLre(W,_me)+PiLre(W,_mmu)+PiLre(W,_MTau)+PiHre),(PiLim(W,_me)+PiLim(W,_mmu)+PiLim(W,_MTau)));         
+      complex<double> M2=complex<double>::complex(sq(M/W)-1.,-Gtot*M/W/W);
+      complex<double> beta_11=complex<double>::complex(betaW-1.,0.);
+      f=pow(M2,beta_11);
+      fp=pow(M2,beta_11)/Pi10C;             
+
+      Double_t rI=0.;
+      Double_t s=W*W;
+      Double_t M2_S=sq(M/W);
+      Double_t delta=(Gtot*M)/s;        
+
+ 
+      rI= 12.*TMath::Pi()*Fg/s/M*effh*(
+                   imag(f)*TMath::Pi()*betaW/sin(TMath::Pi()*betaW)*(1.+DeltaE)
+                   -betaW*0.5*((atan(M/Gtot)-atan((M-W*W/M)/Gtot))*(1.+sq(M/W)))
+                   +0.25*betaW*Gtot*M/W/W*(log((sq(M2_S)+sq(delta))/(sq(M2_S-1.)+sq(delta))))                                      
+//             -2./3.*_alpha*sqrt(Rrat*Gtot/GeeBhadr)*Ratio*TMath::Pi()*betaW/sin(TMath::Pi()*betaW)*(1.+DeltaE)*M/W*real(fp)
+
+            //                                           free lambda 
+                     //         -2./3.*_alpha*sqrt(Rrat*Gtot/GeeBhadr)*Ratio*TMath::Pi()*betaW/sin(TMath::Pi()*betaW)*(1.+DeltaE)*M/W*real(fp)                    
+                     //fixed
+                   -2./3.*_alpha*sqrt(Rrat)/0.9785*Ratio*TMath::Pi()*betaW/sin(TMath::Pi()*betaW)*(1.+DeltaE)*M/W*real(fp)					   );
+
+      
+
   return rI;
 };
 
+
 Double_t K_FuncRInterfJPsi(Double_t W, Double_t* parf)
 {
-      Double_t Bll=_BllJPsi;
-      Double_t  Rrat=2;
-      Double_t Ratio=Rrat*Bll/(1.-3.*Bll);      
-      Double_t  Bhadr= parf[idBhadr];
+ 
+      Double_t  Bll=_BllJPsi; 
+      Double_t  Ratio=0;      
+      Double_t  Rrat=2.14;
+      Double_t  Bhadr=parf[idBhadr];    
       Double_t  beta=parf[idbeta];
       Double_t  M=parf[idM];
       Double_t  Wb=parf[idW];
       Double_t  Sw=parf[idSw];
-      Double_t  Gtot=parf[idGt];      
-      Double_t  Fg=exp(-0.5*sq((W-Wb)/Sw));
+      Double_t  Gtot=parf[idGt];   
+      Double_t  GeeBhadr=parf[idGee];  // Gee*Bhadr    for fixed  efficiency 
+      Double_t  effh=parf[ideff];
+
+
+     if(parf[idFreeInt]==1)
+      { 
+        Ratio=fabs(parf[idLambda]);
+      }
+     else
+       {
+//         Ratio=sqrt(Rrat*Bll/(1.-_BllPPSum)); 
+//fixed lambda
+         Ratio=sqrt(Rrat);
+       }    
+      Double_t  Fg=1.0;
+     
+
+#ifdef _ParChromOn_
+      Double_t mchrom=1.+parf[idChrom]*(W-Wb);
+      if(mchrom<0) mchrom=0;
+      Fg=exp(-0.5*sq((W-Wb)/Sw))*mchrom;      
+#else
+      Fg=exp(-0.5*sq((W-Wb)/Sw));
+#endif
       Double_t  betaW= 4.*_alpha/TMath::Pi()*(log(W/_me)-0.5);   
       Double_t  Delta1=_alpha/TMath::Pi()*(pow(TMath::Pi(),2.)/3.-0.5)-1./24.*sq(betaW)*(2./3.*log(W/_me)+2.*sq(TMath::Pi())-37./4.);
       Double_t  DeltaE=Delta1+0.75*betaW;          
-      complex<double> f=0;            
-      complex<double> M2=complex<double>(sq(M/W)-1.,-Gtot*M/W/W);
-      complex<double> beta_11=complex<double>(betaW-1.,0.);
+      complex<double> f=0;      
+      complex<double> fp=0;      
+      Double_t  PiHre=-0.6e-2;//  ! Berends, Kommen for W from 2 to 4 GeV
+      complex<double> Pi10C=complex<double>::complex(1.-(PiLre(W,_me)+PiLre(W,_mmu)+PiHre),(PiLim(W,_me)+PiLim(W,_mmu)));   
+      
+#ifdef RELATIVE	 
+      complex<double> M2=complex<double>::complex(sq(M/W)-1.,-Gtot*M/W/W);
+      complex<double> beta_11=complex<double>::complex(betaW-1.,0.);
       f=pow(M2,beta_11);
-      Double_t rI=0.;
-      Double_t s=W*W;
-      Double_t M2_S=sq(M/W);
-      Double_t delta=(Gtot*M)/s;                    
-      rI= Fg*12.*TMath::Pi()/M/s*(
-                                  imag(f)*TMath::Pi()*betaW/sin(TMath::Pi()*betaW)*(1.+DeltaE)
-                                  -betaW*0.5*((atan(M/Gtot)-atan((M-W*W/M)/Gtot))*(1.+sq(M/W)))
-                                  +0.25*betaW*Gtot*M/W/W*(log((sq(M2_S)+sq(delta))/(sq(M2_S-1.)+sq(delta))))                                        
-                                  -2./3.*_alpha*sqrt(Rrat/(Bll*Bhadr))*TMath::Pi()*betaW/sin(TMath::Pi()*betaW)*Ratio*(1.+11./12.*betaW)*M/W*real(f)   
+      fp=pow(M2,beta_11)/Pi10C;
+      //fp=pow(M2,beta_11);         
+#else 
+         complex<double> PW_M_G=complex<double>::complex(M/W+1.,0.5*Gtot/W);
+         complex<double> MW_M_G=complex<double>::complex(M/W-1.,-0.5*Gtot/W);
+         complex<double> M_G=complex<double>::complex(M/W,0.5*Gtot/W);      
+         complex<double> beta_1=complex<double>::complex(betaW-1.,0.);      
+         f=pow(PW_M_G,beta_1)*pow(MW_M_G,beta_1)*M_G;   
+#endif 	 
+         Double_t rI=0.;
+         Double_t s=W*W;
+         Double_t M2_S=sq(M/W);
+         Double_t delta=(Gtot*M)/s;        
+        
+         
+          rI= Fg/s/M*effh*(
+                         
+				   
+                         imag(f)*TMath::Pi()*betaW/sin(TMath::Pi()*betaW)*(1.+DeltaE)
+                         -betaW*0.5*((atan(M/Gtot)-atan((M-W*W/M)/Gtot))*(1.+sq(M/W)))
+                         +0.25*betaW*Gtot*M/W/W*(log((sq(M2_S)+sq(delta))/(sq(M2_S-1.)+sq(delta))))                                        				   
+                    
+                       //                                           free lambda 
+                         ///        -2./3.*_alpha*sqrt(Rrat*Gtot/GeeBhadr)*Ratio*TMath::Pi()*betaW/sin(TMath::Pi()*betaW)*(1.+DeltaE)*M/W*real(fp)                    
+                         //fixed
+                         -2./3.*_alpha*sqrt(Rrat)/0.877*Ratio*TMath::Pi()*betaW/sin(TMath::Pi()*betaW)*(1.+DeltaE)*M/W*real(fp)
+                                                                                                                                                                                  
+                         );
+          
+         
 
-       );   
-return rI;
+         
+          
+return rI*_ConvConstant;
 };
+
+
+
+
 
 
 
@@ -227,61 +335,61 @@ Double_t HANDLEDGAUSS(Double_t F(Double_t W,Double_t* parf),Double_t A,Double_t 
   if(B<=A){goto end;}
   CONST=0.005/fabs(B-A);
   BB=A;
-case1:     AA=BB; BB=B;
-case2:     C1=0.5*(BB+AA); C2=0.5*(BB-AA);   
-           S16=wgauss16[0]*(F(C1+C2*xgauss16[0],par)+F(C1-C2*xgauss16[0],par))+
-             wgauss16[1]*(F(C1+C2*xgauss16[1],par)+F(C1-C2*xgauss16[1],par))+
-             wgauss16[2]*(F(C1+C2*xgauss16[2],par)+F(C1-C2*xgauss16[2],par))+
-             wgauss16[3]*(F(C1+C2*xgauss16[3],par)+F(C1-C2*xgauss16[3],par))+
-             wgauss16[4]*(F(C1+C2*xgauss16[4],par)+F(C1-C2*xgauss16[4],par))+
-             wgauss16[5]*(F(C1+C2*xgauss16[5],par)+F(C1-C2*xgauss16[5],par))+
-             wgauss16[6]*(F(C1+C2*xgauss16[6],par)+F(C1-C2*xgauss16[6],par))+
-             wgauss16[7]*(F(C1+C2*xgauss16[7],par)+F(C1-C2*xgauss16[7],par));  
+  case1:     AA=BB; BB=B;
+  case2:     C1=0.5*(BB+AA); C2=0.5*(BB-AA);   
+  S16=wgauss16[0]*(F(C1+C2*xgauss16[0],par)+F(C1-C2*xgauss16[0],par))+
+      wgauss16[1]*(F(C1+C2*xgauss16[1],par)+F(C1-C2*xgauss16[1],par))+
+      wgauss16[2]*(F(C1+C2*xgauss16[2],par)+F(C1-C2*xgauss16[2],par))+
+      wgauss16[3]*(F(C1+C2*xgauss16[3],par)+F(C1-C2*xgauss16[3],par))+
+      wgauss16[4]*(F(C1+C2*xgauss16[4],par)+F(C1-C2*xgauss16[4],par))+
+      wgauss16[5]*(F(C1+C2*xgauss16[5],par)+F(C1-C2*xgauss16[5],par))+
+      wgauss16[6]*(F(C1+C2*xgauss16[6],par)+F(C1-C2*xgauss16[6],par))+
+      wgauss16[7]*(F(C1+C2*xgauss16[7],par)+F(C1-C2*xgauss16[7],par));  
 
-           S32=wgauss32[0]*(F(C1+C2*xgauss32[0],par)+F(C1-C2*xgauss32[0],par))+
-             wgauss32[1]*(F(C1+C2*xgauss32[1],par)+F(C1-C2*xgauss32[1],par))+
-             wgauss32[2]*(F(C1+C2*xgauss32[2],par)+F(C1-C2*xgauss32[2],par))+
-             wgauss32[3]*(F(C1+C2*xgauss32[3],par)+F(C1-C2*xgauss32[3],par))+
-             wgauss32[4]*(F(C1+C2*xgauss32[4],par)+F(C1-C2*xgauss32[4],par))+
-             wgauss32[5]*(F(C1+C2*xgauss32[5],par)+F(C1-C2*xgauss32[5],par))+
-             wgauss32[6]*(F(C1+C2*xgauss32[6],par)+F(C1-C2*xgauss32[6],par))+
-             wgauss32[7]*(F(C1+C2*xgauss32[7],par)+F(C1-C2*xgauss32[7],par))+
-             wgauss32[8]*(F(C1+C2*xgauss32[8],par)+F(C1-C2*xgauss32[8],par))+
-             wgauss32[9]*(F(C1+C2*xgauss32[9],par)+F(C1-C2*xgauss32[9],par))+
-             wgauss32[10]*(F(C1+C2*xgauss32[10],par)+F(C1-C2*xgauss32[10],par))+
-             wgauss32[11]*(F(C1+C2*xgauss32[11],par)+F(C1-C2*xgauss32[11],par))+
-             wgauss32[12]*(F(C1+C2*xgauss32[12],par)+F(C1-C2*xgauss32[12],par))+
-             wgauss32[13]*(F(C1+C2*xgauss32[13],par)+F(C1-C2*xgauss32[13],par))+
-             wgauss32[14]*(F(C1+C2*xgauss32[14],par)+F(C1-C2*xgauss32[14],par))+
-             wgauss32[15]*(F(C1+C2*xgauss32[15],par)+F(C1-C2*xgauss32[15],par));  
+  S32=wgauss32[0]*(F(C1+C2*xgauss32[0],par)+F(C1-C2*xgauss32[0],par))+
+      wgauss32[1]*(F(C1+C2*xgauss32[1],par)+F(C1-C2*xgauss32[1],par))+
+      wgauss32[2]*(F(C1+C2*xgauss32[2],par)+F(C1-C2*xgauss32[2],par))+
+      wgauss32[3]*(F(C1+C2*xgauss32[3],par)+F(C1-C2*xgauss32[3],par))+
+      wgauss32[4]*(F(C1+C2*xgauss32[4],par)+F(C1-C2*xgauss32[4],par))+
+      wgauss32[5]*(F(C1+C2*xgauss32[5],par)+F(C1-C2*xgauss32[5],par))+
+      wgauss32[6]*(F(C1+C2*xgauss32[6],par)+F(C1-C2*xgauss32[6],par))+
+      wgauss32[7]*(F(C1+C2*xgauss32[7],par)+F(C1-C2*xgauss32[7],par))+
+      wgauss32[8]*(F(C1+C2*xgauss32[8],par)+F(C1-C2*xgauss32[8],par))+
+      wgauss32[9]*(F(C1+C2*xgauss32[9],par)+F(C1-C2*xgauss32[9],par))+
+      wgauss32[10]*(F(C1+C2*xgauss32[10],par)+F(C1-C2*xgauss32[10],par))+
+      wgauss32[11]*(F(C1+C2*xgauss32[11],par)+F(C1-C2*xgauss32[11],par))+
+      wgauss32[12]*(F(C1+C2*xgauss32[12],par)+F(C1-C2*xgauss32[12],par))+
+      wgauss32[13]*(F(C1+C2*xgauss32[13],par)+F(C1-C2*xgauss32[13],par))+
+      wgauss32[14]*(F(C1+C2*xgauss32[14],par)+F(C1-C2*xgauss32[14],par))+
+      wgauss32[15]*(F(C1+C2*xgauss32[15],par)+F(C1-C2*xgauss32[15],par));  
 
-           S32*=C2;    
-           if(fabs(S32-C2*S16) <= eps*(1.+fabs(S32)))
-           {
-             H+=S32;
-             if(BB != B) goto case1;
-           }     
-           else
-           {      
-             BB=C1;
-             if(1.+CONST*fabs(C2)!=1.) goto case2;
-             if(ichanges<3)
-             {
-               cout<<"D103: TOO HIGH ACCURACY REQUIRED I'm trying change accuracy!"<<endl;
-               cout<<"A = " << A << " B = " << B << " EPS = " << eps <<endl;
-               eps*=10.;
-               ichanges++;
-               goto case2;
-             }
-             else
-             {
-               cout<<"D103: TOO HIGH ACCURACY REQUIRED ! I can't to change  accuracy !"<<endl;
-               H=0;
-             }
-             goto end;
-           }
-
-end: 	return H;
+    S32*=C2;    
+   if(fabs(S32-C2*S16) <= eps*(1.+fabs(S32)))
+     {
+       H+=S32;
+       if(BB != B) goto case1;
+    }     
+  else
+    {      
+      BB=C1;
+      if(1.+CONST*fabs(C2)!=1.) goto case2;
+      if(ichanges<3)
+	{
+          cout<<"D103: TOO HIGH ACCURACY REQUIRED I'm trying change accuracy!"<<endl;
+          cout<<"A = " << A << " B = " << B << " EPS = " << eps <<endl;
+          eps*=10.;
+          ichanges++;
+          goto case2;
+	}
+      else
+	{
+          cout<<"D103: TOO HIGH ACCURACY REQUIRED ! I can't to change  accuracy !"<<endl;
+          H=0;
+	}
+      goto end;
+    }
+  
+ end: 	return H;
 };
 
 
@@ -306,7 +414,7 @@ Double_t myJPsiCrossSection(Double_t* Eb,Double_t* par)
 {
 //     par(0) = constant, par(1) = total cross section,
 //     par(2) = mass/2,   par(3) = sigma full  //xs [10^{-33} cm^2]
-  double y=Eb[0]*2;
+  double y=Eb[0];
   double cross=CrSOniumR(_MethodAzimov,_IdJPsi,y,par);
   return cross;
 }
@@ -315,7 +423,7 @@ Double_t myPsiPrimeCrossSection(Double_t* Eb,Double_t* par)
 {
 //     par(0) = constant, par(1) = total cross section,
 //     par(2) = mass/2,   par(3) = sigma full  //xs [10^{-33} cm^2]
-  double y=Eb[0]*2;
+  double y=Eb[0];
   double cross=CrSOniumR(_MethodAzimov,_IdPsiPrime,y,par);
   return cross;
 }
@@ -519,4 +627,33 @@ void swapDRows(Double_t* a,Double_t* b,Int_t n)
     {
 	swapD(a[i],b[i]);
     }
+}
+Double_t  PiLre(Double_t W,Double_t M){
+  Double_t x=sq(2*M/W);
+  Double_t sqr=0;
+  Double_t PiLre=0;
+  if(x<=1) {
+    sqr=sqrt(1.-x);
+    PiLre=-5./9.-x/3.+(2.+x)/6.*sqr*log(fabs((1.+sqr)/(1.-sqr)));
+  }
+  else{
+    sqr=sqrt(x-1.);
+    PiLre=-5./9.-x/3.+(2.+x)/6.*sqr*atan(1./sqr);
+  }
+  return PiLre*_alpha/M_PI;   
+}
+
+
+Double_t PiLim(Double_t W,Double_t M)
+{
+  Double_t  x=sq(2.*M/W);
+  Double_t  phi=0;
+  if(x<=1) {
+    phi=(2.+x)/6.*sqrt(1.-x);
+  }
+  else
+    {
+      phi=0;
+    }    
+  return -(1./3.+phi)*_alpha;
 }

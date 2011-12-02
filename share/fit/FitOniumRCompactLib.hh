@@ -22,7 +22,7 @@
 #include<stdio.h>
 #include<fstream>
 #define HALF_KNOT_COUNT 21
-#define _me         0.510998910
+#define _me       0.510998910
 #define _mmu      105.658367
 #define _ConvConstant      389379323.0e+3 // nb*MeV^2
 #define _alpha 1./137.036
@@ -32,6 +32,7 @@
 #define _24part 0.0416666667
 #define _MPsiPrime          3686.090 //PDG-2010
 #define _MJPsi              3096.917
+#define _MTau               1776.69  // KEDR
 #define _GeeJPsi            5.55e-3
 //#define _GeePsiPrime        2.38e-3 //average PDG
 #define _GeePsiPrime        2.35e-3 //PDG-2010
@@ -40,12 +41,13 @@
 #define _BllJPsi            0.0594
 #define _BllPsiPrime        0.00743
 #define _BllPsiDPrime       9.8e-6
-#define _IdJPsi                0
+#define _BttPP              0.003
+#define _IdJPsi             0
 #define _IdPsiPrime         1
-#define _MethodSimple         0
+#define _MethodSimple       0
 #define _MethodAzimov       1
 #define _MethodDIntegral    2
-#define   ScaleEGr          2.0    
+#define  ScaleEGr           2.0    
 
 Double_t K_FuncRInterfPsiP(Double_t W, Double_t* parf);
 Double_t K_FuncRInterfJPsi(Double_t W, Double_t* parf);
@@ -74,15 +76,27 @@ Int_t comparDRows(Int_t UpDown,Double_t* a,Double_t* b,Int_t n);
 void swapD(Double_t& a,Double_t& b);
 void swapI(Int_t& a,Int_t& b);
 void swapDRows(Double_t* a,Double_t* b,Int_t n);
+Double_t PiLre(Double_t W,Double_t M);
+Double_t PiLim(Double_t W,Double_t M);
 
-#define  idRbg       0		  
+
+
+#define  idRbg       0
 #define  idReff      1
 #define  idRM        2
 #define  idRSw       3
 #define  idRGee      4
-#define  idRTauEff   5
-#define  idRFreeGee  6
-#define  idRNP       7
+#define  idRTauEff   6
+#define  idRFreeGee  7
+#define  idRChrom    8
+#define  idRFreeInt  9
+#define  idRLambda   10
+#define  idRMassDP   11
+#define  idRGammaPP  12
+#define  idRR0PP     13
+#define  idRAlphaEff 14
+#define  idRNP       15
+
 
 
 #define  idbeta     0
@@ -99,5 +113,26 @@ void swapDRows(Double_t* a,Double_t* b,Int_t n);
 #define  idsqaphi   11
 #define  idXe       12
 #define  idBhadr    13
-#define  idNPar     14
+#define  idBG       14
+#define  idFreeInt  15
+#define  idLambda   16
+#define  idChrom    17
+#define  idefftau   18
+#define  idSqGtM    19
+#define  idSqM      20
+#define  idSqW      21
+#define  idA0R      22
+#define  idEps      23
+#define  idRatio    24
+#define  idScale    25
+#define  idPolRe    26
+#define  idPolIm    27
+#define  idMassDP   28
+#define  idGammaPP  29
+#define  idPPR0     30
+#define  idSumCR    31
+#define  idSum0R    32
+#define  idNPar     33
+
+
 #endif
