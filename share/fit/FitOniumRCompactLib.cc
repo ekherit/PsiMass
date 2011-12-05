@@ -190,9 +190,9 @@ Double_t K_FuncRInterfPsiP(Double_t W, Double_t* parf)
       complex<double> f=0;      
       complex<double> fp=0;      
       Double_t  PiHre=-0.6e-2;//  ! Berends, Kommen for W from 2 to 4 GeV
-      complex<double> Pi10C=complex<double>::complex(1.-(PiLre(W,_me)+PiLre(W,_mmu)+PiLre(W,_MTau)+PiHre),(PiLim(W,_me)+PiLim(W,_mmu)+PiLim(W,_MTau)));         
-      complex<double> M2=complex<double>::complex(sq(M/W)-1.,-Gtot*M/W/W);
-      complex<double> beta_11=complex<double>::complex(betaW-1.,0.);
+      complex<double> Pi10C(1.-(PiLre(W,_me)+PiLre(W,_mmu)+PiLre(W,_MTau)+PiHre),(PiLim(W,_me)+PiLim(W,_mmu)+PiLim(W,_MTau)));         
+      complex<double> M2(sq(M/W)-1.,-Gtot*M/W/W);
+      complex<double> beta_11(betaW-1.,0.);
       f=pow(M2,beta_11);
       fp=pow(M2,beta_11)/Pi10C;             
 
@@ -261,19 +261,19 @@ Double_t K_FuncRInterfJPsi(Double_t W, Double_t* parf)
       complex<double> f=0;      
       complex<double> fp=0;      
       Double_t  PiHre=-0.6e-2;//  ! Berends, Kommen for W from 2 to 4 GeV
-      complex<double> Pi10C=complex<double>::complex(1.-(PiLre(W,_me)+PiLre(W,_mmu)+PiHre),(PiLim(W,_me)+PiLim(W,_mmu)));   
+      complex<double> Pi10C(1.-(PiLre(W,_me)+PiLre(W,_mmu)+PiHre),(PiLim(W,_me)+PiLim(W,_mmu)));   
       
 #ifdef RELATIVE	 
-      complex<double> M2=complex<double>::complex(sq(M/W)-1.,-Gtot*M/W/W);
-      complex<double> beta_11=complex<double>::complex(betaW-1.,0.);
+      complex<double> M2(sq(M/W)-1.,-Gtot*M/W/W);
+      complex<double> beta_11(betaW-1.,0.);
       f=pow(M2,beta_11);
       fp=pow(M2,beta_11)/Pi10C;
       //fp=pow(M2,beta_11);         
 #else 
-         complex<double> PW_M_G=complex<double>::complex(M/W+1.,0.5*Gtot/W);
-         complex<double> MW_M_G=complex<double>::complex(M/W-1.,-0.5*Gtot/W);
-         complex<double> M_G=complex<double>::complex(M/W,0.5*Gtot/W);      
-         complex<double> beta_1=complex<double>::complex(betaW-1.,0.);      
+         complex<double> PW_M_G(M/W+1.,0.5*Gtot/W);
+         complex<double> MW_M_G(M/W-1.,-0.5*Gtot/W);
+         complex<double> M_G(M/W,0.5*Gtot/W);      
+         complex<double> beta_1(betaW-1.,0.);      
          f=pow(PW_M_G,beta_1)*pow(MW_M_G,beta_1)*M_G;   
 #endif 	 
          Double_t rI=0.;
