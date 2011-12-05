@@ -40,7 +40,7 @@ inline void draw_res(int resid, double sW, std::vector <double> & Es)
   /* draw function */
   vector<double> par(4);  
   double M=0, Emax=0, Emin=0;
-  par[0]=10; //background
+  par[0]=100; //background
   par[1]=1;  //efficiency
   par[2]=0;  //delta M/2, MeV
   par[3]=sW; //sigmaW, MeV
