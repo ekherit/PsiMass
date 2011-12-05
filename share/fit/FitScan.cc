@@ -60,6 +60,7 @@ using namespace std;
 //#include "FitTools/jpsiM.h"
 
 #include "../interference.h"
+#include "draw.h"
 
 #define  NumMaxP 120
 Double_t EMaxRange=1550.;
@@ -381,81 +382,21 @@ int main(int argc, char **argv)
 
   if(arguments.view==1 || arguments.view==2)
   {
-    if(arguments.view==1)
+    double dm=0;
+    vector <double> Es;
+    switch(arguments.view)
     {
-      TCanvas * psip_c  = new TCanvas;
-      /* draw function */
-      Double_t* scen_psi2s_par  = new Double_t [4];
-      scen_psi2s_par[0]=0;
-      scen_psi2s_par[1]=1;   
-      scen_psi2s_par[2]=0;
-      scen_psi2s_par[3]=1.56;
-      double Emax = 1850;
-      double Emin = 1836;
-      TF1* scen_psi2s=new TF1("myfun13456",myPsiPrimeCrossSection,Emin,Emax,4);  
-      unsigned NPX=100;
-      TGraph * fun_psi2s = new TGraph(NPX);
-        for(int i=0;i<NPX;i++)
-        {
-          double E = Emin+(Emax-Emin)/NPX*i;
-          fun_psi2s->SetPoint(i, E, CrSOniumR(_MethodAzimov, _IdPsiPrime, E , scen_psi2s_par));
-        }
-      scen_psi2s->SetParameters(scen_psi2s_par);
-      for(int i=0;i<4;i++)
-      {
-        scen_psi2s->SetParameter(i, scen_psi2s_par[i]);
-        cout << "parameter " << i << ": " << scen_psi2s->GetParameter(i) << endl;
-      }
-      //double dm=(_MPsiPrime/2-1843);
-      double dm=0;
-      double EPSI[7] = {1838.0+dm, 1841.8+dm, 1842.4+dm, 1843.0+dm, 1843.7+dm, 1844.4+dm, 1847.0+dm};
-      //double EPSI[7] = {1838.0, 1841, 1842, 1843, 1844, 1845, 1847.0};
-      //double EPSI[7] = {1838.0, 1841.4, 1842.2, 1843, 1843.8, 1844.6, 1848.0};
-      //double EPSI[7] = {1838.0+dm, 1841+dm, 1842+dm, 1843+dm, 1844.5+dm, 1845.5+dm, 1847.0+dm};
-      //double EPSI[7] = {1838.0, 1841, 1842, 1843, 1844.5, 1845.5, 1847.0};
-      for(int i=0;i<7;i++) EPSI[i]*=1;
-
-
-
-      TGraph * scen_psi2s_g = new TGraph;
-      for(int i=0;i<7;i++)
-      {
-        scen_psi2s_g->SetPoint(i,EPSI[i],CrSOniumR(_MethodAzimov, _IdPsiPrime, EPSI[i], scen_psi2s_par));
-        scen_psi2s_g->SetPoint(i,EPSI[i],scen_psi2s->EvalPar(&EPSI[i],scen_psi2s_par));
-        cout << EPSI[i] << " " 
-          << CrSOniumR(_MethodAzimov, _IdPsiPrime, EPSI[i], scen_psi2s_par) 
-          << " " <<scen_psi2s->EvalPar(&EPSI[i], scen_psi2s_par) 
-          << " " <<scen_psi2s->Eval(EPSI[i])
-          << endl;
-      }
-      scen_psi2s_g->SetMarkerStyle(21);
-      scen_psi2s_g->SetMarkerSize(1.5);
-      fun_psi2s->Draw("al");
-      scen_psi2s_g->Draw("p");
-      scen_psi2s->GetXaxis()->SetTitle("E, MeV");
+      case 1:
+        dm=0;
+        Es =  {1838.0+dm, 1841.8+dm, 1842.4+dm, 1843.0+dm, 1843.7+dm, 1844.4+dm, 1847.0+dm};
+        draw_res(_IdPsiPrime,1.56,Es);
+        break;
+      case 2:
+        dm=0;
+        Es = {1544.0, 1547.7, 1548.1, 1548.5, 1548.9, 1549.3,1552.0};
+        draw_res(_IdJPsi,1.56*sq(_MJPsi/_MPsiPrime),Es);
+        break;
     }
-    if(arguments.view==2)
-    {
-      TCanvas * jpsi_c  = new TCanvas;
-      Double_t* scen_jpsi_par  = new Double_t [4];
-      scen_jpsi_par[0]=0;
-      scen_jpsi_par[1]=1;   
-      scen_jpsi_par[2]=_MJPsi/2.;
-      scen_jpsi_par[3]=1.1;
-      TF1* scen_jpsi=new TF1("scenjpsi",myJPsiCrossSection,1540.,1555,4);  
-      scen_jpsi->SetParameters(scen_jpsi_par);
-      scen_jpsi->Draw();
-      double EJPSI[7] = {1544.0, 1547.7, 1548.1, 1548.5, 1548.9, 1549.3,1552.0};
-      TGraph * scen_jpsi_g = new TGraph;
-      for(int i=0;i<7;i++)
-      {
-        scen_jpsi_g->SetPoint(i,EJPSI[i],scen_jpsi->Eval(EJPSI[i]));
-      }
-      scen_jpsi_g->SetMarkerStyle(21);
-      scen_jpsi_g->SetMarkerSize(1.5);
-      scen_jpsi_g->Draw("p");
-    }
-
     theApp->Run();
   }
 
