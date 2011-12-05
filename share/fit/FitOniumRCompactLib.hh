@@ -60,9 +60,6 @@ Double_t HANDLEDGAUSS(Double_t F(Double_t W,Double_t* parf),Double_t A,Double_t 
 Double_t HANDLEDGAUSSOLD(Double_t F(Double_t W,Double_t* parf),Double_t A,Double_t B,Double_t* par, Double_t eps);
 Double_t FCrossSection(Double_t* Eb,Double_t* par);
 
-Double_t myPsiPrimeCrossSection(Double_t* Eb,Double_t* par);
-Double_t myJPsiCrossSection(Double_t* Eb,Double_t* par);
-
 
 void SeparatePointsPartNew(Int_t npini,Double_t* q,Int_t* npfin,Int_t* NpUse,Double_t* SortArray,Double_t Diff);
 void SumPointsSimple(Int_t npini,Int_t npfin,Int_t* UsePoints,Double_t* v,Double_t* vn);

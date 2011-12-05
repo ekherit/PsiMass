@@ -380,7 +380,7 @@ int main(int argc, char **argv)
     theApp=new  TApplication("App", &argc, argv);
   };  
 
-  if(arguments.view==1 || arguments.view==2)
+  if(arguments.view!=0)
   {
     double dm=0;
     vector <double> Es;
