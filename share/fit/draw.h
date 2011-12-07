@@ -70,11 +70,11 @@ inline void draw_res(int resid, double sW, std::vector <double> & Es)
         //  << " " <<scen_psi2s->Eval(EPSI[i])
         //  << endl;
   }
-  graph->SetMarkerStyle(21);
-  graph->SetMarkerSize(1.5);
+  graph->SetMarkerStyle(20);
+  graph->SetMarkerSize(3);
   graph->SetMarkerColor(kRed);
   fun->Draw("ac");
-  fun->SetLineWidth(3);
+  fun->SetLineWidth(2);
   graph->Draw("p");
   fun->GetXaxis()->SetTitle("E, MeV");
 }
