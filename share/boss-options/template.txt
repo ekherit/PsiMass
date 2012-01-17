@@ -6,7 +6,7 @@
 
 // Input REC or DST file name 
 EventCnvSvc.digiRootInputFile = {
-  "run_0020333_All_file001_SFO-1.dst"
+    TEMPLATE_DST_FILES
 	};
 
 // Set output level threshold (2=DEBUG, 3=INFO, 4=WARNING, 5=ERROR, 6=FATAL )
@@ -16,6 +16,6 @@ MessageSvc.OutputLevel = 5;
 ApplicationMgr.EvtMax = 1000000000;
 
 ApplicationMgr.HistogramPersistency = "ROOT";
-NTupleSvc.Output = { "FILE1 DATAFILE='psip-RUNNUMBER.root' OPT='NEW' TYP='ROOT'"};
+NTupleSvc.Output = {"FILE1 DATAFILE='psip-RUNNUMBER.root' OPT='NEW' TYP='ROOT'"};
 
 				
