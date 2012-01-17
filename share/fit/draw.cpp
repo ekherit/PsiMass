@@ -39,6 +39,10 @@ int main(int argc, char ** argv)
   EsPsiP =  {1838.0+dm, 1841.8+dm, 1842.4+dm, 1843.0+dm, 1843.7+dm, 1844.4+dm, 1847.0+dm};
         draw_res(_IdPsiPrime,sW,EsPsiP);
   EsJPsi = {1544.0, 1547.7, 1548.1, 1548.5, 1548.9, 1549.3,1552.0};
+  vector<double> EsTau = { 1771, 1776.5, 1776.9, 1780.3,1792};
   draw_res(_IdJPsi,sW*sq(_MJPsi/_MPsiPrime),EsJPsi);
+  for(double E: EsPsiP) cout << E << " " << E/cos(0.022/2)<< "\t"<<E/cos(0.022/2)-E << endl;
+  for(double E: EsJPsi) cout << E << " " << E/cos(0.022/2)<< "\t"<<E/cos(0.022/2)-E << endl;
+  for(double E: EsTau) cout << E << " " <<  E/cos(0.022/2)<< "\t"<<E/cos(0.022/2)-E << endl;
   theApp->Run();
 }
