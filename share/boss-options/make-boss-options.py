@@ -42,5 +42,5 @@ for run in range(25244,25337):
   #f.write("cd  $PSIP_BATCH\n")
   #f.write("boss.exe boss-options/"+str(run)+".cfg\n")
   print "Proceeding run ", run
-  os.path.walk("/home/nikolaev/work/BES/test", proceed, run)
+  os.path.walk("../data", proceed, run)
 
