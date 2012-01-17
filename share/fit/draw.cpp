@@ -39,6 +39,8 @@ int main(int argc, char ** argv)
   EsPsiP =  {1838.0+dm, 1841.8+dm, 1842.4+dm, 1843.0+dm, 1843.7+dm, 1844.4+dm, 1847.0+dm};
         draw_res(_IdPsiPrime,sW,EsPsiP);
   EsJPsi = {1544.0, 1547.7, 1548.1, 1548.5, 1548.9, 1549.3,1552.0};
+  vector<double>  jpsi_add = { 1547.5, 1547.9, 1547.9, 1548.3, 1648.7};
+  EsJPsi.add(jpsi_add);
   draw_res(_IdJPsi,sW*sq(_MJPsi/_MPsiPrime),EsJPsi);
   theApp->Run();
 }
