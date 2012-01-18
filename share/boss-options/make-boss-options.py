@@ -37,10 +37,11 @@ def proceed(run, directory, files):
     configure('template.txt',TARGET_FILE,TEMPLATE_RUN_NUMBER, TEMPLATE_DST_FILES)
 
 for run in range(25244,25337):
-  #filename = str(run)+".sh"
-  #f = open(filename, 'w')
-  #f.write("cd  $PSIP_BATCH\n")
-  #f.write("boss.exe boss-options/"+str(run)+".cfg\n")
   print "Proceeding run ", run
   os.path.walk("../data", proceed, run)
+  #create qsub files
+  filename = str(run)+".sh"
+  f = open(filename, 'w')
+  f.write("cd  $PSIP_BATCH\n")
+  f.write("boss.exe boss-options/"+str(run)+".cfg\n")
 
