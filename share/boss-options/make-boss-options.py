@@ -44,6 +44,6 @@ for run in range(25244,25337):
   f = open(filename, 'w')
   f.write("#!/bin/tcsh\n")
   f.write("cd  $PSIP_BATCH\n")
-  f.write("source setup.csh\n")
+  f.write("source $PSIP_BATCH/setup.csh\n")
   f.write("boss.exe boss-options/"+str(run)+".cfg\n")
 
