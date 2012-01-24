@@ -41,12 +41,11 @@
 #include "selection.h"
 #include "interference.h"
 #include "RunInfo.h"
+#include "energy.h"
 using namespace std;
 
 
 
-const double BEPC_ALPHA=0.022; //BEPC crossing angle
-const double Me=0.510998918; //Electron mass, MeV
 
 #include "first-scan.h"
 TTree * get_tree(const char * file)
@@ -220,22 +219,6 @@ void make_runinfo(list<RunInfo_t> & runinfo)
 }
 
 
-/*  calculate c.m.s energy */
-double cm_energy(double Ee, double Ep)
-{
-  double pe = sqrt(Ee*Ee-Me*Me);
-  double pp = sqrt(Ep*Ep-Me*Me);
-  return sqrt((Ee+Ep)*(Ee+Ep) - pe*pe - pp*pp + 2*pe*pp*cos(BEPC_ALPHA));
-  //return 2*sqrt(Ee*Ep)*cos(alpha/2.);
-}
-
-double dW_dE1(double E1, double E2)
-{
-  double W=cm_energy(E1,E2);
-  double p1 = sqrt(E1*E1-Me*Me);
-  double p2 = sqrt(E2*E2-Me*Me);
-  return (E2+p2/p1*E1*cos(BEPC_ALPHA))/W;
-}
 
 void print_data(const vector<ScanPoint_t> &pv)
 {
@@ -413,13 +396,9 @@ void make_scan_points2(vector <ScanPoint_t> &pv)
   unsigned RISIZE=RI.size();
   read_run_info("psip-2011-run-info.txt", RI);
   cout << "Done" << endl;
-  cout << "size=" << RISIZE << endl;
-  pv.resize(RISIZE);
-  cout << "Not done" << endl;
-  for(unsigned i=0; i<RISIZE; ++i)
+  pv.resize(RI.size());
+  for(unsigned i=0; i<pv.size(); ++i)
   {
-    cout << i << " run = " <<endl;
-    cout << RI[i].run<< endl;
     pv[i].pn=i;
     pv[i].scan=1; //scan number the same
     pv[i].lum = RI[i].lum;
@@ -434,11 +413,50 @@ void make_scan_points2(vector <ScanPoint_t> &pv)
     pv[i].dSp=RI[i].p.dS;
     pv[i].W = cm_energy(pv[i].Ee, pv[i].Ep);
     pv[i].dW = sqrt(sq(dW_dE1(pv[i].Ee,pv[i].Ep)*pv[i].dEe) + sq(dW_dE1(pv[i].Ep,pv[i].Ee)*pv[i].dEp));
+    pv[i].Sw = sqrt(pv[i].Sp*pv[i].Sp+pv[i].Se*pv[i].Se);
+    pv[i].dSw = sqrt(sq(pv[i].Sp*pv[i].dSp)+sq(pv[i].Se*pv[i].dSe))/pv[i].Sw;
+    cout << i << " run="<< RI[i].run << " ";
+    cout << "W="<<pv[i].W << "+-" << pv[i].dW;
+    cout << "lum=" << pv[i].lum;
+    cout << endl;
   }
   cout << "end of make scan points " << endl;
 }
 
-
+void draw_energy_vs_time(void)
+{
+  vector <RunInfo_t> pv;
+  read_run_info("psip-2011-run-info.txt",pv);
+  TGraphErrors * besrung=new TGraphErrors(pv.size());
+  TGraphErrors * emsruneg=new TGraphErrors(pv.size());
+  TGraphErrors * emsrunpg=new TGraphErrors(pv.size());
+  for(unsigned i=0;i<pv.size();++i)
+  {
+    double t = pv[i].begin_time/2.+pv[i].end_time/2.;
+    double dt = pv[i].end_time/2. - pv[i].begin_time/2.;
+    cout << t << " " << dt << endl;
+    besrung->SetPoint(i,t,pv[i].W);
+    besrung->SetPointError(i,dt,pv[i].dW);
+    t = pv[i].e.begin_time/2.+pv[i].e.end_time/2.;
+    dt = pv[i].e.end_time/2. - pv[i].e.begin_time/2.;
+    cout << t << " " << dt << " " << pv[i].e.begin_time << " " << pv[i].e.end_time << endl;
+    emsruneg->SetPoint(i,t,pv[i].e.E*2);
+    emsruneg->SetPointError(i,dt,pv[i].e.dE*2);
+    t = pv[i].p.begin_time/2.+pv[i].p.end_time/2.;
+    dt = pv[i].p.end_time/2. - pv[i].p.begin_time/2.;
+    cout << t << " " << dt << endl;
+    emsrunpg->SetPoint(i,t,pv[i].p.E*2);
+    emsrunpg->SetPointError(i,dt,pv[i].p.dE*2);
+  }
+  besrung->SetMarkerStyle(20);
+  emsruneg->SetMarkerStyle(21);
+  emsrunpg->SetMarkerStyle(22);
+  besrung->Draw("ap");
+  emsruneg->Draw("p");
+  emsruneg->SetMarkerColor(kBlue);
+  emsrunpg->SetMarkerColor(kRed);
+  emsrunpg->Draw("p");
+}
 
 void make_result(void)
 {
@@ -491,7 +509,7 @@ void make_result(void)
     {
       unsigned run=*i;
       char file_name[1024];
-      sprintf(file_name,"psip-%d.root",run);
+      sprintf(file_name,"data/%d.root",run);
       mdc->AddFile(file_name);
       emc->AddFile(file_name);
       gg->AddFile(file_name);
@@ -508,6 +526,8 @@ void make_result(void)
     pv[pn].Ngg=Ngg;
     cout << setw(6) << pn+1 << setw(10) << Nsignal << setw(10)<< Nbhabha << setw(10)<< Ngg 
       <<  setw(10)<< setprecision(4) << double(Nbhabha)/double(Ngg) <<  " " << (pv[pn].lum_ee_cor-1)*100.;
+    cout << setw(10) << pv[pn].Sw<<"+-"<<pv[pn].dSw;
+    cout << endl;
     delete mdc;
     delete emc;
     delete gg;
@@ -537,7 +557,9 @@ void make_result(void)
       setw(fw)<< pv[i].Nee <<
       setw(fw)<< pv[i].Ngg <<
 			setw(fw)<< pv[i].lum_ee_cor;
-    cout << os.str() << setw(fw) << double(pv[i].Nee)/pv[i].lum << setw(fw) << double(pv[i].Nee)/double(pv[i].Ngg) << endl;
+    cout << os.str() << setw(fw) << double(pv[i].Nee)/pv[i].lum << setw(fw) << double(pv[i].Nee)/double(pv[i].Ngg);
+    cout << setw(fw) << pv[i].Sw<<"+-"<<pv[i].dSw;
+    cout << endl;
     scan12 << os.str() << endl;
     switch(pv[i].scan)
     {

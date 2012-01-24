@@ -49,6 +49,8 @@ struct RunInfo_t
   double BEPC_Ep;
   double Ie1, Ie2;
   double Ip1, Ip2;
+  double W;
+  double dW;
   EMS_t e,p; //energy and error for electron (e) and positron p
   RunInfo_t(void)
   {

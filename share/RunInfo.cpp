@@ -17,6 +17,7 @@
  */
 
 #include "RunInfo.h"
+#include "energy.h"
 #include <vector>
 #include <fstream>
 #include <iostream>
@@ -91,10 +92,12 @@ void read_run_info(const char * filename, RunInfo_t * RI, unsigned & RIsize)
     ri.end_time = ts2.unixtime;
     file  >> ri.e.E >> ri.e.dE >> ri.e.S >> ri.e.dS >> emst1 >> emst2;
     ri.e.begin_time = emst1.unixtime;
-    ri.e.begin_time = emst2.unixtime;
+    ri.e.end_time = emst2.unixtime;
     file  >> ri.p.E >> ri.p.dE >> ri.p.S >> ri.p.dS >> emst1 >> emst2;
     ri.p.begin_time = emst1.unixtime;
-    ri.p.begin_time = emst2.unixtime;
+    ri.p.end_time = emst2.unixtime;
+    ri.W = cm_energy(ri.e.E,ri.p.E);
+    ri.dW=dcm_energy(ri.e.E,ri.e.dE,ri.p.E,ri.p.dE);
     file.ignore(1000,'\n');
     RI2.push_back(ri);
     std::cout.precision(14);
@@ -136,15 +139,23 @@ void read_run_info(const char * filename, std::vector<RunInfo_t> & RI)
     ri.end_time = ts2.unixtime;
     file  >> ri.e.E >> ri.e.dE >> ri.e.S >> ri.e.dS >> emst1 >> emst2;
     ri.e.begin_time = emst1.unixtime;
-    ri.e.begin_time = emst2.unixtime;
+    ri.e.end_time = emst2.unixtime;
+    cout << emst1.str << " " << emst2.str << endl;
+    cout << emst1.unixtime << " " << emst2.unixtime << endl;
+
     file  >> ri.p.E >> ri.p.dE >> ri.p.S >> ri.p.dS >> emst1 >> emst2;
     ri.p.begin_time = emst1.unixtime;
-    ri.p.begin_time = emst2.unixtime;
+    ri.p.end_time = emst2.unixtime;
+    ri.W = cm_energy(ri.e.E,ri.p.E);
+    ri.dW=dcm_energy(ri.e.E,ri.e.dE,ri.p.E,ri.p.dE);
     file.ignore(1000,'\n');
     RI2.push_back(ri);
     std::cout.precision(14);
     std::cout << ri.run << " " << ri.lum << " " << ts1.unixtime << " " << ts2.unixtime << " ";
-    std::cout << ri.e.E << " " << ri.p.E << std::endl;
+    std::cout << ri.e.E << " " << ri.p.E << " ";
+    std::cout << ri.e.S << " " << ri.p.S << " ";
+    std::cout << ri.W << " " << ri.dW << " ";
+    std::cout<< std::endl;
   }
   file.close();
   RI.resize(RI2.size());

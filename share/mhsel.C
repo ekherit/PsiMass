@@ -19,6 +19,7 @@
   gSystem->CompileMacro("interference.cpp","kO");
   gSystem->CompileMacro("RunInfo.cpp","kO");
   gSystem->CompileMacro("mhsel.cpp","kO");
-  make_result();
+  draw_energy_vs_time();
+  //make_result();
 }
 
