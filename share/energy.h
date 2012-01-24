@@ -41,6 +41,6 @@ double dW_dE1(double E1, double E2)
 
 double dcm_energy(double Ee, double dEe, double Ep, double dEp)
 {
-    double dWcm = sqrt(sq(dW_dE1(Ee,Ep)*dEe) + sq(dW_dE1(Ep,Ee)*dEp));
+    return sqrt(sq(dW_dE1(Ee,Ep)*dEe) + sq(dW_dE1(Ep,Ee)*dEp));
 }
 #endif

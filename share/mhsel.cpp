@@ -171,7 +171,7 @@ void track_number(void)
   gn->Draw("a*");
 }
 
-void set_alias(TTree * t)
+void set_alias(TTree * )
 {
   //t->SetAlias("ecut", "mdc.E>=0.05");
   //t->SetAlias("ngt","Sum$(mdc.E>=0.05)");
@@ -388,12 +388,62 @@ void make_scan_points(vector <ScanPoint_t> &pv)
   };
 }
 
+bool ScanPoint_energy_comp(const ScanPoint_t & sp1, const ScanPoint_t &sp2)
+{
+  return sp1.W < sp2.W;
+}
+
+void combine(double dW, list<ScanPoint_t> & spl, list<ScanPoint_t> &cmb)
+{
+  ibn::averager<double> Wa; //averager for the cm energy
+  ibn::averager<double> Sa; //averager for the energy spread
+  double lastW=0,lastdW=0;
+  ScanPoint_t sp;
+  unsigned pn=0;
+  for(list<ScanPoint_t>::iterator i=spl.begin();i!=spl.end();++i)
+  {
+    double W = i->W;
+    if(i!=spl.begin() && abs(W-Wa.average())>dW)
+    {
+      sp.W = Wa.waverage();
+      sp.dW=  Wa.wsigma_average();
+      sp.Sw = Sa.waverage();
+      sp.dSw = Sa.wsigma_average();
+      sp.pn=pn++;
+      cmb.push_back(sp);
+      Wa.reset();
+      ScanPoint_t tmpsp;
+      sp=tmpsp;
+    }
+    if(i->W!=lastW && i->dW != lastdW) 
+    {
+      Wa.add(W,i->lum/sq(i->dW));
+      Sa.add(i->Sw,i->lum/sq(i->dSw));
+    }
+    lastW=i->W;
+    lastdW=i->dW;
+    sp.runs.insert(sp.runs.end(),i->runs.begin(),i->runs.end());
+    sp.ri.insert(sp.ri.end(),i->ri.begin(),i->ri.end());
+    sp.lum+=i->lum;
+    sp.Nh+=i->Nh;
+    sp.Nee+=i->Nee;
+    sp.Ngg+=i->Ngg;
+  }
+  sp.W = Wa.waverage();
+  sp.dW= Wa.wsigma_average();
+  sp.Sw = Sa.waverage();
+  sp.dSw = Sa.wsigma_average();
+  sp.pn=pn++;
+  cmb.push_back(sp);
+  Wa.reset();
+  ScanPoint_t tmpsp;
+  sp=tmpsp;
+}
 
 void make_scan_points2(vector <ScanPoint_t> &pv)
 {
   cout << "Reading run info" << endl;
   std::vector<RunInfo_t> RI;
-  unsigned RISIZE=RI.size();
   read_run_info("psip-2011-run-info.txt", RI);
   cout << "Done" << endl;
   pv.resize(RI.size());
@@ -411,8 +461,10 @@ void make_scan_points2(vector <ScanPoint_t> &pv)
     pv[i].dSe=RI[i].e.dS;
     pv[i].Sp=RI[i].p.S;
     pv[i].dSp=RI[i].p.dS;
-    pv[i].W = cm_energy(pv[i].Ee, pv[i].Ep);
-    pv[i].dW = sqrt(sq(dW_dE1(pv[i].Ee,pv[i].Ep)*pv[i].dEe) + sq(dW_dE1(pv[i].Ep,pv[i].Ee)*pv[i].dEp));
+    pv[i].W = RI[i].W;
+    pv[i].dW = RI[i].dW;
+    //pv[i].W = cm_energy(pv[i].Ee, pv[i].Ep);
+    //pv[i].dW = sqrt(sq(dW_dE1(pv[i].Ee,pv[i].Ep)*pv[i].dEe) + sq(dW_dE1(pv[i].Ep,pv[i].Ee)*pv[i].dEp));
     pv[i].Sw = sqrt(pv[i].Sp*pv[i].Sp+pv[i].Se*pv[i].Se);
     pv[i].dSw = sqrt(sq(pv[i].Sp*pv[i].dSp)+sq(pv[i].Se*pv[i].dSe))/pv[i].Sw;
     cout << i << " run="<< RI[i].run << " ";
@@ -421,7 +473,52 @@ void make_scan_points2(vector <ScanPoint_t> &pv)
     cout << endl;
   }
   cout << "end of make scan points " << endl;
+  list<ScanPoint_t> spl;
+  for(unsigned i=0;i<pv.size();++i)
+  {
+    spl.push_back(pv[i]);
+  }
+  spl.sort(ScanPoint_energy_comp);
+  //for(list<ScanPoint_t>::iterator i=spl.begin();i!=spl.end();++i)
+  //{
+  //  cout << "sorted: " << i->runs.front() << " " << i->W << "+-" << i->dW << endl;
+  //}
+  list <ScanPoint_t> cmb;
+  combine(0.5,spl,cmb);
+  unsigned pn=0;
+  for(list<ScanPoint_t>::iterator i=cmb.begin();i!=cmb.end();++i)
+  {
+    cout << setw(3)<< ++pn<< " ";
+    unsigned prevrun=0;
+    i->runs.sort();
+    unsigned ext=0;
+    for(list<unsigned>::iterator r=i->runs.begin();r!=i->runs.end();++r)
+    {
+      if(*r==(prevrun+1)) 
+      {
+        cout << "-";
+      }
+      else 
+      {
+        if(prevrun==0)
+          cout <<*r;
+        else 
+          cout << prevrun<<","<<*r;
+      }
+      prevrun=*r;
+      ext++;
+    }
+    cout << " "  << setprecision(7)<< i->W <<  "+-" << setprecision(4)<<i->dW << " " << i->lum<<endl;
+  }
+  pv.resize(cmb.size());
+  pn=0;
+  for(list<ScanPoint_t>::iterator i=cmb.begin();i!=cmb.end();++i)
+  {
+    pv[pn] = *i;
+    pn++;
+  }
 }
+
 
 void draw_energy_vs_time(void)
 {
@@ -478,22 +575,22 @@ void make_result(void)
   vector <ScanPoint_t> pv;
   make_scan_points2(pv);
   //reset luminosity in order to fill it from runinfo table.
-  for(unsigned point=0;point<pv.size();++point)
-  {
-    pv[point].lum=0;
-    for(list<unsigned>::iterator i=pv[point].runs.begin();i!=pv[point].runs.end(); ++i)
-    {
-      for(list<RunInfo_t>::iterator ri=runinfo.begin(); ri!=runinfo.end(); ++ri)
-      {
-        if(*i==ri->run)
-        {
-          pv[point].lum+=ri->lum;
-          pv[point].ri.push_back(*ri);
-        }
-      }
-    }
-  }
-  cout << setw(6) << "pnt#" << setw(10) << "Nmh" << setw(10) << "Nee" << setw(10) << "Ngg" << setw(10) << "Nee/Ngg"<< endl;
+  //for(unsigned point=0;point<pv.size();++point)
+  //{
+  //  pv[point].lum=0;
+  //  for(list<unsigned>::iterator i=pv[point].runs.begin();i!=pv[point].runs.end(); ++i)
+  //  {
+  //    for(list<RunInfo_t>::iterator ri=runinfo.begin(); ri!=runinfo.end(); ++ri)
+  //    {
+  //      if(*i==ri->run)
+  //      {
+  //        pv[point].lum+=ri->lum;
+  //        pv[point].ri.push_back(*ri);
+  //      }
+  //    }
+  //  }
+  //}
+  cout << setw(6) << "pnt#" << setw(8)<< "lum"<<setw(10) << "Nmh" << setw(10) << "Nee" << setw(10) << "Ngg" << setw(10) << "Nee/Ngg"<< endl;
   for(unsigned pn=0; pn<pv.size(); pn++)
   {
     TChain * mdc = new TChain("mdc","mdc");
@@ -524,9 +621,11 @@ void make_result(void)
 		pv[pn].lum_ee_cor = BBIntCor(pv[pn].W);
     pv[pn].Nee=Nbhabha;
     pv[pn].Ngg=Ngg;
-    cout << setw(6) << pn+1 << setw(10) << Nsignal << setw(10)<< Nbhabha << setw(10)<< Ngg 
-      <<  setw(10)<< setprecision(4) << double(Nbhabha)/double(Ngg) <<  " " << (pv[pn].lum_ee_cor-1)*100.;
-    cout << setw(10) << pv[pn].Sw<<"+-"<<pv[pn].dSw;
+    cout << setw(6) << pn+1<< setw(8) << pv[pn].lum << setw(10) << Nsignal << setw(10)<< Nbhabha << setw(10)<< Ngg 
+      <<  setw(10)<< setprecision(4) << double(Nbhabha)/double(Ngg) 
+      <<  setw(8) << (pv[pn].lum_ee_cor-1)*100.; ;
+    //cout << setw(10) << pv[pn].Sw<<"+-"<<pv[pn].dSw;
+    cout << setw(10) << pv[pn].W<<"+-"<<pv[pn].dW;
     cout << endl;
     delete mdc;
     delete emc;
@@ -563,15 +662,8 @@ void make_result(void)
     scan12 << os.str() << endl;
     switch(pv[i].scan)
     {
-      case 0:
-        break;
-      case 1:
-        scan1 << os.str()<<endl;
-        break;
-      case 2:
-        scan2 << os.str()<<endl;
-        break;
       default:
+        scan1 << os.str()<<endl;
         break;
     }
     nchtr_g->SetPoint(i,i, pv[i].Nchtr.average());

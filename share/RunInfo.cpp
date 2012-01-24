@@ -127,12 +127,26 @@ void read_run_info(const char * filename, std::vector<RunInfo_t> & RI)
   time_string ts1, ts2, emst1, emst2;
   time_string trec; //BES3 record time to data base 
   std::vector<RunInfo_t> RI2;
+  unsigned oldrun=0;
   while(file)
   {
+    //char c = file.get();
+    //if(c=='#')
+    //{
+    //  file.ignore(1000,'\n');
+    //  continue;
+    //}
+    //file.putback(c);
     unsigned tmprun;
     file >> tmprun;
+    if(tmprun==oldrun)
+    {
+      file.ignore(65535,'\n');
+      continue; //exclude double run
+    }
     if(file.eof()) break;
     ri.run=tmprun;
+    oldrun=tmprun;
     file >> ri.Nmh >> ri.lum >> ts1 >> ts2;
     file >> ri.BEPC_Ee >> ri.BEPC_Ep >>  ri.Ip1 >> ri.Ip2 >> ri.Ie1 >> ri.Ie2 >> trec;
     ri.begin_time = ts1.unixtime;
@@ -148,7 +162,7 @@ void read_run_info(const char * filename, std::vector<RunInfo_t> & RI)
     ri.p.end_time = emst2.unixtime;
     ri.W = cm_energy(ri.e.E,ri.p.E);
     ri.dW=dcm_energy(ri.e.E,ri.e.dE,ri.p.E,ri.p.dE);
-    file.ignore(1000,'\n');
+    file.ignore(65535,'\n');
     RI2.push_back(ri);
     std::cout.precision(14);
     std::cout << ri.run << " " << ri.lum << " " << ts1.unixtime << " " << ts2.unixtime << " ";
