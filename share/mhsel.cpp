@@ -527,10 +527,10 @@ void make_scan_points2(vector <ScanPoint_t> &pv)
 }
 
 
-void draw_energy_vs_time(void)
+void draw_energy_vs_time(const char * runinfo_filename)
 {
   vector <RunInfo_t> pv;
-  read_run_info("psip-2011-run-info.txt",pv);
+  read_run_info(runinfo_filename,pv);
   TGraphErrors * besrung=new TGraphErrors(pv.size());
   TGraphErrors * emsruneg=new TGraphErrors(pv.size());
   TGraphErrors * emsrunpg=new TGraphErrors(pv.size());
