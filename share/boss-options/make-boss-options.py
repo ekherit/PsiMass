@@ -36,7 +36,10 @@ def proceed(run, directory, files):
     print TEMPLATE_DST_FILES
     configure('template.txt',TARGET_FILE,TEMPLATE_RUN_NUMBER, TEMPLATE_DST_FILES)
 
-for run in range(25244,25337):
+psi2s2011 = range(25244,25337);
+jpsi2011 = range(24937,24978);
+
+for run in jpsi2011:
   print "Proceeding run ", run
   os.path.walk("../data", proceed, run)
   #create qsub files

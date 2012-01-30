@@ -844,7 +844,7 @@ StatusCode JPsi::execute()
       double c = fabs(cos(emcTrk->theta()));
       double E = emcTrk->energy();
       //hit barrel with threshold 25 MeV and endcup 
-      if((c < 0.82 && E > 0.025) ||  ( 0.86<c && c <0.92 && E > 0.05)) gg.ngood_track++;
+      if((c < 0.82 && E > 0.025) ||  ( 0.86<c && c <0.92 && E > 0.05)) gg.ngood_track++; 
     }
     //normalize sphericity tenzor
     for(int i=0;i<3;i++)
