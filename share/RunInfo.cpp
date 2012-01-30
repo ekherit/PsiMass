@@ -130,13 +130,13 @@ void read_run_info(const char * filename, std::vector<RunInfo_t> & RI)
   unsigned oldrun=0;
   while(file)
   {
-    //char c = file.get();
-    //if(c=='#')
-    //{
-    //  file.ignore(1000,'\n');
-    //  continue;
-    //}
-    //file.putback(c);
+    char c = file.get();
+    if(c=='#')
+    {
+      file.ignore(1000,'\n');
+      continue;
+    }
+    file.putback(c);
     unsigned tmprun;
     file >> tmprun;
     if(tmprun==oldrun)

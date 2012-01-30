@@ -417,8 +417,8 @@ void combine(double dW, list<ScanPoint_t> & spl, list<ScanPoint_t> &cmb)
     }
     if(i->W!=lastW && i->dW != lastdW) 
     {
-      Wa.add(W,i->lum/sq(i->dW));
-      Sa.add(i->Sw,i->lum/sq(i->dSw));
+      Wa.add(W,1./sq(i->dW));
+      Sa.add(i->Sw,1./sq(i->dSw));
     }
     lastW=i->W;
     lastdW=i->dW;
@@ -484,19 +484,27 @@ void make_scan_points2(vector <ScanPoint_t> &pv)
   //  cout << "sorted: " << i->runs.front() << " " << i->W << "+-" << i->dW << endl;
   //}
   list <ScanPoint_t> cmb;
-  combine(0.5,spl,cmb);
+  combine(0.2,spl,cmb);
   unsigned pn=0;
   for(list<ScanPoint_t>::iterator i=cmb.begin();i!=cmb.end();++i)
   {
     cout << setw(3)<< ++pn<< " ";
     unsigned prevrun=0;
     i->runs.sort();
-    unsigned ext=0;
     for(list<unsigned>::iterator r=i->runs.begin();r!=i->runs.end();++r)
     {
       if(*r==(prevrun+1)) 
       {
-        cout << "-";
+        if(++r!=i->runs.end())
+        {
+          cout << "-";
+          r--;
+        }
+        else 
+        {
+          r--;
+          cout << *r;
+        }
       }
       else 
       {
@@ -506,7 +514,6 @@ void make_scan_points2(vector <ScanPoint_t> &pv)
           cout << prevrun<<","<<*r;
       }
       prevrun=*r;
-      ext++;
     }
     cout << " "  << setprecision(7)<< i->W <<  "+-" << setprecision(4)<<i->dW << " " << i->lum<<endl;
   }
@@ -532,23 +539,25 @@ void draw_energy_vs_time(void)
     double t = pv[i].begin_time/2.+pv[i].end_time/2.;
     double dt = pv[i].end_time/2. - pv[i].begin_time/2.;
     cout << t << " " << dt << endl;
-    besrung->SetPoint(i,t,pv[i].W);
-    besrung->SetPointError(i,dt,pv[i].dW);
+    besrung->SetPoint(i,t,pv[i].W/2.+0.1);
+    besrung->SetPointError(i,dt,pv[i].dW/2.);
     t = pv[i].e.begin_time/2.+pv[i].e.end_time/2.;
     dt = pv[i].e.end_time/2. - pv[i].e.begin_time/2.;
     cout << t << " " << dt << " " << pv[i].e.begin_time << " " << pv[i].e.end_time << endl;
-    emsruneg->SetPoint(i,t,pv[i].e.E*2);
-    emsruneg->SetPointError(i,dt,pv[i].e.dE*2);
+    emsruneg->SetPoint(i,t,pv[i].e.E);
+    emsruneg->SetPointError(i,dt,pv[i].e.dE);
     t = pv[i].p.begin_time/2.+pv[i].p.end_time/2.;
     dt = pv[i].p.end_time/2. - pv[i].p.begin_time/2.;
     cout << t << " " << dt << endl;
-    emsrunpg->SetPoint(i,t,pv[i].p.E*2);
-    emsrunpg->SetPointError(i,dt,pv[i].p.dE*2);
+    emsrunpg->SetPoint(i,t,pv[i].p.E);
+    emsrunpg->SetPointError(i,dt,pv[i].p.dE);
   }
   besrung->SetMarkerStyle(20);
   emsruneg->SetMarkerStyle(21);
   emsrunpg->SetMarkerStyle(22);
   besrung->Draw("ap");
+  besrung->GetXaxis()->SetTimeDisplay(1);
+  besrung->GetXaxis()->SetTimeFormat("%H:%M%F1970-01-01");
   emsruneg->Draw("p");
   emsruneg->SetMarkerColor(kBlue);
   emsrunpg->SetMarkerColor(kRed);
@@ -736,7 +745,7 @@ void make_result(void)
   TGraphErrors * REEg[2];
   TGraphErrors * RGGg[2];
   TLegend * l = new TLegend(0.6,0.8,1.0,1.0);
-  for(int i=0;i<2;i++)
+  for(int i=0;i<1;i++)
   {
     RLg[i] = new TGraphErrors;
     REEg[i] = new TGraphErrors;
@@ -758,25 +767,25 @@ void make_result(void)
     sprintf(buf, "scan %d,  #gamma#gamma lum",i+1);
     l->AddEntry(RGGg[i],buf,"p");
   }
-  unsigned Nscan1=6;
-  for(unsigned i=0; i<Nscan1; i++)
+  unsigned Nscan1=100;
+  for(unsigned i=0; i<pv.size(); i++)
   {
-    RLg[0]->SetPoint(i, pv[i].W, double(pv[i].Nh)/pv[i].lum);
-    REEg[0]->SetPoint(i,pv[i].W, double(pv[i].Nh)/pv[i].Nee*Kee);
-    RGGg[0]->SetPoint(i,pv[i].W, double(pv[i].Nh)/pv[i].Ngg*Kgg);
-    RLg[0]->SetPointError(i, pv[i].dW, sqrt(double(pv[i].Nh))/pv[i].lum);
-    REEg[0]->SetPointError(i,pv[i].dW,double(pv[i].Nh)/pv[i].Nee*Kee*sqrt(1./pv[i].Nh+1./pv[i].Nee));
-    RGGg[0]->SetPointError(i,pv[i].dW,double(pv[i].Nh)/pv[i].Ngg*Kgg*sqrt(1./pv[i].Nh+1./pv[i].Ngg));
+    RLg[0]->SetPoint(i, pv[i].W/2, double(pv[i].Nh)/pv[i].lum);
+    REEg[0]->SetPoint(i,pv[i].W/2, double(pv[i].Nh)/pv[i].Nee*Kee);
+    RGGg[0]->SetPoint(i,pv[i].W/2, double(pv[i].Nh)/pv[i].Ngg*Kgg);
+    RLg[0]->SetPointError(i, pv[i].dW/2, sqrt(double(pv[i].Nh))/pv[i].lum);
+    REEg[0]->SetPointError(i,pv[i].dW/2,double(pv[i].Nh)/pv[i].Nee*Kee*sqrt(1./pv[i].Nh+1./pv[i].Nee));
+    RGGg[0]->SetPointError(i,pv[i].dW/2,double(pv[i].Nh)/pv[i].Ngg*Kgg*sqrt(1./pv[i].Nh+1./pv[i].Ngg));
   }
-  for(unsigned i=Nscan1; i<pv.size(); i++)
-  {
-    RLg[1]->SetPoint (i-Nscan1,pv[i].W, double(pv[i].Nh)/pv[i].lum);
-    REEg[1]->SetPoint(i-Nscan1,pv[i].W, double(pv[i].Nh)/pv[i].Nee*Kee);
-    RGGg[1]->SetPoint(i-Nscan1,pv[i].W, double(pv[i].Nh)/pv[i].Ngg*Kgg);
-     RLg[1]->SetPointError(i-Nscan1,pv[i].dW, sqrt(double(pv[i].Nh))/pv[i].lum);
-    REEg[1]->SetPointError(i-Nscan1,pv[i].dW,double(pv[i].Nh)/pv[i].Nee*Kee*sqrt(1./pv[i].Nh+1./pv[i].Nee));
-    RGGg[1]->SetPointError(i-Nscan1,pv[i].dW,double(pv[i].Nh)/pv[i].Ngg*Kgg*sqrt(1./pv[i].Nh+1./pv[i].Ngg));
-  }
+  //for(unsigned i=Nscan1; i<pv.size(); i++)
+  //{
+  //  RLg[1]->SetPoint (i-Nscan1,pv[i].W/2, double(pv[i].Nh)/pv[i].lum);
+  //  REEg[1]->SetPoint(i-Nscan1,pv[i].W/2, double(pv[i].Nh)/pv[i].Nee*Kee);
+  //  RGGg[1]->SetPoint(i-Nscan1,pv[i].W/2, double(pv[i].Nh)/pv[i].Ngg*Kgg);
+  //   RLg[1]->SetPointError(i-Nscan1,pv[i].dW/2, sqrt(double(pv[i].Nh))/pv[i].lum);
+  //  REEg[1]->SetPointError(i-Nscan1,pv[i].dW/2,double(pv[i].Nh)/pv[i].Nee*Kee*sqrt(1./pv[i].Nh+1./pv[i].Nee));
+  //  RGGg[1]->SetPointError(i-Nscan1,pv[i].dW/2,double(pv[i].Nh)/pv[i].Ngg*Kgg*sqrt(1./pv[i].Nh+1./pv[i].Ngg));
+  //}
 
   TCanvas * result_c = new TCanvas;
   result_c->SetGridx();
