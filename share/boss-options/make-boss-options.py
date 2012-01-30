@@ -41,12 +41,12 @@ jpsi2011 = range(24937,24978);
 
 for run in jpsi2011:
   print "Proceeding run ", run
-  os.path.walk("../data", proceed, run)
+  os.path.walk("data", proceed, run)
   #create qsub files
   filename = str(run)+".sh"
   f = open(filename, 'w')
   f.write("#!/bin/tcsh\n")
   f.write("cd  $PSIP_BATCH\n")
   f.write("source $PSIP_BATCH/setup.csh\n")
-  f.write("boss.exe boss-options/"+str(run)+".cfg\n")
+  f.write("boss.exe "+str(run)+".cfg\n")
 
