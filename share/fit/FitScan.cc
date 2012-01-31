@@ -761,8 +761,11 @@ int main(int argc, char **argv)
   if(FreeEnergyFit==1) nf-=NEp;
 
   cout.precision(15);
-  cout<<"Minuit Mass= "<<_MPsiPrime+parRes[2]*2.<<endl;
-  cout<<"PDG Mass= "<<_MPsiPrime<<endl;
+  double PDGMASS=0;
+  if(JpsiFitOnly) PDGMASS=_MJPsi;
+  else  PDGMASS=_MPsiPrime;
+  cout<<"Minuit Mass= "<<PDGMASS+parRes[2]*2.<<endl;
+  cout<<"PDG Mass= "<<PDGMASS<<endl;
   cout.precision(4);
   cout<<"M-Mpdg="<<parRes[2]*2.<< " +- " << parErrRes[2]*2. <<  " MeV." << endl;
   cout<< "chi2/ndf = " <<MinChi2 << "/(" << NpPP<<"-"<<nf<<") = "  << MinChi2/(NpPP-nf) << ", P(chi2)=" << TMath::Prob(MinChi2,NpPP-nf) << endl;
@@ -847,7 +850,13 @@ int main(int argc, char **argv)
 	dNgr->Fit("pol0", "Q");
 
   GrRes=new TGraphErrors(NEp,WInScan,CrossSInScan,WErrInScan,CrossSErrInScan);
-  TF1* FitPsiP=new TF1("FitPsiP",FCrSPPrimeAzimov,1836.*ScaleEGr,1855*ScaleEGr,idRNP);  
+  TF1 * fitfun1=0;
+  TF1 * fitfun2=0;
+  if(JpsiFitOnly)
+    fitfun1  = new TF1("FitJPsi",FCrSJpsiAzimov,1540*ScaleEGr,1560*ScaleEGr,idRNP);
+  else 
+    fitfun1  = new TF1("FitPsiP",FCrSPPrimeAzimov,1836.*ScaleEGr,1855*ScaleEGr,idRNP);;
+  TF1* FitPsiP = fitfun1;
   TF1* FitPsiP2=new TF1("FitPsiP2",FCrSPPrimeAzimov,1836.*ScaleEGr,1855*ScaleEGr,idRNP);  
   FitPsiP->SetParameters( parPsiPF);
   FitPsiP2->SetParameters( parPsiPF2);
@@ -878,6 +887,7 @@ int main(int argc, char **argv)
   latexM1->SetTextColor(2);       
   sprintf(Info1,"#chi^{2}_{#psi(2S)}=%3.3f/ (%d -%d) =%3.3f",MinChi2,NpPP,nf,MinChi2/(NpPP-nf)); 
   double xx=1838*ScaleEGr;
+  if(JpsiFitOnly) xx=1545*ScaleEGr;
   //double yy = parRes[0]*5;
   double yy = FitPsiP->GetMaximum();
   latexM1->DrawLatex(xx,yy,Info1);
@@ -975,7 +985,8 @@ void fcnResMult(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
     //Correction to efficiency
     //parmh[idReff]=par[1]*MhadrCor(2*Energy);
     //cout << "Correction to efficiency: " << (MhadrCor(2*Energy)-1)*1000. << " ppm" << endl;
-    sigmaMH=CrSOniumR(_MethodAzimov,_IdPsiPrime,Energy,parmh);  
+    if(JpsiFitOnly) sigmaMH=CrSOniumR(_MethodAzimov,_IdJPsi,Energy,parmh);  
+    else sigmaMH=CrSOniumR(_MethodAzimov,_IdPsiPrime,Energy,parmh);  
     sigmaBB=CrossSBhabhaPP(Energy,&CrossBhabha);                        
     sigmaGG=CrossSBhabhaPP(Energy,&CrossGG);                        
     switch(LUMINOSITY)

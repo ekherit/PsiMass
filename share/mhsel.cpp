@@ -440,11 +440,11 @@ void combine(double dW, list<ScanPoint_t> & spl, list<ScanPoint_t> &cmb)
   sp=tmpsp;
 }
 
-void make_scan_points2(vector <ScanPoint_t> &pv)
+void make_scan_points2(const char * runinfo_filename, vector <ScanPoint_t> &pv)
 {
   cout << "Reading run info" << endl;
   std::vector<RunInfo_t> RI;
-  read_run_info("psip-2011-run-info.txt", RI);
+  read_run_info(runinfo_filename, RI);
   cout << "Done" << endl;
   pv.resize(RI.size());
   for(unsigned i=0; i<pv.size(); ++i)
@@ -564,7 +564,7 @@ void draw_energy_vs_time(const char * runinfo_filename)
   emsrunpg->Draw("p");
 }
 
-void make_result(void)
+void make_result(const char * runinfo_filename)
 {
   //Cut used in selection;
   TCut  mh_cut;
@@ -582,7 +582,7 @@ void make_result(void)
   list<RunInfo_t> runinfo;
   make_runinfo(runinfo);
   vector <ScanPoint_t> pv;
-  make_scan_points2(pv);
+  make_scan_points2(runinfo_filename, pv);
   //reset luminosity in order to fill it from runinfo table.
   //for(unsigned point=0;point<pv.size();++point)
   //{

@@ -36,7 +36,8 @@
 #define _GeeJPsi            5.55e-3
 //#define _GeePsiPrime        2.38e-3 //average PDG
 #define _GeePsiPrime        2.35e-3 //PDG-2010
-#define _GtotJPsi           93.2e-3  //
+//#define _GtotJPsi           93.2e-3  //
+#define _GtotJPsi           92.9e-3  //PDG-2012
 #define _GtotPsiPrime       304e-3  //
 #define _BllJPsi            0.0594
 #define _BllPsiPrime        0.00743
@@ -53,6 +54,7 @@ Double_t K_FuncRInterfPsiP(Double_t W, Double_t* parf);
 Double_t K_FuncRInterfJPsi(Double_t W, Double_t* parf);
 Double_t CrossSBhabhaPP(Double_t Eb,Double_t* par);
 Double_t FCrSPPrimeAzimov(Double_t* Eb,Double_t* par);
+Double_t FCrSJpsiAzimov(Double_t* Eb,Double_t* par);
 
 Double_t CrSOniumR(Int_t Method,Int_t Id,Double_t Eb,Double_t* par);
 Double_t CrSOniumRAzimov(Int_t Id,Double_t Eb,Double_t* par);
