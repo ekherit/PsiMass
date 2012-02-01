@@ -1,17 +1,20 @@
 #define _HESSE_ 1 // calculate errors with HESSE
 #define _MINOs_ 1 // use minos errors
-#include<iostream>
-#include<stdlib.h>
-#include<iomanip>
-#include<math.h>
+#include <iostream>
+#include <stdlib.h>
+#include <iomanip>
+#include <math.h>
 #include <complex>
-#include<string>
-#include<assert.h>
-#include<stdio.h>
-#include<fstream>
-#include<unistd.h>
+#include <string>
+#include <assert.h>
+#include <stdio.h>
+#include <fstream>
+#include <unistd.h>
 #include <error.h>
 #include <argp.h>
+
+#include <boost/program_options.hpp>
+
 #include <TROOT.h>
 #include <TH1.h>
 #include <TApplication.h>
@@ -47,29 +50,26 @@
 #include <TRandom.h>
 #include <TMinuit.h>
 #include <TVirtualFitter.h>
+#include <TCanvas.h>
+#include <TPostScript.h>
+#include <TApplication.h>
 R__EXTERN TSystem *gSystem;
 extern void InitGui();
 VoidFuncPtr_t initfuncs[] = { InitGui, 0 };
 TROOT root("ROOTPROGRAM","ROOTPROGRAM", initfuncs);
-#include"FitOniumRCompactLib.hh"
-#include<TCanvas.h>
-#include"TPostScript.h"
-#include<TApplication.h>
 using namespace std;
-//Double_t epsilon=0.000001;
-//#include "FitTools/jpsiM.h"
 
+#include "FitOniumRCompactLib.hh"
 #include "../interference.h"
 #include "draw.h"
 
 #define  NumMaxP 120
 Double_t EMaxRange=1550.;
 Double_t EMinRange=1530.;
-Int_t    JpsiFitOnly=0;
 Int_t    NpPP=0;
-Int_t     UseLumBB=0;
 Double_t CrossBhabha=265;
 Double_t CrossGG=50;
+Double_t LUM_CROSS_SECTION=0;
 
 Double_t CrossSInScan[NumMaxP];
 Double_t CrossSErrInScan[NumMaxP];
@@ -103,36 +103,11 @@ void fcnResMult2    (Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int
 void fcnResMult_both2    (Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 void fcnResMult3    (Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 
-/* Program documentation. */
-static char doc[] ="Searching narrow resonance";
-
-/* A description of the arguments we accept. */
-static char args_doc[] = "";
-#define OPT_MStep             1
-#define OPT_ERangeL           2
-#define OPT_ERangeR           3
-#define OPT_NeeFlag           4
-#define OPT_NmhFlag           5
-#define OPT_CrBhabha          6
-#define OPT_dEmin             7
-#define OPT_Emin              8
-#define OPT_Emax              9
-#define OPT_scan             10
-
-#define OPT_sel             11
-#define OPT_lumbb           12
-#define OPT_both           13
-#define OPT_SW             14
-#define OPT_USE_CHI2             15
-#define OPT_lum             16
-#define OPT_lum_cor             17
-#define OPT_VIEW           18
-
-
 bool USE_CBS_SIGMAW = false;
 bool USE_CHI2 = false;
 bool LUM_COR=true;
-Int_t   FreeEnergyFit=0;
+bool FREE_ENERGY_FIT=false;
+unsigned BOTH_FIT=0;
 
 enum LuminosityType
 {
@@ -147,6 +122,14 @@ enum LuminosityType
 
 LuminosityType LUMINOSITY;
 
+enum ResonanceType
+{
+  JPSIRES,
+  PSI2SRES
+};
+
+unsigned RESONANCE;
+
 
 double CHI2_TOTAL;
 double CHI2_LUM;
@@ -155,250 +138,146 @@ double CHI2_SIGNAL;
 
 
 #include "../utils.h"
-static struct argp_option options[] = {
-  {"verbose",'v',0,0,"produce verbose information",100},
-  {"quickly",'q',0,0," fast mode",100},
-  {"FreeEnergy",'E',0,0,"FreeEnergy",100},
-  {"JpsiFit",'J',0,0," fit Jpsi",100},
-  {"Chi2",'C',0,0," chi2",100},
-  {"MStep",OPT_MStep,"MeV",0,"step",1},
-  {"ERangeL",OPT_ERangeL,"MeV",0,"ERangeL",2},
-  {"ERangeR",OPT_ERangeR,"MeV",0,"ERangeR",3},
-  {"NeeFlag",OPT_NeeFlag,"sel",0,"NeeFlag",4}, 
-  {"lum",OPT_lum,"sel",0,"Luminosity type",OPT_lum}, 
-  {"lum_cor",OPT_lum_cor,"sel",0,"Use luminosity correction",OPT_lum_cor}, 
-  {"NmhFlag",OPT_NmhFlag,"sel",0,"NmhFlag",5}, 
-  {"CrBhabha",OPT_CrBhabha,"nb",0,"CrBhabha",6}, 
-  {"dEmin",OPT_dEmin,"MeV",0,"dEmin",7}, 
-  {"Emin",OPT_Emin,"MeV",0,"Emin",8}, 
-  {"Emax",OPT_Emax,"MeV",0,"Emax",9}, 
-  {"scan",OPT_scan,"scan",0,"scan",10}, 
-  {"sel",OPT_sel,"sel",0,"sel",11}, 
-  {"lumbb",OPT_lumbb,"lumbb",0,"lumbb",12},     
-  {"both",OPT_both,"both",0,"both",13},     
-  {"SW",OPT_SW,"SW",0,"SW",14},     
-  {"use-chi2",OPT_USE_CHI2,"use-chi2",0,"use-chi2",15},     
-  {"view",OPT_VIEW,"view",0,"view",OPT_VIEW},     
-  {0}
-};
+//static struct argp_option options[] = {
+//  {"resonance",'R',0,0," fit Jpsi",200},
+//  {"Chi2",'C',0,0," chi2",100},
+//  {0}
+//};
+
 
 struct arguments
 {
-  int verbose;
-  int quickly;
-  int FreeEnergy;
-  int JpsiFit;
   double MStep;
   double ERangeL;
   double ERangeR;
-  int    NeeFlag;
-  int    NmhFlag;
   double CrBhabha;
   double dEmin;
   double Emin;
   double Emax;
-  int Chi2;
-  int sel;
-  int lumbb;
-  int lum; //luminosity type
-	int lum_cor; //luminosity correction flag;
   int both;
-  int scan;
   int SW; //use cbs measure sigmaW
-  int use_chi2; //use chi2 algorithm
   int view; //view or not the resonances with scenario points layout.
 };
 
-static error_t parse_opt (int key, char *arg, struct argp_state *state)
-{
-  union ArG
-  {
-    struct arguments *arguments;
-    void *void_arg;
-  };
-  ArG arg_union;
-  arg_union.void_arg=state->input;
-  switch (key)
-  {
-    case 'v': arg_union.arguments->verbose += 1; break;
-    case 'q': arg_union.arguments->quickly += 1; break;
-    case 'J': arg_union.arguments->JpsiFit += 1; break;
-    case 'E': arg_union.arguments->FreeEnergy += 1; break;
-    case 'C': arg_union.arguments->Chi2 += 1; break;
-    case OPT_MStep:arg_union.arguments->MStep=atof(arg);break;
-    case OPT_CrBhabha:arg_union.arguments->CrBhabha=atof(arg);break;
-    case OPT_ERangeL:arg_union.arguments->ERangeL =atof(arg);break;
-    case OPT_ERangeR:arg_union.arguments->ERangeR =atof(arg);break;
-    case OPT_NeeFlag:arg_union.arguments->NeeFlag=atoi(arg);break;
-    case OPT_lum:arg_union.arguments->lum=atoi(arg);break;
-    case OPT_lum_cor:arg_union.arguments->lum_cor=atoi(arg);break;
-    case OPT_NmhFlag:arg_union.arguments->NmhFlag=atoi(arg);break;            
-    case OPT_dEmin:arg_union.arguments->dEmin=atof(arg);break;            
-    case OPT_Emin:arg_union.arguments->Emin=atof(arg);break;            
-    case OPT_Emax:arg_union.arguments->Emax=atof(arg);break;            
-    case OPT_scan:arg_union.arguments->scan=atoi(arg);break;            
-    case OPT_sel:arg_union.arguments->sel=atoi(arg);break;            
-    case OPT_lumbb:arg_union.arguments->lumbb=atoi(arg);break;            
-    case OPT_both:arg_union.arguments->both=atoi(arg);break;            
-    case OPT_SW:arg_union.arguments->SW=atoi(arg);break;            
-    case OPT_USE_CHI2:arg_union.arguments->use_chi2=atoi(arg);break;            
-    case OPT_VIEW:arg_union.arguments->view=atoi(arg);break;            
-  }
-  return 0;
-};
-static struct argp argp = { options, parse_opt, args_doc, doc };
+
+//static error_t parse_opt (int key, char *arg, struct argp_state *state)
+//{
+//  union ArG
+//  {
+//    struct arguments *arguments;
+//    void *void_arg;
+//  };
+//  ArG arg_union;
+//  arg_union.void_arg=state->input;
+//  switch (key)
+//  {
+//    case 'C': arg_union.arguments->Chi2 += 1; break;
+//    case 200: break;
+//  }
+//  return 0;
+//};
 
 
 
 int main(int argc, char **argv)
 {
-
+  namespace po=boost::program_options;
+  po::options_description opt_desc("Allowed options");
+  opt_desc.add_options()
+    ("help,h","Print this help")
+    ("verbose,v","Verbose output")
+    ("scan,s",po::value<std::string>()->default_value("scan.txt"),"data file")
+    ("lum,l", po::value<std::string>()->default_value("ee"),"luminosity used: bes, ee (default), gg, eegg, mhee, mhgg, mheegg")
+    ("resonance,R", po::value<unsigned>(&RESONANCE)->default_value(JPSIRES),"resonance: 0 - JPSI, 1 - PSI2S")
+    ("free-energy,E","allow energy points to be variated")
+    ("both", po::value<unsigned>(&BOTH_FIT)->default_value(0),"Fit mode 0,1,2")
+    ("lum-cor","Use MC luminosity correction")
+    ("chi2", "Use chi2 fit")
+    ;
+  po::positional_options_description pos;
+  pos.add("scan",-1);
+  po::variables_map opt; //options container
+  po::store(po::command_line_parser(argc, argv).options(opt_desc).positional(pos).run(), opt);
+  po::notify(opt);
+  if(opt.count("help"))
+  {
+    std::clog << opt_desc;
+    return 0;
+  }
   struct arguments arguments;
-  arguments.verbose=0;
-  arguments.quickly=0;
-  arguments.scan=1;
-  arguments.sel=0;
   arguments.MStep=  0.1;
   arguments.ERangeL= 6.5;
   arguments.ERangeR= 6.5;
-  arguments.NeeFlag= 0;
-  arguments.NmhFlag= 0;
-  arguments.FreeEnergy= 0;
-  arguments.JpsiFit= 1;
   arguments.Emin= 500.;
   arguments.Emax= 1600.;  
-  arguments.Chi2= 0;
-  arguments.lumbb= 0;
-  arguments.SW=0;
-  arguments.use_chi2=0;
-  //arguments.CrBhabha=62;  
-  // arguments.CrBhabha=535;  
-
-  arguments.CrBhabha=80; 
-  arguments.both=0; 
-	arguments.lum_cor=1;
-	arguments.lum=0;
-  arguments.view=0;
-
-
-
   arguments.dEmin=0.02 ;  
-  argp_parse (&argp, argc, argv, 0, 0, &arguments);
+
   TApplication* theApp=0;
 
-  cout<<"JpsiFit:"<<arguments.JpsiFit<<"Ch2:"<<arguments.Chi2<<endl;
-  JpsiFitOnly=arguments.JpsiFit;
-  UseLumBB=arguments.lumbb;
-  double Kee;
-  double Kgg;
+  USE_CHI2 = opt.count("chi2");
+  std::cout << "Chi2 fit: " << USE_CHI2 << std::endl;
 
-  if(arguments.SW==1) USE_CBS_SIGMAW=true;
-  if(arguments.use_chi2==1) USE_CHI2=true;
-	if(arguments.lum_cor==1 && arguments.lum==1) 
-	{
-		LUM_COR=true;
-		cout << "Use luminosity corrections." << endl;
-	}
-	else
-	{
-		LUM_COR = false;
-		cout << "No luminosity corrections." << endl;
-	}
+  LUM_COR = opt.count("lum-cor") && LUMINOSITY==NEELUM;
+  std::cout << "Luminosity corrections: " << LUM_COR << std::endl;
+
+  FREE_ENERGY_FIT = opt.count("free-energy");
+  std::cout << "Use free energy fit: " << FREE_ENERGY_FIT << std::endl;
+
   ifstream kfile("CrBhabha.txt");
   if(kfile) 
   {
-    kfile >> Kee;
-    kfile >> Kgg;
+    kfile >> CrossBhabha;
+    kfile >> CrossGG;
   }
   kfile.close();
-  //arguments.CrBhabha=Kee;
-  arguments.CrBhabha=0;
-  //Fast luminosity chosen
-  //switch(arguments.lumbb)
-  //{
-  //  case 1:
-  //    arguments.NeeFlag=1;
-  //    break;
-  //  case 2:
-  //    arguments.NeeFlag=2;
-  //    break;
-  //  default:
-  //    break;
-  //}
-  CrossBhabha = Kee;
-  CrossGG = Kgg;
 
 	cout << "Luminosity used: ";
-  switch(arguments.lum)
+  std::string lumstr=opt["lum"].as<string>();
+  if(lumstr=="bes")
   {
-    case 0:
       LUMINOSITY = BESLUM;
-      arguments.CrBhabha=Kee;
-			cout << "BESLUM"<< endl;
-      break;
-    case 1:
+      LUM_CROSS_SECTION=CrossBhabha;
+      std::cout << "BES online luminosity monitor"<< std::endl;
+  }
+  if(lumstr=="ee")
+  {
       LUMINOSITY = NEELUM;
-      arguments.CrBhabha=Kee;
-			cout << "NEELUM"<< endl;
-      break;
-    case 2:
+      LUM_CROSS_SECTION=CrossBhabha;
+      std::cout << "Bhabha"<< std::endl;
+  }
+  if(lumstr=="gg")
+  {
       LUMINOSITY = NGGLUM;
-      arguments.CrBhabha=Kgg;
-			cout << "NGGLUM"<< endl;
-      break;
-    case 3:
+      LUM_CROSS_SECTION=CrossGG;
+      std::cout << "gamma gamma"<< std::endl;
+  }
+  if(lumstr=="eegg")
+  {
       LUMINOSITY = NEEGGLUM;
-      arguments.CrBhabha=Kee+Kgg;
-			cout << "NEEGGLUM"<< endl;
-      break;
-    case 4:
+      LUM_CROSS_SECTION=CrossGG+CrossBhabha;
+      std::cout << "Bhabha + gamma-gamma"<< std::endl;
+  }
+  if(lumstr=="mhee")
+  {
       LUMINOSITY = NMHEELUM;
-      arguments.CrBhabha=Kee;
-			cout << "NMHEELUM"<< endl;
-      break;
-    case 5:
+      LUM_CROSS_SECTION=CrossBhabha;
+      std::cout << "MH + Bhabha "<< std::endl;
+  }
+  if(lumstr=="mhgg")
+  {
       LUMINOSITY = NMHGGLUM;
-      arguments.CrBhabha=Kgg;
-			cout << "NMHGGLUM"<< endl;
-      break;
-    case 6:
+      LUM_CROSS_SECTION=CrossGG;
+      std::cout << "MH + gamma-gamma "<< std::endl;
+  }
+  if(lumstr=="mheegg")
+  {
       LUMINOSITY = NMHEEGGLUM;
-      arguments.CrBhabha=Kee+Kgg;
-			cout << "NMHEEGGLUM"<< endl;
-      break;
-    default:
-      LUMINOSITY = BESLUM;
-      arguments.CrBhabha=Kee;
-			cout << "BESLUM"<< endl;
-      break;
+      LUM_CROSS_SECTION=CrossGG+CrossBhabha;
+      std::cout << "MH + Bhabha + gamma-gamma "<< std::endl;
   }
-	cout << "Luminosity type: " << LUMINOSITY << endl;
-  cout << "Average cross section of luminosity measurement process: " << arguments.CrBhabha << " nb" << endl;
-  FreeEnergyFit= arguments.FreeEnergy;
-  if(arguments.quickly==0)
-  {
-    theApp=new  TApplication("App", &argc, argv);
-  };  
+  cout << "Average cross section of luminosity measurement process: " << LUM_CROSS_SECTION << " nb" << endl;
+  theApp=new  TApplication("App", &argc, argv);
 
-  if(arguments.view!=0)
-  {
-    double dm=0;
-    vector <double> Es;
-    switch(arguments.view)
-    {
-      case 1:
-        dm=0;
-        Es =  {1838.0+dm, 1841.8+dm, 1842.4+dm, 1843.0+dm, 1843.7+dm, 1844.4+dm, 1847.0+dm};
-        draw_res(_IdPsiPrime,1.56,Es);
-        break;
-      case 2:
-        dm=0;
-        Es = {1544.0, 1547.7, 1548.1, 1548.5, 1548.9, 1549.3,1552.0};
-        draw_res(_IdJPsi,1.56*sq(_MJPsi/_MPsiPrime),Es);
-        break;
-    }
-    theApp->Run();
-  }
 
   TMinuit*  MinuitRes=0; 
   TF1* FitRes=0;
@@ -419,31 +298,24 @@ int main(int argc, char **argv)
   double** AllMH=0;
   int      npMHFile=0; 
 
+  std::cout << "Fit resonance ";
+  switch(RESONANCE)
+  {
+    case JPSIRES:
+      std::cout << "JPSI";
+      break;
+    case PSI2SRES:
+      std::cout << "PSI2S";
+      break;
+  }
+  std::cout << std::endl;
   /* ***** Reading data from file ****************** */
-  if(arguments.scan==1){
-    npMHFile=GetNumRows("scan1.txt",dimMHFile);       
-  }
-  else if(arguments.scan==2)
-  {
-    npMHFile=GetNumRows("scan2.txt",dimMHFile);          
-  }
-  else if(arguments.scan==3){
-    npMHFile=GetNumRows("scan12.txt",dimMHFile); 
-  }
   AllMH=new double* [npMHFile];
-  if(arguments.scan==1){
-    FillArrayFromFile("scan1.txt",AllMH,dimMHFile,npMHFile);  
-  }
-  else if(arguments.scan==2)
-  {
-    FillArrayFromFile("scan2.txt",AllMH,dimMHFile,npMHFile);  
-  }
-  else if(arguments.scan==3){
-    FillArrayFromFile("scan12.txt",AllMH,dimMHFile,npMHFile);  
-  }
-
-
-  cout<<"npMHFile:"<<npMHFile<<endl;
+  std::string data_file_name=opt["scan"].as<std::string>();
+  std::cout << "Reading data from file " << data_file_name;
+  npMHFile=GetNumRows(data_file_name.c_str(),dimMHFile);       
+  FillArrayFromFile(data_file_name.c_str(),AllMH,dimMHFile,npMHFile);  
+  std::cout << npMHFile << " points read" << std::endl;
 
   int dimAP= 19;
   int ARun=0;
@@ -498,7 +370,7 @@ int main(int argc, char **argv)
   CUpDown[1]  = 1;
 
   /*  SKIP SORTING OF POINTS IF separate scan*/
-  if(arguments.both==0)
+  if(BOTH_FIT==0)
   {
     for(Int_t i=0;i<npAP;i++) // simplest bubble's method for each condition
     {
@@ -584,9 +456,9 @@ int main(int argc, char **argv)
   SumPointsSimple(np,NEp,Euse,Lcor_,Lcor);     
   NumEpoints=NEp;
   int numpar=4;
-  if(FreeEnergyFit==1) numpar+=NEp;
-  if(arguments.both==1) numpar+=2;
-  if(arguments.both==2) numpar+=3;
+  if(FREE_ENERGY_FIT) numpar+=NEp;
+  if(BOTH_FIT==1) numpar+=2;
+  if(BOTH_FIT==2) numpar+=3;
   Double_t ECorrBB=0;
   Double_t ECorrGG=0;
   Double_t LG=0,Lee=0,Lgg=0; //integrated luminosity measured different way
@@ -602,8 +474,8 @@ int main(int argc, char **argv)
     NmhInScan[is]=Nmh[is];   
     NbbInScan[is]=Nbb[is];       
     NggInScan[is]=Ngg[is];       
-    ECorrBB=1./CrossSBhabhaPP(En[is],&Kee);
-    ECorrGG=1./CrossSBhabhaPP(En[is],&Kgg);
+    ECorrBB=1./CrossSBhabhaPP(En[is],&CrossBhabha);
+    ECorrGG=1./CrossSBhabhaPP(En[is],&CrossGG);
     LumInScanEE[is]=NbbInScan[is]*ECorrBB;
     LumInScanGG[is]=NggInScan[is]*ECorrGG;
     LumInScanEEGG[is]=(NggInScan[is] + NbbInScan[is])/(1./ECorrBB + 1./ECorrGG);
@@ -659,7 +531,7 @@ int main(int argc, char **argv)
     else CrossSGGErrInScan[is]=sqrt(Ngg[is]+4)/LumInScan[is];         
   }
   cout<<"Total luminosity: BES lum:"<<LG<<" Lee: " << Lee << "  Lgg:"<<Lgg<<endl;
-  if(arguments.verbose)
+  if(opt.count("verbose"))
   {
     for(int is=0;is<NEp;is++)
     {
@@ -673,7 +545,7 @@ int main(int argc, char **argv)
   Double_t arglistRes[numpar*2];
 
   Int_t ierflgRes = 0;
-  if(arguments.verbose>0)
+  if(opt.count("verbose"))
   {
     arglistRes[0]=-1;
     MinuitRes->mnexcm("SET PRINT", arglistRes,1,ierflgRes);
@@ -691,7 +563,7 @@ int main(int argc, char **argv)
   arglistRes[0] = 2;
   MinuitRes->mnexcm("SET STRATEGY", arglistRes,1,ierflgRes);
 
-  Double_t vstartRes[5]= {5,0.34,0.0,1.59,arguments.CrBhabha};   
+  Double_t vstartRes[5]= {5,0.34,0.0,1.59,LUM_CROSS_SECTION};   
 
   Double_t stepRes[5] =  {1,0.1,0.01,0.05,0.0};
 
@@ -703,7 +575,7 @@ int main(int argc, char **argv)
   MinuitRes->DefineParameter(2,"dM/2.",vstartRes[2],stepRes[2],-0.5,0.5);      
   MinuitRes->DefineParameter(3,"SigmaW",vstartRes[3],stepRes[3],0.5,2.0);
   //if(USE_CBS_SIGMAW) MinuitRes->FixParameter(3);
-  if(FreeEnergyFit==1)
+  if(FREE_ENERGY_FIT)
   {
     for(int j=0;j<NEp;j++)
     {
@@ -713,25 +585,28 @@ int main(int argc, char **argv)
     }
   }
 
-  int nep = FreeEnergyFit==0 ? 0 : NEp;
+  int nep = FREE_ENERGY_FIT==false ? 0 : NEp;
+  /* 
+   *  Fit both scan togegher
+   *  This code must be refubrished to use with boost program options.
   if(arguments.scan==3)
   {
     cout << "Fit scan1 and scan2"<< endl;
-    if(arguments.both==1)
+    if(BOTH_FIT==1)
     {
       MinuitRes->DefineParameter(0+4+nep,"bg2",vstartRes[0],stepRes[0],-150,150.0);
       MinuitRes->DefineParameter(1+4+nep,"eff2",vstartRes[1],stepRes[1],0.1,1.0);      
       cout << "Variant with own bg and eff" << endl;
     }
-    if(arguments.both==2)
+    if(BOTH_FIT==2)
     {
       MinuitRes->DefineParameter(0+4+nep,"bg2",vstartRes[0],stepRes[0],-150,150.0);
       MinuitRes->DefineParameter(1+4+nep,"eff2",vstartRes[1],stepRes[1],0.1,1.0);      
       MinuitRes->DefineParameter(2+4+nep,"SigmaW2",vstartRes[3],stepRes[3],0.5,1.8);      
       cout << "Variant with own bg, eff and sigmaW" << endl;
     }
-
   }
+  */
 
   MinuitRes->mnexcm("MIGRAD", arglistRes,numpar,ierflgRes);
   MinuitRes->mnimpr();
@@ -758,12 +633,15 @@ int main(int argc, char **argv)
   MinuitRes->mnprin(numpar,aminRes);
 
   int nf=MinuitRes->GetNumFreePars();
-  if(FreeEnergyFit==1) nf-=NEp;
+  if(FREE_ENERGY_FIT) nf-=NEp;
 
   cout.precision(15);
   double PDGMASS=0;
-  if(JpsiFitOnly) PDGMASS=_MJPsi;
-  else  PDGMASS=_MPsiPrime;
+  switch(RESONANCE)
+  {
+    case JPSIRES:  PDGMASS=_MJPsi; break;
+    case PSI2SRES: PDGMASS=_MPsiPrime; break;
+  };
   cout<<"Minuit Mass= "<<PDGMASS+parRes[2]*2.<<endl;
   cout<<"PDG Mass= "<<PDGMASS<<endl;
   cout.precision(4);
@@ -786,10 +664,13 @@ int main(int argc, char **argv)
   parPsiPF[idRTauEff]=0;
 
 
+  /* 
+   *  Fit both scan togegher
+   *  This code must be refubrished to use with boost program options.
   if(arguments.scan==3)
   {
-    int nep = arguments.FreeEnergy == 0 ? 0 : NEp;
-    if(arguments.both==1)
+    int nep = FREE_ENERGY_FIT ? NEp : 0;
+    if(BOTH_FIT==1)
     {
       parPsiPF2[idRbg]=parRes[0+4+nep];
       parPsiPF2[idReff]=parRes[1+4+nep];
@@ -802,7 +683,7 @@ int main(int argc, char **argv)
         cout << i << " " << parPsiPF2[i] << endl;
       }
     }
-    if(arguments.both==2)
+    if(BOTH_FIT==2)
     {
       parPsiPF2[idRbg]=parRes[0+4+nep];
       parPsiPF2[idReff]=parRes[1+4+nep];
@@ -816,6 +697,7 @@ int main(int argc, char **argv)
       }
     }
   }
+  */
 
 
   double EnergyChi2=0;
@@ -852,10 +734,15 @@ int main(int argc, char **argv)
   GrRes=new TGraphErrors(NEp,WInScan,CrossSInScan,WErrInScan,CrossSErrInScan);
   TF1 * fitfun1=0;
   TF1 * fitfun2=0;
-  if(JpsiFitOnly)
-    fitfun1  = new TF1("FitJPsi",FCrSJpsiAzimov,1540*ScaleEGr,1560*ScaleEGr,idRNP);
-  else 
-    fitfun1  = new TF1("FitPsiP",FCrSPPrimeAzimov,1836.*ScaleEGr,1855*ScaleEGr,idRNP);;
+  switch(RESONANCE)
+  {
+    case JPSIRES:
+      fitfun1  = new TF1("FitJPsi",FCrSJpsiAzimov,1540*ScaleEGr,1560*ScaleEGr,idRNP);
+      break;
+    case PSI2SRES:
+      fitfun1  = new TF1("FitPsiP",FCrSPPrimeAzimov,1836.*ScaleEGr,1855*ScaleEGr,idRNP);;
+      break;
+  }
   TF1* FitPsiP = fitfun1;
   TF1* FitPsiP2=new TF1("FitPsiP2",FCrSPPrimeAzimov,1836.*ScaleEGr,1855*ScaleEGr,idRNP);  
   FitPsiP->SetParameters( parPsiPF);
@@ -868,11 +755,23 @@ int main(int argc, char **argv)
   //TestCanv->cd();
   GrRes->Draw("AP");
   gPad->SetBorderMode(0);
-  GrRes->GetXaxis()->SetTitle("W [MeV]");
-  GrRes->GetYaxis()->SetTitle("#sigma [nb]");
-  GrRes->SetTitle("#psi' scan");
+  GrRes->GetXaxis()->SetTitle("W, MeV");
+  GrRes->GetYaxis()->SetTitle("#sigma, nb");
+  double xx=0;
+  switch(RESONANCE)
+  {
+    case JPSIRES:  
+      GrRes->SetTitle("J/#psi scan");
+      xx=1544*ScaleEGr;
+      break;
+    case PSI2SRES: 
+      GrRes->SetTitle("#psi(2S) scan");
+      xx=1838*ScaleEGr;
+      break;
+  };
+
   FitPsiP->Draw("SAME");
-  if(arguments.both==1 || arguments.both==2)
+  if(BOTH_FIT==1 || BOTH_FIT==2)
   {
     FitPsiP2->SetLineColor(kBlue);
     FitPsiP2->Draw("SAME");
@@ -885,24 +784,22 @@ int main(int argc, char **argv)
   TLatex*  latexM1=new TLatex();
   latexM1->SetTextSize(0.038);
   latexM1->SetTextColor(2);       
-  sprintf(Info1,"#chi^{2}_{#psi(2S)}=%3.3f/ (%d -%d) =%3.3f",MinChi2,NpPP,nf,MinChi2/(NpPP-nf)); 
-  double xx=1838*ScaleEGr;
-  if(JpsiFitOnly) xx=1545*ScaleEGr;
+  sprintf(Info1,"#chi^{2} = %3.3f/ (%d -%d) =%3.3f",MinChi2,NpPP,nf,MinChi2/(NpPP-nf)); 
   //double yy = parRes[0]*5;
   double yy = FitPsiP->GetMaximum();
   latexM1->DrawLatex(xx,yy,Info1);
-  sprintf(Info1,"#Delta M_{#psi(2S)}=%3.3f#pm%3.3f [MeV]",parRes[2]*2.,parErrRes[2]*2.);
+  sprintf(Info1,"#Delta M = %3.3f#pm%3.3f MeV",parRes[2]*2.,parErrRes[2]*2.);
   latexM1->DrawLatex(xx,yy*0.8,Info1);
   TLatex * latexSw = new TLatex();
   latexSw->SetTextSize(0.038);
   latexSw->SetTextColor(2);
-  sprintf(Info1,"#sigma_{W}=%1.3f #pm %1.3f [MeV]",parRes[3],parErrRes[3]); 
+  sprintf(Info1,"#sigma_{W} = %1.3f #pm %1.3f MeV",parRes[3],parErrRes[3]); 
   latexSw->DrawLatex(xx,yy*0.6,Info1);
 
   TLatex * latexProb = new TLatex();
   latexProb->SetTextSize(0.038);
   latexProb->SetTextColor(2);
-  sprintf(Info1,"P(#chi^{2})=%1.4f",TMath::Prob(MinChi2,NpPP-nf)); 
+  sprintf(Info1,"P(#chi^{2}) = %1.4f",TMath::Prob(MinChi2,NpPP-nf)); 
   latexProb->DrawLatex(xx,yy*0.4,Info1);
 
   TestCanv->Update();
@@ -971,7 +868,7 @@ void fcnResMult(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
   {
     Energy=EInScan[i];
     double echi2=0;
-    if(FreeEnergyFit==1)
+    if(FREE_ENERGY_FIT)
     { 
       Energy+=par[4+i];
       echi2=(par[4+i]*par[4+i]/(EErrInScan[i]*EErrInScan[i]));
@@ -985,8 +882,15 @@ void fcnResMult(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
     //Correction to efficiency
     //parmh[idReff]=par[1]*MhadrCor(2*Energy);
     //cout << "Correction to efficiency: " << (MhadrCor(2*Energy)-1)*1000. << " ppm" << endl;
-    if(JpsiFitOnly) sigmaMH=CrSOniumR(_MethodAzimov,_IdJPsi,Energy,parmh);  
-    else sigmaMH=CrSOniumR(_MethodAzimov,_IdPsiPrime,Energy,parmh);  
+    switch(RESONANCE)
+    {
+      case JPSIRES:
+        sigmaMH=CrSOniumR(_MethodAzimov,_IdJPsi,Energy,parmh);
+        break;
+      case PSI2SRES:
+        sigmaMH=CrSOniumR(_MethodAzimov,_IdPsiPrime,Energy,parmh);
+        break;
+    };
     sigmaBB=CrossSBhabhaPP(Energy,&CrossBhabha);                        
     sigmaGG=CrossSBhabhaPP(Energy,&CrossGG);                        
     switch(LUMINOSITY)
@@ -1077,7 +981,7 @@ void fcnResMult(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
     }
   }
   f = chisq;
-  if(FreeEnergyFit==1) f+=EnergyChi2;//;    
+  if(FREE_ENERGY_FIT) f+=EnergyChi2;//;    
   if(USE_CBS_SIGMAW) f+=SigmaWChi2;    
   if(MinChi2>f)
   {
