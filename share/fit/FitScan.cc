@@ -899,6 +899,7 @@ void fcnResMult(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
       std::cout << boost::format("%3.3f") % boost::io::group(std::setw(10),NbbInScan[i]/sigmaBB);
       std::cout << boost::format("%3.3f") % boost::io::group(std::setw(10),lumFull);
       for(unsigned i=0;i<4;++i) std::cout << std::setw(5) << parmh[i];
+      std::cout << boost::format("% 3.3f") % sigmaMH;
       //  " LG:"<<LumLgammaInScan[i]<<
       std::cout << std::endl;
       NpPP++;
