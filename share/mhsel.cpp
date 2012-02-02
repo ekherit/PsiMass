@@ -664,7 +664,7 @@ void make_result(const char * runinfo_filename)
       setw(fw)<< pv[i].Nh  << 
       setw(fw)<< pv[i].Nee <<
       setw(fw)<< pv[i].Ngg <<
-			setw(fw)<< pv[i].lum_ee_cor;
+			setw(fw+4)<< pv[i].lum_ee_cor;
     cout << os.str() << setw(fw) << double(pv[i].Nee)/pv[i].lum << setw(fw) << double(pv[i].Nee)/double(pv[i].Ngg);
     cout << setw(fw) << pv[i].Sw<<"+-"<<pv[i].dSw;
     cout << endl;
@@ -793,8 +793,8 @@ void make_result(const char * runinfo_filename)
   mg->Draw("a");
   l->Draw();
 
-  ofstream kfile("CrBhabha.txt");
-  kfile << Kee << endl;
-  kfile << Kgg << endl;
+  ofstream kfile("fit.cfg");
+  kfile << "cross-section-ee=" << Kee << endl;
+  kfile << "cross-section-gg=" << Kgg << endl;
 }
 

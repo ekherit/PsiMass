@@ -103,11 +103,12 @@ void fcnResMult2    (Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int
 void fcnResMult_both2    (Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 void fcnResMult3    (Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag);
 
-bool USE_CBS_SIGMAW = false;
+bool USE_CBS_SIGMAW = false; 
 bool USE_CHI2 = false;
-bool LUM_COR=true;
+bool LUM_COR = true;
 bool FREE_ENERGY_FIT=false;
 unsigned BOTH_FIT=0;
+double DEDIFF=0.02;
 
 enum LuminosityType
 {
@@ -138,44 +139,6 @@ double CHI2_SIGNAL;
 
 
 #include "../utils.h"
-//static struct argp_option options[] = {
-//  {"resonance",'R',0,0," fit Jpsi",200},
-//  {"Chi2",'C',0,0," chi2",100},
-//  {0}
-//};
-
-
-struct arguments
-{
-  double MStep;
-  double ERangeL;
-  double ERangeR;
-  double CrBhabha;
-  double dEmin;
-  double Emin;
-  double Emax;
-  int both;
-  int SW; //use cbs measure sigmaW
-  int view; //view or not the resonances with scenario points layout.
-};
-
-
-//static error_t parse_opt (int key, char *arg, struct argp_state *state)
-//{
-//  union ArG
-//  {
-//    struct arguments *arguments;
-//    void *void_arg;
-//  };
-//  ArG arg_union;
-//  arg_union.void_arg=state->input;
-//  switch (key)
-//  {
-//    case 'C': arg_union.arguments->Chi2 += 1; break;
-//    case 200: break;
-//  }
-//  return 0;
-//};
 
 
 
@@ -193,28 +156,45 @@ int main(int argc, char **argv)
     ("both", po::value<unsigned>(&BOTH_FIT)->default_value(0),"Fit mode 0,1,2")
     ("lum-cor","Use MC luminosity correction")
     ("chi2", "Use chi2 fit")
+    ("cross-section-ee",po::value<double>(&CrossBhabha)->default_value(200), "Bhabha cross section, nb")
+    ("cross-section-gg", po::value<double>(&CrossGG)->default_value(20), "Gamma-gamma cross section, nb")
     ;
   po::positional_options_description pos;
   pos.add("scan",-1);
   po::variables_map opt; //options container
-  po::store(po::command_line_parser(argc, argv).options(opt_desc).positional(pos).run(), opt);
-  po::notify(opt);
+  try
+  {
+    po::store(po::command_line_parser(argc, argv).options(opt_desc).positional(pos).run(), opt);
+    std::ifstream config_file("fit.cfg");
+    po::store(po::parse_config_file(config_file,opt_desc,true), opt);
+    po::notify(opt);
+  } 
+  catch (boost::program_options::error & po_error)
+  {
+    cerr << "WARGNING: configuration: "<< po_error.what() << endl;
+  }
+
   if(opt.count("help"))
   {
     std::clog << opt_desc;
     return 0;
   }
-  struct arguments arguments;
-  arguments.MStep=  0.1;
-  arguments.ERangeL= 6.5;
-  arguments.ERangeR= 6.5;
-  arguments.Emin= 500.;
-  arguments.Emax= 1600.;  
-  arguments.dEmin=0.02 ;  
+  std::cout << "Fit resonance: ";
+  switch(RESONANCE)
+  {
+    case JPSIRES:
+      std::cout << "JPSI";
+      break;
+    case PSI2SRES:
+      std::cout << "PSI2S";
+      break;
+  }
+  std::cout << std::endl;
 
-  TApplication* theApp=0;
 
   USE_CHI2 = opt.count("chi2");
+  std::cout << boolalpha;
+
   std::cout << "Chi2 fit: " << USE_CHI2 << std::endl;
 
   LUM_COR = opt.count("lum-cor") && LUMINOSITY==NEELUM;
@@ -223,13 +203,7 @@ int main(int argc, char **argv)
   FREE_ENERGY_FIT = opt.count("free-energy");
   std::cout << "Use free energy fit: " << FREE_ENERGY_FIT << std::endl;
 
-  ifstream kfile("CrBhabha.txt");
-  if(kfile) 
-  {
-    kfile >> CrossBhabha;
-    kfile >> CrossGG;
-  }
-  kfile.close();
+  std::cout << "Average cross section: Bhabha: " << CrossBhabha << " nb, Gamma-gamma: " << CrossGG << " nb" << std::endl;
 
 	cout << "Luminosity used: ";
   std::string lumstr=opt["lum"].as<string>();
@@ -276,6 +250,7 @@ int main(int argc, char **argv)
       std::cout << "MH + Bhabha + gamma-gamma "<< std::endl;
   }
   cout << "Average cross section of luminosity measurement process: " << LUM_CROSS_SECTION << " nb" << endl;
+  TApplication* theApp=0;
   theApp=new  TApplication("App", &argc, argv);
 
 
@@ -298,24 +273,13 @@ int main(int argc, char **argv)
   double** AllMH=0;
   int      npMHFile=0; 
 
-  std::cout << "Fit resonance ";
-  switch(RESONANCE)
-  {
-    case JPSIRES:
-      std::cout << "JPSI";
-      break;
-    case PSI2SRES:
-      std::cout << "PSI2S";
-      break;
-  }
-  std::cout << std::endl;
   /* ***** Reading data from file ****************** */
   AllMH=new double* [npMHFile];
   std::string data_file_name=opt["scan"].as<std::string>();
   std::cout << "Reading data from file " << data_file_name;
   npMHFile=GetNumRows(data_file_name.c_str(),dimMHFile);       
   FillArrayFromFile(data_file_name.c_str(),AllMH,dimMHFile,npMHFile);  
-  std::cout << npMHFile << " points read" << std::endl;
+  std::cout << "Read " << npMHFile << " points." << std::endl;
 
   int dimAP= 19;
   int ARun=0;
@@ -358,8 +322,6 @@ int main(int argc, char **argv)
     AP[Aind][ALumCor]=AllMH[i][MHLumCor];
     Aind++;
   }
-
-
 
   if(Aind!=npAP) cout<<"PROBLEM !!!!!!!!!"<<endl;
   int   NumParForC[3];  
@@ -432,8 +394,7 @@ int main(int argc, char **argv)
     np++;      
   }
   int  NEp=0;
-  SeparatePointsPartNew(np,Nbb_,&NEp,Euse,En_,arguments.dEmin);      
-  cout<<"!!!dEmin:"<<arguments.dEmin<<endl;
+  SeparatePointsPartNew(np,Nbb_,&NEp,Euse,En_,DEDIFF); 
   Double_t *En  =new Double_t[NEp];
   Double_t *Eerr=new Double_t[NEp];
   Double_t *SW  =new Double_t[NEp];
@@ -814,13 +775,7 @@ int main(int argc, char **argv)
   delete [] Nbb;               
   delete [] Ngg;               
   delete FitRes;
-
-
-
-
   theApp->Run();
-
-
   return 0;
 }
 

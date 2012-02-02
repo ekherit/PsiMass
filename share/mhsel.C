@@ -21,6 +21,6 @@
   gSystem->CompileMacro("mhsel.cpp","kO");
   //draw_energy_vs_time("psip-2011-run-info.txt");
   draw_energy_vs_time("jpsi-2011-run-info.txt");
-  //make_result("jpsi-2011-run-info.txt");
+  make_result("jpsi-2011-run-info.txt");
 }
 
