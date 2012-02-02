@@ -64,8 +64,6 @@ using namespace std;
 #include "draw.h"
 
 #define  NumMaxP 120
-Double_t EMaxRange=1550.;
-Double_t EMinRange=1530.;
 Int_t    NpPP=0;
 Double_t CrossBhabha=265;
 Double_t CrossGG=50;
@@ -122,6 +120,7 @@ enum LuminosityType
 };
 
 LuminosityType LUMINOSITY;
+double PDGMASS=0;
 
 enum ResonanceType
 {
@@ -183,9 +182,11 @@ int main(int argc, char **argv)
   switch(RESONANCE)
   {
     case JPSIRES:
+      PDGMASS=_MJPsi;
       std::cout << "JPSI";
       break;
     case PSI2SRES:
+      PDGMASS=_MPsiPrime;
       std::cout << "PSI2S";
       break;
   }
@@ -271,7 +272,7 @@ int main(int argc, char **argv)
   int MHNgg=8; 
   int MHLumCor=9; 
   double** AllMH=0;
-  int      npMHFile=0; 
+  int npMHFile=0; 
 
   /* ***** Reading data from file ****************** */
   AllMH=new double* [npMHFile];
@@ -363,7 +364,7 @@ int main(int argc, char **argv)
 
   Double_t EMax=AP[npAP-1][AEnergy]+1;
   int np=npAP ;   
-  cout<<"EMin:"<<EMin<<"EMax:"<<EMax<<"np:"<<np<<endl;
+  cout<<"EMin="<<EMin<<", EMax="<<EMax<<"np:"<<np<<endl;
 
   Double_t *En_=new Double_t[np];
   Double_t *Eerr_=new Double_t[np];
@@ -597,12 +598,6 @@ int main(int argc, char **argv)
   if(FREE_ENERGY_FIT) nf-=NEp;
 
   cout.precision(15);
-  double PDGMASS=0;
-  switch(RESONANCE)
-  {
-    case JPSIRES:  PDGMASS=_MJPsi; break;
-    case PSI2SRES: PDGMASS=_MPsiPrime; break;
-  };
   cout<<"Minuit Mass= "<<PDGMASS+parRes[2]*2.<<endl;
   cout<<"PDG Mass= "<<PDGMASS<<endl;
   cout.precision(4);
