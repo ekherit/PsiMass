@@ -14,6 +14,7 @@
 #include <argp.h>
 
 #include <boost/program_options.hpp>
+#include <boost/format.hpp>
 
 #include <TROOT.h>
 #include <TH1.h>
@@ -446,9 +447,6 @@ int main(int argc, char **argv)
     Lgg+= LumInScanGG[is];
     LumLgammaInScan[is]=TMath::Max(Le[is],Lp[is]); //BES lum
 		BBLumCorr[is] = Lcor[is];
-    cout<<"BESLUM:"<<LumLgammaInScan[is]<<" LumInScan:"<<LumInScan[is]<< ", BBLumCor=" << BBLumCorr[is] << endl;;
-    double lum=0; //temporary luminosity could be ee, gg and bes lum
-    double Nobs=0; //temporary number of luminosity events
     switch(LUMINOSITY)
     {
       case BESLUM:
@@ -480,6 +478,7 @@ int main(int argc, char **argv)
         NLum[is]=NggInScan[is]+NbbInScan[is];
         break;
     }
+    cout<<"BESLUM:"<<LumLgammaInScan[is]<<" LumInScan:"<<LumInScan[is]<< ", BBLumCor=" << BBLumCorr[is] << endl;;
     //calculate mhadr cross section
     CrossSInScan[is]=Nmh[is]/LumInScan[is];
     if(Nmh[is]>4) CrossSErrInScan[is]=sqrt(Nmh[is]*(1.+Nmh[is]/NLum[is]))/LumInScan[is];        
@@ -814,6 +813,20 @@ void fcnResMult(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
     }
     cout << setw(4)<< "point#" << setw(15)<< "energy, MeV" <<  setw(15) << "energy chi2" << setw(15) <<  "signal chi2" << endl;
   }
+  if( FCNcall ==0 )
+  {
+    std::cout << std::setw(3)  << "#pn";
+    std::cout << std::setw(10) << "E, MeV";
+    std::cout << std::setw(6)  << "Nmh";
+    std::cout << std::setw(6)  << "Nee";
+    std::cout << std::setw(10) << "sigBB,nb";
+    std::cout << std::setw(10) << "sigMH,nb";
+    std::cout << std::setw(10) << "Lmh,1/nb";
+    std::cout << std::setw(10) << "Lbb,1/nb";
+    std::cout << std::setw(10) << "L,1/nb";
+    for(unsigned i=0;i<4;++i) std::cout << setw(5) << "p"+std::string(boost::lexical_cast<std::string>(i));
+    std::cout << std::endl;
+  }
   for (Int_t i=0;i<NumEpoints;i++)
   {
     Energy=EInScan[i];
@@ -876,15 +889,18 @@ void fcnResMult(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t if
     }
     if( FCNcall ==0 )
     {
-      cout<<"Point "<< i << " E " << Energy
-        << " Nmh " << NmhInScan[i]<<"Nbb:"<<NbbInScan[i]<<
-        " sigmaBB:"<<sigmaBB<<
-        " sigmaMH:"<<sigmaMH<<" rmh:"<<NmhInScan[i]/ sigmaMH<<
-        " rbb: "<<NbbInScan[i] / sigmaBB<<" LumFull:"<<lumFull<<
-        " LG:"<<LumLgammaInScan[i]<<
-        " parmh0:"<<parmh[0]<<"parmh[1]:"<<parmh[1]<<
-        "parmh[2]:"<<parmh[2]<<"parmh[3]:"<<parmh[3]
-        <<endl;
+      std::cout << setw(3) << i;
+      std::cout << boost::format("  %4.3f") % Energy;
+      std::cout << setw(6) << NmhInScan[i];
+      std::cout << setw(6) << NbbInScan[i];
+      std::cout << boost::format("%3.3f") % boost::io::group(std::setw(10),sigmaBB);
+      std::cout << boost::format("%3.3f") % boost::io::group(std::setw(10),sigmaMH);
+      std::cout << boost::format("%3.3f") % boost::io::group(std::setw(10),NmhInScan[i]/ sigmaMH);
+      std::cout << boost::format("%3.3f") % boost::io::group(std::setw(10),NbbInScan[i]/sigmaBB);
+      std::cout << boost::format("%3.3f") % boost::io::group(std::setw(10),lumFull);
+      for(unsigned i=0;i<4;++i) std::cout << std::setw(5) << parmh[i];
+      //  " LG:"<<LumLgammaInScan[i]<<
+      std::cout << std::endl;
       NpPP++;
     }
     chisqmh=0;
