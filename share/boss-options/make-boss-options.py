@@ -38,8 +38,9 @@ def proceed(run, directory, files):
 
 psi2s2011 = range(25244,25337);
 jpsi2011 = range(24937,24978);
+jpsi2012 = range(28312,28514);
 
-for run in jpsi2011:
+for run in jpsi2012:
   print "Proceeding run ", run
   os.path.walk("../data", proceed, run)
   #create qsub files
