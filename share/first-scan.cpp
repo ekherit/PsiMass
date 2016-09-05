@@ -671,8 +671,8 @@ void make_result(void)
   mg->Draw("a");
   l->Draw();
 
-  ofstream kfile("CrBhabha.txt");
-  kfile << Kee << endl;
-  kfile << Kgg << endl;
+  ofstream kfile("fit.cfg");
+  kfile << "cross-section-ee=" << Kee << endl;
+  kfile << "cross-section-gg=" << Kgg << endl;
 }
 

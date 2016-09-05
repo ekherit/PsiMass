@@ -1,14 +1,14 @@
 all : fitscan draw
 
-LIBS = `root-config --libs` -L$(HOME)/local/lib
-CXXFLAGS = `root-config --cflags` -std=c++0x  -I$(HOME)/local/include
+LIBS = `root-config --libs` -lMinuit -L$(HOME)/local/lib  -lboost_program_options
+CXXFLAGS = `root-config --cflags` -I$(HOME)/local/include  -std=c++0x 
 
 BINDIR=../../bin
 fitscan : FitOniumRCompactLib.o fitscan.o interference.o
-		g++ -o $(BINDIR)/fitscan FitOniumRCompactLib.o interference.o fitscan.o   $(LIBS) -lMinuit
+		g++ -o $(BINDIR)/fitscan  FitOniumRCompactLib.o interference.o fitscan.o  $(LIBS)
 
 draw : FitOniumRCompactLib.o draw.o 
-		g++ -o $(BINDIR)/draw FitOniumRCompactLib.o interference.o draw.o   $(LIBS) -lMinuit
+		g++ -o $(BINDIR)/draw FitOniumRCompactLib.o interference.o draw.o   $(LIBS)
 
 FitOniumRCompactLib.o : 
 		g++ -o FitOniumRCompactLib.o $(CXXFLAGS) -c FitOniumRCompactLib.cc

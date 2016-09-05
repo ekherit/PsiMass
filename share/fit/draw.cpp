@@ -40,7 +40,7 @@ int main(int argc, char ** argv)
         draw_res(_IdPsiPrime,sW,EsPsiP);
   EsJPsi = {1544.0, 1547.7, 1548.1, 1548.5, 1548.9, 1549.3,1552.0};
   vector<double>  jpsi_add = { 1547.5, 1547.9, 1547.9, 1548.3, 1648.7};
-  EsJPsi.add(jpsi_add);
+  //EsJPsi.add(jpsi_add);
   vector<double> EsTau = { 1771, 1776.5, 1776.9, 1780.3,1792};
   draw_res(_IdJPsi,sW*sq(_MJPsi/_MPsiPrime),EsJPsi);
   for(double E: EsPsiP) cout << E << " " << E/cos(0.022/2)<< "\t"<<E/cos(0.022/2)-E << endl;
