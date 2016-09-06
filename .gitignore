@@ -7,3 +7,4 @@ i386_linux26
 bin
 *.d
 x86_64-slc6-gcc46-opt
+cmt
