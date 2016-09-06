@@ -6,3 +6,4 @@ i386_linux26
 *.so
 bin
 *.d
+x86_64-slc6-gcc46-opt
