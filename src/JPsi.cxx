@@ -97,7 +97,7 @@ JPsi::JPsi(const std::string& name, ISvcLocator* pSvcLocator) :
   declareProperty("IPTRACKS", IPTRACKS=2); //number of tracks from interection point
   declareProperty("MIN_CHARGED_TRACKS", MIN_CHARGED_TRACKS=2); //minimum number of charged tracks in selection
   declareProperty("MAX_TRACK_NUMBER", MAX_TRACK_NUMBER=50); //maximum number of charged tracks
-  declareProperty("USE_VERTEX", USE_VERTEX=1); //Use vertex information from beam position
+  declareProperty("USE_VERTEX", USE_VERTEX=0); //Use vertex information from beam position
 
   emc.MAX_TRACK_NUMBER = MAX_TRACK_NUMBER;
   gg.MAX_TRACK_NUMBER = MAX_TRACK_NUMBER;
@@ -628,7 +628,7 @@ StatusCode JPsi::execute()
       mdc.y[i]=mdcTrk->y();
       mdc.z[i]=mdcTrk->z();
 
-      if(USE_VERTEX)
+      if(USE_VERTEX==1)
       {
         /* Vertex game. copy from rhophi analysis */
         double phi0=mdcTrk->helix(1);
