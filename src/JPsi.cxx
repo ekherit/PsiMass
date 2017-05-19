@@ -541,9 +541,9 @@ StatusCode JPsi::execute()
   nttr_a.add(evtRecEvent->totalTracks());
 
   /*  Reconstruct the vertex */
+  Hep3Vector xorigin(0,0,0);
   if(USE_VERTEX==1)
   {
-    Hep3Vector xorigin(0,0,0);
     IVertexDbSvc*  vtxsvc;
     Gaudi::svcLocator()->service("VertexDbSvc", vtxsvc);
     if(vtxsvc->isVertexValid())
