@@ -652,7 +652,7 @@ StatusCode JPsi::execute()
       }
       else
       {
-        mdc.r[i]=hypot(mdc.x[i],mdc[y]);
+        mdc.r[i]=hypot(mdc.x[i],mdc.y[i]);
         mdc.rvxy[i]=mdc.r[i];
         mdc.rvz[i]=mdc.z[i];
         mdc.rvphi[i]=0;
