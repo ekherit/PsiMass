@@ -89,7 +89,7 @@ def lookup( f, d):
 
 
 class OptionMaker:
-    JPSIKKROOT_DIR       = os.path.abspath(os.environ['JPSI'])
+    JPSIKKROOT_DIR       = os.path.abspath(os.environ['JPSIROOT'])
     TEMPLATE_DIR         = os.path.join(JPSIKKROOT_DIR, 'share/template')
     SHARE_DIR            = os.path.join(JPSIKKROOT_DIR, 'share')
     dataDir = ""   #folder where data files will be searched
