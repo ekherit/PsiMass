@@ -97,6 +97,7 @@ JPsi::JPsi(const std::string& name, ISvcLocator* pSvcLocator) :
   declareProperty("IPTRACKS", IPTRACKS=2); //number of tracks from interection point
   declareProperty("MIN_CHARGED_TRACKS", MIN_CHARGED_TRACKS=2); //minimum number of charged tracks in selection
   declareProperty("MAX_TRACK_NUMBER", MAX_TRACK_NUMBER=50); //maximum number of charged tracks
+  declareProperty("USE_VERTEX", USE_VERTEX=1); //Use vertex information from beam position
 
   emc.MAX_TRACK_NUMBER = MAX_TRACK_NUMBER;
   gg.MAX_TRACK_NUMBER = MAX_TRACK_NUMBER;
@@ -540,16 +541,19 @@ StatusCode JPsi::execute()
   nttr_a.add(evtRecEvent->totalTracks());
 
   /*  Reconstruct the vertex */
-  Hep3Vector xorigin(0,0,0);
-  IVertexDbSvc*  vtxsvc;
-  Gaudi::svcLocator()->service("VertexDbSvc", vtxsvc);
-  if(vtxsvc->isVertexValid())
+  if(USE_VERTEX==1)
   {
-    double* dbv = vtxsvc->PrimaryVertex(); 
-    double*  vv = vtxsvc->SigmaPrimaryVertex();  
-    xorigin.setX(dbv[0]);
-    xorigin.setY(dbv[1]);
-    xorigin.setZ(dbv[2]);
+    Hep3Vector xorigin(0,0,0);
+    IVertexDbSvc*  vtxsvc;
+    Gaudi::svcLocator()->service("VertexDbSvc", vtxsvc);
+    if(vtxsvc->isVertexValid())
+    {
+      double* dbv = vtxsvc->PrimaryVertex(); 
+      double*  vv = vtxsvc->SigmaPrimaryVertex();  
+      xorigin.setX(dbv[0]);
+      xorigin.setY(dbv[1]);
+      xorigin.setZ(dbv[2]);
+    }
   }
 
   typedef std::multimap <double, unsigned> mmap_t;
@@ -624,25 +628,35 @@ StatusCode JPsi::execute()
       mdc.y[i]=mdcTrk->y();
       mdc.z[i]=mdcTrk->z();
 
-      /* Vertex game. copy from rhophi analysis */
-      double phi0=mdcTrk->helix(1);
-      double xv=xorigin.x();
-      double yv=xorigin.y();
-      double Rxy=(mdc.x[i]-xv)*cos(phi0)+(mdc.y[i]-yv)*sin(phi0);
-      mdc.r[i]=Rxy;
-      HepVector a = mdcTrk->helix();
-      HepSymMatrix Ea = mdcTrk->err();
-      HepPoint3D point0(0.,0.,0.);   // the initial point for MDC recosntruction
-      HepPoint3D IP(xorigin[0],xorigin[1],xorigin[2]); 
-      VFHelix helixip(point0,a,Ea); 
-      helixip.pivot(IP);
-      HepVector vecipa = helixip.a();
-      double  Rvxy0=fabs(vecipa[0]);  //the nearest distance to IP in xy plane
-      double  Rvz0=vecipa[3];         //the nearest distance to IP in z direction
-      double  Rvphi0=vecipa[1];
-      mdc.rvxy[i]=Rvxy0;
-      mdc.rvz[i]=Rvz0;
-      mdc.rvphi[i]=Rvphi0;
+      if(USE_VERTEX)
+      {
+        /* Vertex game. copy from rhophi analysis */
+        double phi0=mdcTrk->helix(1);
+        double xv=xorigin.x();
+        double yv=xorigin.y();
+        double Rxy=(mdc.x[i]-xv)*cos(phi0)+(mdc.y[i]-yv)*sin(phi0);
+        mdc.r[i]=Rxy;
+        HepVector a = mdcTrk->helix();
+        HepSymMatrix Ea = mdcTrk->err();
+        HepPoint3D point0(0.,0.,0.);   // the initial point for MDC recosntruction
+        HepPoint3D IP(xorigin[0],xorigin[1],xorigin[2]); 
+        VFHelix helixip(point0,a,Ea); 
+        helixip.pivot(IP);
+        HepVector vecipa = helixip.a();
+        double  Rvxy0=fabs(vecipa[0]);  //the nearest distance to IP in xy plane
+        double  Rvz0=vecipa[3];         //the nearest distance to IP in z direction
+        double  Rvphi0=vecipa[1];
+        mdc.rvxy[i]=Rvxy0;
+        mdc.rvz[i]=Rvz0;
+        mdc.rvphi[i]=Rvphi0;
+      }
+      else
+      {
+        mdc.r[i]=hypot(mdc.x[i],mdc[y]);
+        mdc.rvxy[i]=mdc.r[i];
+        mdc.rvz[i]=mdc.z[i];
+        mdc.rvphi[i]=0;
+      }
       mdc.Emdc+=sqrt(mdc.p[i]*mdc.p[i]+PI_MESON_MASS*PI_MESON_MASS);
 
       // fill good tracks

@@ -51,6 +51,7 @@ class JPsi : public Algorithm
 	double DELTA_X, DELTA_Y, DELTA_Z; //interection point cut
 	long int event_proceed;
 	long int event_write;
+  int USE_VERTEX;
 
 	NTuple::Tuple * main_tuple;//main tuple 
 	NTuple::Item<long> m_time; //time when events is writed (unixtime)
