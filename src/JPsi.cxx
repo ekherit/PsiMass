@@ -22,7 +22,7 @@
 #include "GaudiKernel/SmartDataPtr.h"
 #include "GaudiKernel/IDataProviderSvc.h"
 #include "GaudiKernel/PropertyMgr.h"
-#include "VertexFit/IVertexDbSvc.h"
+//#include "VertexFit/IVertexDbSvc.h"
 #include "GaudiKernel/Bootstrap.h"
 #include "GaudiKernel/ISvcLocator.h"
 
@@ -53,9 +53,9 @@ typedef HepGeom::Point3D<double> HepPoint3D;
 
 #include <TMatrixDEigen.h>
 
-#include "VertexFit/KinematicFit.h"
-#include "VertexFit/VertexFit.h"
-#include "VertexFit/Helix.h"
+//#include "VertexFit/KinematicFit.h"
+//#include "VertexFit/VertexFit.h"
+//#include "VertexFit/Helix.h"
 #include "ParticleID/ParticleID.h"
 
 #include "../share/averager.h"
@@ -544,6 +544,7 @@ StatusCode JPsi::execute()
   Hep3Vector xorigin(0,0,0);
   if(USE_VERTEX==1)
   {
+    /*
     IVertexDbSvc*  vtxsvc;
     Gaudi::svcLocator()->service("VertexDbSvc", vtxsvc);
     if(vtxsvc->isVertexValid())
@@ -554,6 +555,7 @@ StatusCode JPsi::execute()
       xorigin.setY(dbv[1]);
       xorigin.setZ(dbv[2]);
     }
+    */
   }
 
   typedef std::multimap <double, unsigned> mmap_t;
@@ -631,6 +633,7 @@ StatusCode JPsi::execute()
       if(USE_VERTEX==1)
       {
         /* Vertex game. copy from rhophi analysis */
+        /*
         double phi0=mdcTrk->helix(1);
         double xv=xorigin.x();
         double yv=xorigin.y();
@@ -649,6 +652,7 @@ StatusCode JPsi::execute()
         mdc.rvxy[i]=Rvxy0;
         mdc.rvz[i]=Rvz0;
         mdc.rvphi[i]=Rvphi0;
+        */
       }
       else
       {
